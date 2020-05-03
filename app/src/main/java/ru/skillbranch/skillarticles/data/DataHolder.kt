@@ -22,17 +22,15 @@ object LocalDataHolder {
             if (isDelay) delay(1000)
             withContext(Dispatchers.Main){
                 articleData.value = ArticleData(
-                        title = "CoordinatorLayout Basic",
-                        category = "Android",
+                    title = "Skill Articles",
+                    category = "loading...",
                         categoryIcon = R.drawable.logo,
                         date = Date(),
                         author = "Skill-Branch"
                     )
             }
-
         }
         return articleData
-
     }
 
     fun findArticlePersonalInfo(articleId: String): LiveData<ArticlePersonalInfo?> {

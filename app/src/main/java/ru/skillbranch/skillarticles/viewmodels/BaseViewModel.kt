@@ -48,7 +48,7 @@ abstract class BaseViewModel<T>(initState: T) : ViewModel() {
 
     /***
      * более компактная форма записи observe() метода LiveData принимает последним аргумент лямбда
-     * выражение обрабатывающее изменение текущего стостояния
+     * выражение обрабатывающее изменение текущего состостояния
      */
     fun observeState(owner: LifecycleOwner, onChanged: (newState: T) -> Unit) {
         state.observe(owner, Observer { onChanged(it!!) })
@@ -126,7 +126,7 @@ sealed class Notify(val message: String) {
     data class ActionMessage(
         val msg: String,
         val actionLabel: String,
-        val actionHandler: (() -> Unit)
+        val actionHandler: (() -> Unit)?
     ) : Notify(msg)
 
     data class ErrorMessage(
