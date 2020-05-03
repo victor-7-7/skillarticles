@@ -22,11 +22,11 @@ object LocalDataHolder {
             if (isDelay) delay(1000)
             withContext(Dispatchers.Main){
                 articleData.value = ArticleData(
-                    title = "Skill Articles",
-                    category = "loading...",
-                        categoryIcon = R.drawable.logo,
-                        date = Date(),
-                        author = "Skill-Branch"
+                    title = "CoordinatorLayout Basic",
+                    category = "Android",
+                    categoryIcon = R.drawable.logo,
+                    date = Date(),
+                    author = "Skill-Branch"
                     )
             }
         }
@@ -43,13 +43,14 @@ object LocalDataHolder {
         return articleInfo
     }
 
-    fun getAppSettings() = settings
-    fun updateAppSettings(appSettings: AppSettings) {
-        settings.value = appSettings
-    }
-
     fun updateArticlePersonalInfo(info: ArticlePersonalInfo) {
         articleInfo.value = info
+    }
+
+    fun getAppSettings() = settings
+
+    fun updateAppSettings(appSettings: AppSettings) {
+        settings.value = appSettings
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)

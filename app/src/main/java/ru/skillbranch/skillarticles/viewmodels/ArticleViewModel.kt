@@ -22,7 +22,8 @@ class ArticleViewModel(private val articleId: String)
                 title = article.title,
                 category = article.category,
                 categoryIcon = article.categoryIcon,
-                date = article.date.format()
+                date = article.date.format(),
+                author = article.author
             )
         }
         subscribeOnDataSource(getArticleContent()) { content, state ->
@@ -70,7 +71,7 @@ class ArticleViewModel(private val articleId: String)
         toggleLike()
         val msg = if (currentState.isLike) Notify.TextMessage("Mark is liked")
         else Notify.ActionMessage(
-            "Don't like it anymore", // snackbar message
+            "Don`t like it anymore", // snackbar message
             "No, still like it", // action btn on snackbar
             toggleLike // handler, if action btn will be pressed
         )
@@ -84,9 +85,10 @@ class ArticleViewModel(private val articleId: String)
             repository.updateArticlePersonalInfo(info.copy(isBookmark = !info.isBookmark))
         }
         toggleBookmark()
-        val msg = if (currentState.isBookmark) Notify.TextMessage("Place is bookmarked")
+        val msg = if (currentState.isBookmark)
+            Notify.TextMessage("Add to bookmarks")
         else Notify.ActionMessage(
-            "Place is not bookmarked", // snackbar message
+            "Remove from bookmarks", // snackbar message
             "No, retain bookmark", // action btn on snackbar
             toggleBookmark // handler, if action btn will be pressed
         )
@@ -144,7 +146,7 @@ data class ArticleState(
     val category: String? = null, // категория
     val categoryIcon: Any? = null, // иконка категории
     val date: String? = null, // дата публикации
-    val author: Any? = false, // автор статьи
+    val author: Any? = null, // автор статьи
     val poster: String? = null, // обложка статьи
     val content: List<Any> = emptyList(), // контент
     val reviews: List<Any> = emptyList() // комментарии
