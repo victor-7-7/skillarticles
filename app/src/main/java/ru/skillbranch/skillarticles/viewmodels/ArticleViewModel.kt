@@ -7,11 +7,13 @@ import ru.skillbranch.skillarticles.data.repositories.ArticleRepository
 import ru.skillbranch.skillarticles.extensions.data.toAppSettings
 import ru.skillbranch.skillarticles.extensions.data.toArticlePersonalInfo
 import ru.skillbranch.skillarticles.extensions.format
+import ru.skillbranch.skillarticles.extensions.mutableLiveData
 
 class ArticleViewModel(private val articleId: String)
     : BaseViewModel<ArticleState>(ArticleState()) {
 
     private val repository = ArticleRepository
+    private val searchQuery = mutableLiveData("")
 
     // subscribe on mutable data
     init {
@@ -47,6 +49,8 @@ class ArticleViewModel(private val articleId: String)
             )
         }
     }
+
+    fun getSearchQuery(): LiveData<String> = searchQuery
 
     // load text from network
     private fun getArticleContent(): LiveData<List<Any>?> {
@@ -118,11 +122,11 @@ class ArticleViewModel(private val articleId: String)
     }
 
     fun handleSearchMode(isSearch: Boolean) {
-        TODO("not implemented")
+        if (!isSearch) searchQuery.value = ""
     }
 
-    fun handleSearch(query: String?) {
-        TODO("not implemented")
+    fun handleSearch(text: String?) {
+        searchQuery.value = text
     }
 }
 

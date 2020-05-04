@@ -2,9 +2,12 @@ package ru.skillbranch.skillarticles.ui
 
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.SearchView
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_root.*
@@ -20,6 +23,7 @@ import ru.skillbranch.skillarticles.viewmodels.ViewModelFactory
 class RootActivity : AppCompatActivity() {
 
     private lateinit var viewModel: ArticleViewModel
+    private var lastSearchRestored = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,12 +45,14 @@ class RootActivity : AppCompatActivity() {
 
     private fun renderNotification(notify: Notify) {
         val snackbar = Snackbar.make(
-            coordinator_container, notify.message, Snackbar.LENGTH_LONG
-        )
-            .setAnchorView(bottombar)
+            coordinator_container,
+            notify.message,
+            Snackbar.LENGTH_LONG
+        ).setAnchorView(bottombar)
 
         when (notify) {
-            is Notify.TextMessage -> { /* nothing*/
+            is Notify.TextMessage -> {
+//                if(notify.message.contains("запрос")) snackbar.anchorView = null
             }
             is Notify.ActionMessage -> {
                 snackbar.setActionTextColor(getColor(R.color.color_accent_dark))
@@ -150,5 +156,29 @@ class RootActivity : AppCompatActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_search, menu)
+        val searchItem = menu?.findItem(R.id.action_search)
+        val searchView = searchItem?.actionView as SearchView
+        searchView.queryHint = "Введите поисковый запрос"
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                viewModel.handleSearchMode(false)
+                return true
+            }
 
+            override fun onQueryTextChange(newText: String?): Boolean {
+                viewModel.handleSearch(newText)
+                return true
+            }
+        })
+        viewModel.getSearchQuery().observe(this, Observer { query ->
+            if (query.isNotEmpty() && !lastSearchRestored) {
+                searchView.isIconified = false
+                searchView.setQuery(query, false)
+            }
+            lastSearchRestored = true
+        })
+        return super.onCreateOptionsMenu(menu)
+    }
 }
