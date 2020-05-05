@@ -1,13 +1,11 @@
 package ru.skillbranch.skillarticles.ui
 
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_root.*
@@ -23,7 +21,7 @@ import ru.skillbranch.skillarticles.viewmodels.ViewModelFactory
 class RootActivity : AppCompatActivity() {
 
     private lateinit var viewModel: ArticleViewModel
-    private var lastSearchRestored = false
+    private var query: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,10 +34,47 @@ class RootActivity : AppCompatActivity() {
         viewModel = ViewModelProviders.of(this, vmFactory)
             .get(ArticleViewModel::class.java)
         viewModel.observeState(this) {
+            query = it.searchQuery
             renderUI(it)
         }
         viewModel.observeNotifications(this) {
             renderNotification(it)
+        }
+    }
+
+    private fun renderUI(data: ArticleState) {
+        // bind submenu state
+        btn_settings.isChecked = data.isShowMenu
+        if (data.isShowMenu) submenu.open() else submenu.close()
+
+        // bind article person data
+        btn_like.isChecked = data.isLike
+        btn_bookmark.isChecked = data.isBookmark
+
+        // bind submenu views
+        switch_mode.isChecked = data.isDarkMode
+        delegate.localNightMode =
+            if (data.isDarkMode) AppCompatDelegate.MODE_NIGHT_YES
+            else AppCompatDelegate.MODE_NIGHT_NO
+
+        if (data.isBigText) {
+            tv_text_content.textSize = 18f
+            btn_text_up.isChecked = true
+            btn_text_down.isChecked = false
+        } else {
+            tv_text_content.textSize = 14f
+            btn_text_up.isChecked = false
+            btn_text_down.isChecked = true
+        }
+        // bind content
+        tv_text_content.text = if (data.isLoadingContent) "loading"
+        else data.content.first() as String
+
+        // bind toolbar
+        toolbar.title = data.title ?: "Skill Articles"
+        toolbar.subtitle = data.category ?: "loading..."
+        if (data.categoryIcon != null) {
+            toolbar.logo = getDrawable(data.categoryIcon as Int)
         }
     }
 
@@ -74,52 +109,17 @@ class RootActivity : AppCompatActivity() {
         snackbar.show()
     }
 
-    private fun renderUI(data: ArticleState) {
-        // bind submenu state
-        btn_settings.isChecked = data.isShowMenu
-        if (data.isShowMenu) submenu.open() else submenu.close()
-
-        // bind article person data
-        btn_like.isChecked = data.isLike
-        btn_bookmark.isChecked = data.isBookmark
-
-        // bind submenu views
-        switch_mode.isChecked = data.isDarkMode
-        delegate.localNightMode =
-            if (data.isDarkMode) AppCompatDelegate.MODE_NIGHT_YES
-            else AppCompatDelegate.MODE_NIGHT_NO
-
-        if (data.isBigText) {
-            tv_text_content.textSize = 18f
-            btn_text_up.isChecked = true
-            btn_text_down.isChecked = false
-        } else {
-            tv_text_content.textSize = 14f
-            btn_text_up.isChecked = false
-            btn_text_down.isChecked = true
-        }
-        // bind content
-        tv_text_content.text = if (data.isLoadingContent) "loading"
-        else data.content.first() as String
-
-        // bind toolbar
-        toolbar.title = data.title ?: "loading"
-        toolbar.subtitle = data.category ?: "loading"
-        if (data.categoryIcon != null) {
-            toolbar.logo = getDrawable(data.categoryIcon as Int)
-        }
-    }
-
     private fun setupToolbar() {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         val logo = if (toolbar.childCount > 2) toolbar.getChildAt(2)
                 as ImageView else null
         logo?.scaleType = ImageView.ScaleType.CENTER_CROP
-        Log.d("M_RootActivity", "logo => $logo")
+//        Log.d("M_RootActivity", "logo => $logo")
 
+        /** null !!! for Toolbar.LayoutParams */
         val lp = logo?.layoutParams // as? Toolbar.LayoutParams
-        Log.d("M_RootActivity", "lp => $lp") // null for Toolbar lp
+//        Log.d("M_RootActivity", "lp => $lp")
 
         lp?.let {
             it.width = this.dpToIntPx(40)
@@ -156,29 +156,33 @@ class RootActivity : AppCompatActivity() {
         }
     }
 
+    // https://stackoverflow.com/questions/22498344/is-there-a-better-way-to-restore-searchview-state
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_search, menu)
         val searchItem = menu?.findItem(R.id.action_search)
         val searchView = searchItem?.actionView as SearchView
-        searchView.queryHint = "Введите поисковый запрос"
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                viewModel.handleSearchMode(false)
-                return true
-            }
+        if (!query.isNullOrEmpty()) {
+            searchItem.expandActionView()
+            searchView.setQuery(query, true)
+            searchView.clearFocus()
+        }
+        with(searchView) {
+            queryHint = "Введите поисковый запрос"
+            setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    return true
+                }
 
-            override fun onQueryTextChange(newText: String?): Boolean {
-                viewModel.handleSearch(newText)
-                return true
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    viewModel.handleSearchQuery(newText)
+                    return true
+                }
+            })
+            setOnCloseListener {
+                viewModel.handleSearchQuery(null)
+                false
             }
-        })
-        viewModel.getSearchQuery().observe(this, Observer { query ->
-            if (query.isNotEmpty() && !lastSearchRestored) {
-                searchView.isIconified = false
-                searchView.setQuery(query, false)
-            }
-            lastSearchRestored = true
-        })
+        }
         return super.onCreateOptionsMenu(menu)
     }
 }
