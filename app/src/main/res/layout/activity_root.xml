@@ -58,6 +58,7 @@
         android:theme="@style/ArticleBarsTheme"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        app:layout_behavior=".ui.custom.behaviors.BottombarBehavior"
         android:layout_gravity="bottom"
         android:elevation="@dimen/spacing_tiny_4"
         app:layout_insetEdge="bottom"/>
