@@ -8,7 +8,6 @@ import androidx.core.widget.NestedScrollView
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
 import ru.skillbranch.skillarticles.ui.custom.Bottombar
 
-
 class BottombarBehavior @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
