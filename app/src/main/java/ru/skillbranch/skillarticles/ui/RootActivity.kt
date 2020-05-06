@@ -6,6 +6,7 @@ import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
+import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_root.*
@@ -117,14 +118,15 @@ class RootActivity : AppCompatActivity() {
         logo?.scaleType = ImageView.ScaleType.CENTER_CROP
 //        Log.d("M_RootActivity", "logo => $logo")
 
-        /** null !!! for Toolbar.LayoutParams */
-        val lp = logo?.layoutParams // as? Toolbar.LayoutParams
+        /** Важно !!! Toolbar взять из androidx.appcompat.widget.Toolbar,
+         * иначе будет null */
+        val lp = logo?.layoutParams as? Toolbar.LayoutParams
 //        Log.d("M_RootActivity", "lp => $lp")
 
         lp?.let {
             it.width = this.dpToIntPx(40)
             it.height = this.dpToIntPx(40)
-//            it.marginEnd = this.dpToIntPx(16) // for Toolbar lp
+            it.marginEnd = this.dpToIntPx(16) // for Toolbar lp
             logo.layoutParams = it
         }
     }
