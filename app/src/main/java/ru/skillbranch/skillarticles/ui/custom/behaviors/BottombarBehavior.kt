@@ -32,10 +32,6 @@ class BottombarBehavior @JvmOverloads constructor(
         child: Bottombar,
         dependency: View
     ): Boolean {
-//        val translationY = 0f.coerceAtMost(
-//            dependency.translationY - dependency.height)
-//        child.translationY = translationY
-//        return true
         return super.onDependentViewChanged(parent, child, dependency)
     }
 }
