@@ -46,7 +46,6 @@
         android:theme="@style/ArticleBarsTheme"
         android:layout_width="200dp"
         android:layout_height="96dp"
-        app:layout_behavior=".ui.custom.behaviors.SubmenuBehavior"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="@dimen/spacing_small_8"
         android:layout_marginBottom="@dimen/spacing_small_8"
@@ -59,7 +58,6 @@
         android:theme="@style/ArticleBarsTheme"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        app:layout_behavior=".ui.custom.behaviors.BottombarBehavior"
         android:layout_gravity="bottom"
         android:elevation="@dimen/spacing_tiny_4"
         app:layout_insetEdge="bottom"/>

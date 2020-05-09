@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Skill Articles</string>
     <string name="menu_search_title">Поиск</string>
+    <string name="article_search_placeholder">Найти</string>
 </resources>

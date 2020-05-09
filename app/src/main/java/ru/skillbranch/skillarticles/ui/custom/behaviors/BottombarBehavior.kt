@@ -1,37 +1,38 @@
 package ru.skillbranch.skillarticles.ui.custom.behaviors
 
-import android.content.Context
-import android.util.AttributeSet
 import android.view.View
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.widget.NestedScrollView
-import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
+import androidx.core.math.MathUtils
+import androidx.core.view.ViewCompat
 import ru.skillbranch.skillarticles.ui.custom.Bottombar
 
-class BottombarBehavior @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
-) : HideBottomViewOnScrollBehavior<Bottombar>() {
+class BottombarBehavior : CoordinatorLayout.Behavior<Bottombar>() {
 
-    override fun layoutDependsOn(
-        parent: CoordinatorLayout,
+    override fun onNestedPreScroll(
+        coordinatorLayout: CoordinatorLayout,
         child: Bottombar,
-        dependency: View
-    ): Boolean {
-        /** мы хотим реагировать только на изменения разметки
-         * виджета NestedScrollView */
-        return dependency is NestedScrollView
+        target: View,
+        dx: Int,
+        dy: Int,
+        consumed: IntArray,
+        type: Int
+    ) {
+        val offset = MathUtils.clamp(
+            child.translationY + dy,
+            0f, child.height.toFloat()
+        )
+        if (offset != child.translationY) child.translationY = offset
+        super.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed, type)
     }
 
-    /** Метод вызывается всякий раз, когда с виджетом, который находится
-     * в CoordinatorLayout и изменения которого мы отслеживаем (NestedScrollView),
-     * что-то происходит */
-    override fun onDependentViewChanged(
-        parent: CoordinatorLayout,
+    override fun onStartNestedScroll(
+        coordinatorLayout: CoordinatorLayout,
         child: Bottombar,
-        dependency: View
+        directTargetChild: View,
+        target: View,
+        axes: Int,
+        type: Int
     ): Boolean {
-        return super.onDependentViewChanged(parent, child, dependency)
+        return axes == ViewCompat.SCROLL_AXIS_VERTICAL
     }
 }

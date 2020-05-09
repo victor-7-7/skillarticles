@@ -20,7 +20,7 @@
         <item name="colorOnSurface">@color/color_on_surface</item>
         <item name="snackbarStyle">@style/CustomSnackbar</item>
 
-        <item name="autoCompleteTextViewStyle">@style/SearchAutoCompleteTextView</item>
+        <!--        <item name="autoCompleteTextViewStyle">@style/SearchAutoCompleteTextView</item>-->
     </style>
 
     <style name="ArticleBarsTheme" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar">
@@ -28,11 +28,14 @@
         <item name="colorOnPrimary">@color/color_on_article_bar</item>
         <item name="colorSurface">@color/color_article_bar</item>
         <item name="colorControlNormal">@color/color_on_article_bar</item>
+        <item name="android:textColorHint">@color/color_gray</item>
+        <item name="android:textColorPrimary">?attr/colorOnPrimary</item>
     </style>
 
     <style name="ArticleToolbar" parent="Widget.MaterialComponents.Toolbar.Primary">
         <item name="titleTextColor">?attr/colorOnPrimary</item>
         <item name="contentInsetStartWithNavigation">0dp</item>
+        <item name="android:textColorSecondary">?attr/colorOnPrimary</item>
     </style>
 
     <style name="BottombarIcon">
@@ -47,9 +50,9 @@
         <item name="layout_insetEdge">bottom</item>
     </style>
 
-    <style name="SearchAutoCompleteTextView" parent="Widget.AppCompat.Light.AutoCompleteTextView">
-        <item name="android:textColor">@color/color_on_surface</item>
-        <!--        <item name="android:textColorHint">@color/my_hint_color</item>-->
-    </style>
+    <!--    <style name="SearchAutoCompleteTextView" parent="Widget.AppCompat.Light.AutoCompleteTextView">-->
+    <!--        <item name="android:textColor">@color/color_on_surface</item>-->
+    <!--        &lt;!&ndash;        <item name="android:textColorHint">@color/my_hint_color</item>&ndash;&gt;-->
+    <!--    </style>-->
 
 </resources>

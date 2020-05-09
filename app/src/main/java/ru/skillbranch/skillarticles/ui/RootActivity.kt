@@ -2,6 +2,7 @@ package ru.skillbranch.skillarticles.ui
 
 import android.os.Bundle
 import android.view.Menu
+import android.view.MenuItem
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -22,7 +23,8 @@ import ru.skillbranch.skillarticles.viewmodels.ViewModelFactory
 class RootActivity : AppCompatActivity() {
 
     private lateinit var viewModel: ArticleViewModel
-    private var query: String? = null
+    private var searchQuery: String? = null
+    private var isSearching = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,12 +37,53 @@ class RootActivity : AppCompatActivity() {
         viewModel = ViewModelProviders.of(this, vmFactory)
             .get(ArticleViewModel::class.java)
         viewModel.observeState(this) {
-            query = it.searchQuery
             renderUI(it)
+            // restore search mode
+            if (it.isSearch) {
+                isSearching = true
+                searchQuery = it.searchQuery
+            }
         }
         viewModel.observeNotifications(this) {
             renderNotification(it)
         }
+    }
+
+    // https://stackoverflow.com/questions/22498344/is-there-a-better-way-to-restore-searchview-state
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_search, menu)
+        val menuItem = menu?.findItem(R.id.action_search)
+        val searchView = menuItem?.actionView as? SearchView
+        searchView?.queryHint = getString(R.string.article_search_placeholder)
+        // restore search
+        if (isSearching) {
+            menuItem?.expandActionView()
+            searchView?.setQuery(searchQuery, false)
+            searchView?.clearFocus()
+        }
+        menuItem?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+            override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
+                viewModel.handleIsSearch(true)
+                return true
+            }
+
+            override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
+                viewModel.handleIsSearch(false)
+                return true
+            }
+        })
+        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                viewModel.handleSearchQuery(query)
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                viewModel.handleSearchQuery(newText)
+                return true
+            }
+        })
+        return super.onCreateOptionsMenu(menu)
     }
 
     private fun renderUI(data: ArticleState) {
@@ -156,35 +199,5 @@ class RootActivity : AppCompatActivity() {
         switch_mode.setOnClickListener {
             viewModel.handleNightMode()
         }
-    }
-
-    // https://stackoverflow.com/questions/22498344/is-there-a-better-way-to-restore-searchview-state
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_search, menu)
-        val searchItem = menu?.findItem(R.id.action_search)
-        val searchView = searchItem?.actionView as SearchView
-        if (!query.isNullOrEmpty()) {
-            searchItem.expandActionView()
-            searchView.setQuery(query, true)
-            searchView.clearFocus()
-        }
-        with(searchView) {
-            queryHint = "Введите поисковый запрос"
-            setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String?): Boolean {
-                    return true
-                }
-
-                override fun onQueryTextChange(newText: String?): Boolean {
-                    viewModel.handleSearchQuery(newText)
-                    return true
-                }
-            })
-            setOnCloseListener {
-                viewModel.handleSearchQuery(null)
-                false
-            }
-        }
-        return super.onCreateOptionsMenu(menu)
     }
 }
