@@ -4,14 +4,26 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.util.DisplayMetrics
 import android.util.TypedValue
 
 fun Context.dpToPx(dp: Int) = TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP,
-        dp.toFloat(),
-        this.resources.displayMetrics)
+    TypedValue.COMPLEX_UNIT_DIP, dp.toFloat(), resources.displayMetrics
+)
 
 fun Context.dpToIntPx(dp: Int) = dpToPx(dp).toInt()
+
+fun Context.convertDpToPx(dp: Float): Float = TypedValue.applyDimension(
+    TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics
+)
+
+fun Context.convertPxToDp(px: Float): Float =
+    px / (resources.displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT
+            )
+
+fun Context.convertSpToPx(sp: Float): Float = TypedValue.applyDimension(
+    TypedValue.COMPLEX_UNIT_SP, sp, resources.displayMetrics
+)
 
 val Context.isNetworkAvailable: Boolean
     get() {

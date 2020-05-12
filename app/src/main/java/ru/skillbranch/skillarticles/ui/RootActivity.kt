@@ -1,10 +1,13 @@
 package ru.skillbranch.skillarticles.ui
 
+import android.graphics.Color
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
@@ -13,55 +16,64 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.layout_bottombar.*
 import kotlinx.android.synthetic.main.layout_submenu.*
+import kotlinx.android.synthetic.main.search_view_layout.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
+import ru.skillbranch.skillarticles.extensions.setMarginOptionally
+import ru.skillbranch.skillarticles.ui.base.BaseActivity
+import ru.skillbranch.skillarticles.ui.custom.SearchSpan
 import ru.skillbranch.skillarticles.viewmodels.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.ArticleViewModel
-import ru.skillbranch.skillarticles.viewmodels.Notify
-import ru.skillbranch.skillarticles.viewmodels.ViewModelFactory
+import ru.skillbranch.skillarticles.viewmodels.base.Notify
+import ru.skillbranch.skillarticles.viewmodels.base.ViewModelFactory
 
-class RootActivity : AppCompatActivity() {
+class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
-    private lateinit var viewModel: ArticleViewModel
+    override val layout = R.layout.activity_root
+    override lateinit var viewModel: ArticleViewModel
+
     private var searchQuery: String? = null
     private var isSearching = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_root)
-        setupToolbar()
-        setupBottombar()
-        setupSubmenu()
 
-        val vmFactory = ViewModelFactory("0")
+        val vmFactory =
+            ViewModelFactory("0")
         viewModel = ViewModelProviders.of(this, vmFactory)
             .get(ArticleViewModel::class.java)
         viewModel.observeState(this) {
+            // save search mode for create options menu
+            isSearching = it.isSearch
+            searchQuery = it.searchQuery
+
             renderUI(it)
-            // restore search mode
-            if (it.isSearch) {
-                isSearching = true
-                searchQuery = it.searchQuery
-            }
         }
         viewModel.observeNotifications(this) {
             renderNotification(it)
         }
     }
 
+    override fun setupViews() {
+        setupToolbar()
+        setupBottombar()
+        setupSubmenu()
+    }
+
     // https://stackoverflow.com/questions/22498344/is-there-a-better-way-to-restore-searchview-state
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_search, menu)
-        val menuItem = menu?.findItem(R.id.action_search)
-        val searchView = menuItem?.actionView as? SearchView
+        val searchMenuItem = menu?.findItem(R.id.action_search)
+        val searchView = searchMenuItem?.actionView as? SearchView
         searchView?.queryHint = getString(R.string.article_search_placeholder)
+
         // restore search
         if (isSearching) {
-            menuItem?.expandActionView()
+            searchMenuItem?.expandActionView()
             searchView?.setQuery(searchQuery, false)
             searchView?.clearFocus()
         }
-        menuItem?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+        searchMenuItem?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
             override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
                 viewModel.handleIsSearch(true)
                 return true
@@ -73,12 +85,12 @@ class RootActivity : AppCompatActivity() {
             }
         })
         searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                viewModel.handleSearchQuery(query)
+            override fun onQueryTextSubmit(query: String): Boolean {
+//                viewModel.handleSearchQuery(query)
                 return true
             }
 
-            override fun onQueryTextChange(newText: String?): Boolean {
+            override fun onQueryTextChange(newText: String): Boolean {
                 viewModel.handleSearchQuery(newText)
                 return true
             }
@@ -110,15 +122,28 @@ class RootActivity : AppCompatActivity() {
             btn_text_up.isChecked = false
             btn_text_down.isChecked = true
         }
+
         // bind content
-        tv_text_content.text = if (data.isLoadingContent) "loading"
-        else data.content.first() as String
+        if (data.isLoadingContent) tv_text_content.text = "loading"
+        else {
+            val content = data.content.first() as String
+            tv_text_content.setText(content, TextView.BufferType.SPANNABLE)
+        }
 
         // bind toolbar
         toolbar.title = data.title ?: "Skill Articles"
         toolbar.subtitle = data.category ?: "loading..."
         if (data.categoryIcon != null) {
             toolbar.logo = getDrawable(data.categoryIcon as Int)
+        }
+
+        if (data.isSearch) {
+            showSearchBar()
+            renderSearchResult(data.searchResults)
+        } else {
+            hideSearchBar()
+            clearSearchResult()
+            search_view?.isIconified = true
         }
     }
 
@@ -187,17 +212,73 @@ class RootActivity : AppCompatActivity() {
         btn_settings.setOnClickListener {
             viewModel.handleToggleMenu()
         }
+        btn_result_up.setOnClickListener {
+            if (search_view.hasFocus()) search_view.clearFocus()
+            viewModel.handleUpResult()
+        }
+        btn_result_down.setOnClickListener {
+            if (search_view.hasFocus()) search_view.clearFocus()
+            viewModel.handleDownResult()
+        }
+        btn_search_close.setOnClickListener {
+            viewModel.handleIsSearch(false)
+            invalidateOptionsMenu()
+        }
     }
 
     private fun setupSubmenu() {
         btn_text_up.setOnClickListener {
-            viewModel.handleUpText()
+            viewModel.handleUpTextSize()
         }
         btn_text_down.setOnClickListener {
-            viewModel.handleDownText()
+            viewModel.handleDownTextSize()
         }
         switch_mode.setOnClickListener {
             viewModel.handleNightMode()
         }
+    }
+
+    override fun renderSearchResult(searchResult: List<Pair<Int, Int>>) {
+        if (searchResult.isEmpty()) {
+            clearSearchResult()
+            return
+        }
+        val content = tv_text_content.text as Spannable
+        val bgColor = Color.RED
+        val fgColor = Color.WHITE
+
+        searchResult.forEach { (start, end) ->
+            content.setSpan(
+                SearchSpan(bgColor, fgColor), start, end,
+                SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+    }
+
+    override fun renderSearchPosition(searchPosition: Int) {
+        TODO("not implemented")
+    }
+
+    override fun clearSearchResult() {
+        val content = (tv_text_content.text as? Spannable) ?: return
+        val spans = content.getSpans(
+            0, tv_text_content.text.lastIndex,
+            SearchSpan::class.java
+        )
+        if (spans.isEmpty()) return
+        for (span in spans) {
+            content.removeSpan(span)
+        }
+    }
+
+    override fun showSearchBar() {
+        // Чтобы контент был виден до самого конца (не перекрывался боттомбаром)
+        scroll.setMarginOptionally(bottomPx = dpToIntPx(56))
+        bottombar.setSearchState(true)
+    }
+
+    override fun hideSearchBar() {
+        scroll.setMarginOptionally(bottomPx = dpToIntPx(0))
+        bottombar.setSearchState(false)
     }
 }
