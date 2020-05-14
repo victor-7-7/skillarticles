@@ -16,7 +16,6 @@ object LocalDataHolder {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     val settings = MutableLiveData(AppSettings())
 
-
     fun findArticle(articleId: String): LiveData<ArticleData?> {
         GlobalScope.launch {
             if (isDelay) delay(1000)
@@ -66,6 +65,11 @@ object LocalDataHolder {
     }
 }
 
+
+//===================================================================
+
+
+
 object NetworkDataHolder {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     val content = MutableLiveData<List<Any>?>(null)
@@ -77,19 +81,18 @@ object NetworkDataHolder {
             withContext(Dispatchers.Main){
                 content.value = listOf(longText)
             }
-
         }
         return content
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
-    fun disableDelay(value:Boolean = false) {
-        isDelay = !value
+    fun clearData() {
+        content.postValue(null)
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
-    fun clearData(){
-        content.postValue(null)
+    fun disableDelay(value:Boolean = false) {
+        isDelay = !value
     }
 }
 

@@ -50,6 +50,7 @@ class Bottombar @JvmOverloads constructor(
             0f,
             endRadius
         )
+        va.duration = 700
         va.doOnEnd { group_bottom.isVisible = false }
         va.start()
     }
@@ -64,6 +65,7 @@ class Bottombar @JvmOverloads constructor(
             startRadius,
             0f
         )
+        va.duration = 700
         va.doOnEnd { reveal.isVisible = false }
         va.start()
     }
@@ -80,10 +82,10 @@ class Bottombar @JvmOverloads constructor(
             btn_result_down.isEnabled = true
         }
         // lock btn in min/max positions
-        when (position) {
-            0 -> btn_result_up.isEnabled = false
-            searchCount - 1 -> btn_result_down.isEnabled = false
-        }
+//        when (position) {
+//            0 -> btn_result_up.isEnabled = false
+//            searchCount - 1 -> btn_result_down.isEnabled = false
+//        }
     }
 
     // save bottom state

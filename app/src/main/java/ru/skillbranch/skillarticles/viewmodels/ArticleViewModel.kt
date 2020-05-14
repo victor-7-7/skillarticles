@@ -132,16 +132,39 @@ class ArticleViewModel(private val articleId: String)
             .map {
                 it to it + query.length
             }
-        updateState { it.copy(searchQuery = query, searchResults = results) }
+        updateState {
+            it.copy(
+                searchQuery = query,
+                searchResults = results,
+                searchPosition = 0
+            )
+        }
     }
 
     fun handleUpResult() {
-        updateState { it.copy(searchPosition = it.searchPosition.dec()) }
+        updateState {
+            val newPos = when {
+                it.searchPosition.dec() < 0 -> it.searchResults.lastIndex
+                else -> it.searchPosition.dec()
+            }
+            it.copy(searchPosition = newPos)
+        }
     }
 
     fun handleDownResult() {
-        updateState { it.copy(searchPosition = it.searchPosition.inc()) }
+        updateState {
+            val newPos = when {
+                it.searchPosition.inc() > it.searchResults.lastIndex -> 0
+                else -> it.searchPosition.inc()
+            }
+            it.copy(searchPosition = newPos)
+        }
     }
+
+    fun getIsSearch() = currentState.isSearch
+    fun getSearchQuery() = currentState.searchQuery
+    fun getSearchResults() = currentState.searchResults
+    fun getSearchPosition() = currentState.searchPosition
 }
 
 data class ArticleState(
@@ -157,7 +180,7 @@ data class ArticleState(
     val searchQuery: String? = null, // поисковый запрос
     // результаты поиска (стартовая и конечная позиции фрагментов)
     val searchResults: List<Pair<Int, Int>> = emptyList(),
-    // текущая позиция найденного результата
+    // текущая индексная (zero-based) позиция найденного результата
     val searchPosition: Int = 0,
     val shareLink: String? = null, // ссылка Share
     val title: String? = null, // заголовок статьи
@@ -170,10 +193,11 @@ data class ArticleState(
     val reviews: List<Any> = emptyList() // комментарии, отзывы
 ) : IViewModelState {
     override fun save(outState: Bundle) {
-
+        TODO("not implemented")
     }
 
     override fun restore(savedState: Bundle): IViewModelState {
         TODO("not implemented")
     }
 }
+

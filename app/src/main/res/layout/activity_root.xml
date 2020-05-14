@@ -39,6 +39,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/spacing_normal_16"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             android:text="loading..." />
     </androidx.core.widget.NestedScrollView>
 
