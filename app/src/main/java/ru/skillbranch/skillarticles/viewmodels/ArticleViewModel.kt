@@ -134,21 +134,23 @@ class ArticleViewModel(private val articleId: String)
 
     fun handleUpResult() {
         updateState {
-            val newPos = when {
-                it.searchPosition.dec() < 0 -> it.searchResults.lastIndex
-                else -> it.searchPosition.dec()
-            }
-            it.copy(searchPosition = newPos)
+            //            val newPos = when {
+//                it.searchPosition.dec() < 0 -> it.searchResults.lastIndex
+//                else -> it.searchPosition.dec()
+//            }
+//            it.copy(searchPosition = newPos)
+            it.copy(searchPosition = it.searchPosition.dec())
         }
     }
 
     fun handleDownResult() {
         updateState {
-            val newPos = when {
-                it.searchPosition.inc() > it.searchResults.lastIndex -> 0
-                else -> it.searchPosition.inc()
-            }
-            it.copy(searchPosition = newPos)
+            //            val newPos = when {
+//                it.searchPosition.inc() > it.searchResults.lastIndex -> 0
+//                else -> it.searchPosition.inc()
+//            }
+//            it.copy(searchPosition = newPos)
+            it.copy(searchPosition = it.searchPosition.inc())
         }
     }
 }

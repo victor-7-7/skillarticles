@@ -9,14 +9,14 @@ fun String.truncate(maxChars: Int = MAX_CHARS): String {
     return "${outStr.trimEnd()}..."
 }
 
-fun String?.indexesOf(query: String): List<Int> {
+fun String?.indexesOf(query: String, ignoreCase: Boolean = true): List<Int> {
     if (this.isNullOrEmpty() || query.isEmpty()) return emptyList()
     val list = mutableListOf<Int>()
     var start = 0
     var wip = true
     var index: Int?
     while (wip) {
-        index = findAnyOf(listOf(query), start, true)?.first
+        index = findAnyOf(listOf(query), start, ignoreCase)?.first
         if (index == null) wip = false
         else {
             list.add(index)
