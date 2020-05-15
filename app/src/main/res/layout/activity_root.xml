@@ -30,9 +30,7 @@
         android:id="@+id/scroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
-        tools:layout_editor_absoluteX="-173dp"
-        tools:layout_editor_absoluteY="-341dp">
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
         <TextView
             android:id="@+id/tv_text_content"
@@ -41,6 +39,7 @@
             android:layout_margin="@dimen/spacing_normal_16"
             android:focusable="true"
             android:focusableInTouchMode="true"
+            android:saveEnabled="false"
             android:text="loading..." />
     </androidx.core.widget.NestedScrollView>
 

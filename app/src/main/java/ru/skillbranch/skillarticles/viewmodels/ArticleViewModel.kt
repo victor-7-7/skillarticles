@@ -1,6 +1,7 @@
 package ru.skillbranch.skillarticles.viewmodels
 
 import android.os.Bundle
+import androidx.core.os.bundleOf
 import androidx.lifecycle.LiveData
 import ru.skillbranch.skillarticles.data.ArticleData
 import ru.skillbranch.skillarticles.data.ArticlePersonalInfo
@@ -17,7 +18,6 @@ class ArticleViewModel(private val articleId: String)
     : BaseViewModel<ArticleState>(ArticleState()) {
 
     private val repository = ArticleRepository
-    private var menuIsShown: Boolean = false
 
     // subscribe on mutable data
     init {
@@ -101,11 +101,7 @@ class ArticleViewModel(private val articleId: String)
 
     // session state
     fun handleToggleMenu() {
-        updateState { state ->
-            state.copy(isShowMenu = !state.isShowMenu).also {
-                menuIsShown = !state.isShowMenu
-            }
-        }
+        updateState { it.copy(isShowMenu = !it.isShowMenu) }
     }
 
     fun handleUpTextSize() {
@@ -123,22 +119,17 @@ class ArticleViewModel(private val articleId: String)
     }
 
     fun handleIsSearch(isSearch: Boolean) {
-        updateState { it.copy(isSearch = isSearch) }
+        updateState { it.copy(isSearch = isSearch, isShowMenu = false, searchPosition = 0) }
     }
 
-    fun handleSearchQuery(query: String) {
+    fun handleSearchQuery(query: String?) {
+        query ?: return
         val text = (currentState.content.firstOrNull() as? String)
         val results = text.indexesOf(query)
             .map {
                 it to it + query.length
             }
-        updateState {
-            it.copy(
-                searchQuery = query,
-                searchResults = results,
-                searchPosition = 0
-            )
-        }
+        updateState { it.copy(searchQuery = query, searchResults = results) }
     }
 
     fun handleUpResult() {
@@ -160,11 +151,6 @@ class ArticleViewModel(private val articleId: String)
             it.copy(searchPosition = newPos)
         }
     }
-
-    fun getIsSearch() = currentState.isSearch
-    fun getSearchQuery() = currentState.searchQuery
-    fun getSearchResults() = currentState.searchResults
-    fun getSearchPosition() = currentState.searchPosition
 }
 
 data class ArticleState(
@@ -193,11 +179,24 @@ data class ArticleState(
     val reviews: List<Any> = emptyList() // комментарии, отзывы
 ) : IViewModelState {
     override fun save(outState: Bundle) {
-        TODO("not implemented")
+        outState.putAll(
+            bundleOf(
+                "isSearch" to isSearch,
+                "searchQuery" to searchQuery,
+                "searchResults" to searchResults,
+                "searchPosition" to searchPosition
+            )
+        )
     }
 
-    override fun restore(savedState: Bundle): IViewModelState {
-        TODO("not implemented")
+    @Suppress("UNCHECKED_CAST")
+    override fun restore(savedState: Bundle): ArticleState {
+        return copy(
+            isSearch = savedState["isSearch"] as Boolean,
+            searchQuery = savedState["searchQuery"] as String?,
+            searchResults = savedState["searchResults"] as List<Pair<Int, Int>>,
+            searchPosition = savedState["searchPosition"] as Int
+        )
     }
 }
 
