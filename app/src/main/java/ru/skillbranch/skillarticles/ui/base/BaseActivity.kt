@@ -2,7 +2,7 @@ package ru.skillbranch.skillarticles.ui.base
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import ru.skillbranch.skillarticles.viewmodels.ArticleViewModel
+import androidx.lifecycle.ViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
@@ -27,8 +27,9 @@ abstract class BaseActivity<T : BaseViewModel<out IViewModelState>> : AppCompatA
         viewModel.observeNotifications(this) { renderNotification(it) }
     }
 
-    internal fun provideViewModel(arg: Any?) =
-        ViewModelDelegate(ArticleViewModel::class.java, arg)
+    internal inline fun <reified T : ViewModel>
+            provideViewModel(arg: Any?) =
+        ViewModelDelegate(T::class.java, arg)
 
     override fun onSaveInstanceState(outState: Bundle) {
         viewModel.saveState(outState)

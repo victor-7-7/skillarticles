@@ -37,7 +37,7 @@ import ru.skillbranch.skillarticles.viewmodels.base.Notify
 class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
     override val layout = R.layout.activity_root
-    override val viewModel by provideViewModel("0")
+    override val viewModel: ArticleViewModel by provideViewModel("0")
 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public override val binding: ArticleBinding by lazy { ArticleBinding() }
