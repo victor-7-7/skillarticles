@@ -14,8 +14,9 @@ class ViewModelDelegate<T : ViewModel>(
 
     override fun getValue(thisRef: FragmentActivity, property: KProperty<*>): T {
         if (value == null) {
-            val vmFactory = arg?.let { ViewModelFactory(it) }
-            value = ViewModelProviders.of(thisRef, vmFactory).get(clazz)
+            value = if (arg != null)
+                ViewModelProviders.of(thisRef, ViewModelFactory(arg)).get(clazz)
+            else ViewModelProviders.of(thisRef).get(clazz)
         }
         return value!!
     }

@@ -50,7 +50,6 @@ class Bottombar @JvmOverloads constructor(
             0f,
             endRadius
         )
-        va.duration = 500
         va.doOnEnd { group_bottom.isVisible = false }
         va.start()
     }
@@ -65,7 +64,6 @@ class Bottombar @JvmOverloads constructor(
             startRadius,
             0f
         )
-        va.duration = 500
         va.doOnEnd { reveal.isVisible = false }
         va.start()
     }
