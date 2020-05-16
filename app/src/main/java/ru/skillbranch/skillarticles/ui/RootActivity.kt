@@ -13,7 +13,6 @@ import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
-import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.layout_bottombar.*
@@ -21,6 +20,7 @@ import kotlinx.android.synthetic.main.layout_submenu.*
 import kotlinx.android.synthetic.main.search_view_layout.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
+import ru.skillbranch.skillarticles.extensions.getSpans
 import ru.skillbranch.skillarticles.extensions.setMarginOptionally
 import ru.skillbranch.skillarticles.ui.base.BaseActivity
 import ru.skillbranch.skillarticles.ui.base.Binding
@@ -33,16 +33,17 @@ import ru.skillbranch.skillarticles.viewmodels.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.ArticleViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
-import ru.skillbranch.skillarticles.viewmodels.base.ViewModelFactory
 
 class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
     override val layout = R.layout.activity_root
-    override val viewModel: ArticleViewModel by lazy {
-        val vmFactory = ViewModelFactory("0")
-        ViewModelProviders.of(this, vmFactory)
-            .get(ArticleViewModel::class.java)
-    }
+    override val viewModel by provideViewModel("0")
+
+//    override val viewModel: ArticleViewModel by lazy {
+//        val vmFactory = ViewModelFactory("0")
+//        ViewModelProviders.of(this, vmFactory)
+//            .get(ArticleViewModel::class.java)
+//    }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public override val binding: ArticleBinding by lazy { ArticleBinding() }
@@ -67,7 +68,8 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             else searchView?.clearFocus()
         }
 
-        searchMenuItem?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+        searchMenuItem?.setOnActionExpandListener(
+            object : MenuItem.OnActionExpandListener {
             override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
                 viewModel.handleIsSearch(true)
                 return true
@@ -77,7 +79,8 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
                 return true
             }
         })
-        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        searchView?.setOnQueryTextListener(
+            object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
 //                viewModel.handleSearchQuery(query)
                 return true
@@ -92,6 +95,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
     override fun renderSearchResult(searchResult: List<Pair<Int, Int>>) {
         val content = tv_text_content.text as Spannable
+//        tv_text_content.isVisible // ??????????????????????????????????????????????????
         clearSearchResult() // results before current render
 
         searchResult.forEach { (start, end) ->
@@ -106,27 +110,32 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
     override fun clearSearchResult() {
         val content = (tv_text_content.text as? Spannable) ?: return
-        val spans = content.getSpans(
-            0, tv_text_content.text.lastIndex,
-            SearchSpan::class.java
-        )
-        if (spans.isEmpty()) return
-        for (span in spans) {
-            content.removeSpan(span)
-        }
+//        val spans = content.getSpans(
+//            0, tv_text_content.text.lastIndex,
+//            SearchSpan::class.java
+//        )
+//        if (spans.isEmpty()) return
+//        for (span in spans) {
+//            content.removeSpan(span)
+//        }
+        content.getSpans<SearchSpan>().forEach { content.removeSpan(it) }
     }
 
     override fun renderSearchPosition(searchPosition: Int) {
         val content = (tv_text_content.text as? Spannable) ?: return
-        val spans = content.getSpans(
-            0, tv_text_content.text.lastIndex,
-            SearchSpan::class.java
-        )
+
+//        val spans = content.getSpans(
+//            0, tv_text_content.text.lastIndex,
+//            SearchSpan::class.java
+//        )
+        val spans = content.getSpans<SearchSpan>()
+
         // clear last search focus position
-        content.getSpans(
-            0, tv_text_content.text.lastIndex,
-            SearchFocusSpan::class.java
-        ).forEach { content.removeSpan(it) }
+//        content.getSpans(
+//            0, tv_text_content.text.lastIndex,
+//            SearchFocusSpan::class.java
+//        ).forEach { content.removeSpan(it) }
+        content.getSpans<SearchFocusSpan>().forEach { content.removeSpan(it) }
 
         if (spans.isNotEmpty()) {
             // find span at position
@@ -287,14 +296,16 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
                 btn_text_down.isChecked = true
             }
         }
-        private var isDarkMode: Boolean by RenderProp(false, false) {
+        private var isDarkMode: Boolean by RenderProp(
+            value = false, needInit = false
+        ) {
             // bind submenu views
             switch_mode.isChecked = it
             delegate.localNightMode =
                 if (it) AppCompatDelegate.MODE_NIGHT_YES
                 else AppCompatDelegate.MODE_NIGHT_NO
         }
-        private var isLoadingContent: Boolean by ObserveProp(true)
+        private var isLoadingContent by ObserveProp(true)
 
         var isSearch: Boolean by ObserveProp(false) {
             if (it) showSearchBar() else hideSearchBar()
@@ -319,6 +330,8 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             ) { ilc, ise, sr, sp ->
                 if (!ilc && ise) {
                     renderSearchResult(sr)
+                    /** метод renderSearchPosition(0) вызывается и в теле
+                     * метода renderSearchResult(). Все ли здесь чисто? */
                     renderSearchPosition(sp)
                 }
                 if (!ilc && !ise) {

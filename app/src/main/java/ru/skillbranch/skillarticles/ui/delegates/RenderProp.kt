@@ -36,7 +36,6 @@ class ObserveProp<T : Any>(
     private var value: T,
     private val onChange: ((T) -> Unit)? = null
 ) {
-
     // when by call
     operator fun provideDelegate(
         thisRef: Binding,

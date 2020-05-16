@@ -1,5 +1,7 @@
 package ru.skillbranch.skillarticles.extensions
 
+import android.text.Spannable
+
 const val MAX_CHARS = 16
 
 fun String.truncate(maxChars: Int = MAX_CHARS): String {
@@ -38,3 +40,6 @@ fun String.removeHtmlSpecialChars(): String =
 
 fun String.removeExtraSpaces(): String =
     this.trim().replace(Regex(" {2,}"), " ")
+
+inline fun <reified T> Spannable.getSpans(): Array<T> =
+    getSpans(0, lastIndex, T::class.java)
