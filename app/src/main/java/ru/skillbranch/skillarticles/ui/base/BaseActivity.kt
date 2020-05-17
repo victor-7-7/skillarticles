@@ -33,13 +33,13 @@ abstract class BaseActivity<T : BaseViewModel<out IViewModelState>> : AppCompatA
 
     override fun onSaveInstanceState(outState: Bundle) {
         viewModel.saveState(outState)
-        binding.saveUI(outState)
+        binding.saveUi(outState)
         super.onSaveInstanceState(outState)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         viewModel.restoreState(savedInstanceState)
-        binding.restoreUI(savedInstanceState)
+        binding.restoreUi(savedInstanceState)
     }
 }
