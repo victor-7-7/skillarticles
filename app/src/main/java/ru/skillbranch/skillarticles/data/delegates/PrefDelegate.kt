@@ -8,10 +8,11 @@ class PrefDelegate<T>(private val defaultValue: T) : ReadWriteProperty<PrefManag
 
     private var storedValue: T? = null
 
-    @Suppress("UNCHECKED_CAST")
+
     override fun getValue(thisRef: PrefManager, property: KProperty<*>): T? {
         if (storedValue == null) {
             with(thisRef.preferences) {
+                @Suppress("UNCHECKED_CAST")
                 storedValue = when (defaultValue) {
                     is Int -> getInt(property.name, defaultValue) as T
                     is Long -> getLong(property.name, defaultValue) as T
@@ -30,11 +31,11 @@ class PrefDelegate<T>(private val defaultValue: T) : ReadWriteProperty<PrefManag
     override fun setValue(thisRef: PrefManager, property: KProperty<*>, value: T?) {
         with(thisRef.preferences.edit()) {
             when (value) {
-                is Boolean -> putBoolean(property.name, value as Boolean)
-                is String -> putString(property.name, value as String)
-                is Float -> putFloat(property.name, value as Float)
-                is Int -> putInt(property.name, value as Int)
-                is Long -> putLong(property.name, value as Long)
+                is Boolean -> putBoolean(property.name, value)
+                is String -> putString(property.name, value)
+                is Float -> putFloat(property.name, value)
+                is Int -> putInt(property.name, value)
+                is Long -> putLong(property.name, value)
                 else -> throw IllegalArgumentException("Illegal preference type $value")
             }
             apply()

@@ -13,7 +13,7 @@ object ArticleRepository {
     fun getArticle(articleId: String) =
         local.findArticle(articleId) //2s delay from db
 
-    fun loadArticleContent(articleId: String) =
+    fun loadArticleContent(articleId: String): LiveData<String?> =
         network.loadArticleContent(articleId) //5s delay from network
 
     fun loadArticlePersonalInfo(articleId: String): LiveData<ArticlePersonalInfo?> {

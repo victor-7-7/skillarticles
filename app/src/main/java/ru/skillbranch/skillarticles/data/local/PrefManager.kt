@@ -21,5 +21,5 @@ class PrefManager(context: Context) {
     var storedString by PrefDelegate("")
     var storedFloat by PrefDelegate(0f)
     var storedInt by PrefDelegate(0)
-    var storedLong by PrefDelegate(0)
+    var storedLong by PrefDelegate(0L)
 }
