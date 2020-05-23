@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.text.Selection
 import android.text.Spannable
 import android.text.SpannableString
-import android.text.method.ScrollingMovementMethod
+import android.text.method.LinkMovementMethod
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
@@ -22,6 +22,7 @@ import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
 import ru.skillbranch.skillarticles.extensions.getSpans
 import ru.skillbranch.skillarticles.extensions.setMarginOptionally
+import ru.skillbranch.skillarticles.markdown.MarkdownBuilder
 import ru.skillbranch.skillarticles.ui.base.BaseActivity
 import ru.skillbranch.skillarticles.ui.base.Binding
 import ru.skillbranch.skillarticles.ui.custom.SearchFocusSpan
@@ -309,10 +310,16 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         private var searchPosition: Int by ObserveProp(0)
 
         private var content: String by ObserveProp("loading...") {
-            tv_text_content.setText(it, TextView.BufferType.SPANNABLE)
+            MarkdownBuilder(this@RootActivity)
+                .markdownToSpan(it)
+                .run {
+                    tv_text_content.setText(this, TextView.BufferType.SPANNABLE)
+                }
             // Чтобы перевод фокуса к следующему поисковому результату
             // мог проскроллить контент до этого результата
-            tv_text_content.movementMethod = ScrollingMovementMethod()
+//            tv_text_content.movementMethod = ScrollingMovementMethod()
+            // Чтобы можно было переходить по ссылкам
+            tv_text_content.movementMethod = LinkMovementMethod.getInstance()
         }
 
         override fun onFinishInflate() {
@@ -322,12 +329,12 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
                 ::searchResults,
                 ::searchPosition
             ) { ilc, ise, sr, sp ->
+                // Если контент уже загружен и мы в поиске
                 if (!ilc && ise) {
                     renderSearchResult(sr)
-                    /** метод renderSearchPosition(0) вызывается и в теле
-                     * метода renderSearchResult(). Все ли здесь чисто? */
                     renderSearchPosition(sp)
                 }
+                // Если контент уже загружен, но мы не в поиске
                 if (!ilc && !ise) {
                     clearSearchResult()
                 }

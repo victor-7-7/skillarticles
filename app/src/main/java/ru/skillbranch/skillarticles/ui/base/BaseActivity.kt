@@ -23,8 +23,12 @@ abstract class BaseActivity<T : BaseViewModel<out IViewModelState>> : AppCompatA
         setContentView(layout)
         setupViews()
         binding.onFinishInflate()
-        viewModel.observeState(this) { binding.bind(it) }
-        viewModel.observeNotifications(this) { renderNotification(it) }
+        viewModel.observeState(this) {
+            binding.bind(it)
+        }
+        viewModel.observeNotifications(this) {
+            renderNotification(it)
+        }
     }
 
     internal inline fun <reified T : ViewModel>

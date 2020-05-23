@@ -8,7 +8,7 @@ object MarkdownParser {
     private const val UNORDERED_LIST_ITEM_GROUP = "(^[*+-] .+$)"
     // .+? знак ? означает ленивый поиск (lazy) - удовлетворимся
     // совпадением с минимальным числом символов
-    private const val HEADER_GROUP = "(^#{1,6} .+?$)"
+    private const val HEADER_GROUP = "(^#{1,6} .+$)"
     private const val QUOTE_GROUP = "(^> .+?$)"
     private const val ITALIC_GROUP =
         "((?<!\\*)\\*[^*].*?[^*]?\\*(?!\\*)|(?<!_)_[^_].*?[^_]?_(?!_))"
@@ -18,12 +18,15 @@ object MarkdownParser {
     private const val RULE_GROUP = "(^[-_*]{3}$)"
     private const val INLINE_GROUP = "((?<!`)`[^`\\s].*?[^`\\s]?`(?!`))"
     private const val LINK_GROUP = "(\\[[^\\[\\]]*?]\\(.+?\\)|^\\[*?]\\(.*?\\))"
+    // (?s) <- embedded flag Pattern.DOTALL для многострочного блока кода
+    private const val BLOCK_CODE_GROUP = "((?s)\\v(?<!`)```[^`\\s].*?[^`\\s]```(?!`)\\v)"
+    private const val ORDERED_LIST_GROUP = "(^\\d+?. .+$)"
 
     // result regex
     private const val MARKDOWN_GROUPS =
         "$UNORDERED_LIST_ITEM_GROUP|$HEADER_GROUP|$QUOTE_GROUP" +
                 "|$ITALIC_GROUP|$BOLD_GROUP|$STRIKE_GROUP|$RULE_GROUP" +
-                "|$INLINE_GROUP|$LINK_GROUP"
+                "|$INLINE_GROUP|$LINK_GROUP|$BLOCK_CODE_GROUP|$ORDERED_LIST_GROUP"
 
     private val elementsPattern by lazy {
         Pattern.compile(MARKDOWN_GROUPS, Pattern.MULTILINE)
@@ -41,9 +44,22 @@ object MarkdownParser {
     /**
      * clear markdown text to string without markdown characters
      */
-    fun clear(string: String): String? {
-        // TODO: not implemented
-        return null
+    fun clear(string: String?): String? {
+        string ?: return null
+        // Очищаем размеченный текст от разметочных символов
+        return buildPlainText(
+            parse(string).elements,
+            StringBuilder("")
+        ).toString()
+    }
+
+    private fun buildPlainText(elems: List<Element>, sb: StringBuilder)
+            : StringBuilder {
+        elems.forEach {
+            if (it.elements.isEmpty()) sb.append(it.text)
+            else buildPlainText(it.elements, sb)
+        }
+        return sb
     }
 
     /**
@@ -54,10 +70,12 @@ object MarkdownParser {
         val matcher = elementsPattern.matcher(string)
         var lastStartIndex = 0
 
-        loop@ while (matcher.find(lastStartIndex)) {
+        loop@ while (
+            matcher.find(lastStartIndex)
+        ) {
             val startIndex = matcher.start()
             val endIndex = matcher.end()
-            // if something is found then everything before - TEXT
+            // if something is found then everything before is TEXT
             if (lastStartIndex < startIndex) {
                 parents.add(
                     Element.Text(
@@ -70,7 +88,7 @@ object MarkdownParser {
             // found text
             var text: CharSequence
             // groups range for iterate by groups
-            val groups = 1..9
+            val groups = 1..11
             var group = -1
             for (gr in groups) {
                 if (matcher.group(gr) != null) {
@@ -172,6 +190,30 @@ object MarkdownParser {
                     parents.add(element)
                     lastStartIndex = endIndex
                 }
+                // block code
+                10 -> {
+                    // text without "```{}```"
+                    text = string.subSequence(
+                        startIndex.plus(3),
+                        endIndex.minus(3)
+                    )
+                    // TODO: type?
+                    val element = Element.BlockCode(text = text)
+                    parents.add(element)
+                    lastStartIndex = endIndex
+                }
+                // ordered list
+                11 -> {
+                    val reg = "^\\d+?. ".toRegex()
+                        .find(string.subSequence(startIndex, endIndex))
+                    val num = reg!!.value
+                    text = string.subSequence(
+                        startIndex.plus(num.length), endIndex
+                    )
+                    val element = Element.OrderedListItem(num, text)
+                    parents.add(element)
+                    lastStartIndex = endIndex
+                }
             }
         }
         if (lastStartIndex < string.length) {
@@ -184,7 +226,7 @@ object MarkdownParser {
 
 data class MarkdownText(val elements: List<Element>)
 
-sealed class Element() {
+sealed class Element {
     abstract val text: CharSequence
     abstract val elements: List<Element>
 

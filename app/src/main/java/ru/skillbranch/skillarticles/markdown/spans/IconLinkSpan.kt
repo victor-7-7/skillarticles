@@ -40,7 +40,23 @@ class IconLinkSpan(
         bottom: Int,
         paint: Paint
     ) {
-        //TODO implement me
+        val textStart = x + iconSize + padding
+        paint.forLine {
+            path.reset()
+            path.moveTo(textStart, bottom.toFloat())
+            path.lineTo(textStart + textWidth, bottom.toFloat())
+            canvas.drawPath(path, paint)
+        }
+        paint.forIcon {
+            canvas.save()
+            val transY = bottom - linkDrawable.bounds.bottom
+            canvas.translate(x, transY.toFloat())
+            linkDrawable.draw(canvas)
+            canvas.restore()
+        }
+        paint.forText {
+            canvas.drawText(text, start, end, textStart, y.toFloat(), paint)
+        }
     }
 
 
@@ -51,20 +67,52 @@ class IconLinkSpan(
         end: Int,
         fm: Paint.FontMetricsInt?
     ): Int {
-        //TODO implement me
-        return 0
+        if (fm != null) {
+            iconSize = fm.descent - fm.ascent // font size
+            linkDrawable.setBounds(0, 0, iconSize, iconSize)
+            linkDrawable.setTint(iconColor)
+        }
+        textWidth = paint.measureText(text.toString(), start, end)
+        return (iconSize + padding + textWidth).toInt()
     }
 
 
     private inline fun Paint.forLine(block: () -> Unit) {
-        //TODO implement me
+        val oldColor = color
+        val oldStyle = style
+        val oldWidth = strokeWidth
+
+        pathEffect = dashs
+        color = textColor
+        style = Paint.Style.STROKE // просто линия
+        strokeWidth = 0f
+
+        block()
+
+        color = oldColor
+        style = oldStyle
+        strokeWidth = oldWidth
     }
 
     private inline fun Paint.forText(block: () -> Unit) {
-        //TODO implement me
+        val oldColor = color
+        color = textColor
+
+        block()
+
+        color = oldColor
     }
 
     private inline fun Paint.forIcon(block: () -> Unit) {
-        //TODO implement me
+        val oldStyle = style
+        val oldColor = color
+
+        color = textColor
+        style = Paint.Style.STROKE
+
+        block()
+
+        color = oldColor
+        style = oldStyle
     }
 }

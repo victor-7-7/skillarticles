@@ -6,7 +6,6 @@ import android.text.style.ReplacementSpan
 import androidx.annotation.ColorInt
 import androidx.annotation.Px
 
-
 class HorizontalRuleSpan(
     @Px
     val ruleWidth: Float,
@@ -21,7 +20,6 @@ class HorizontalRuleSpan(
         end: Int,
         fm: Paint.FontMetricsInt?
     ): Int {
-        //TODO implement me
         return 0
     }
 
@@ -36,10 +34,24 @@ class HorizontalRuleSpan(
         bottom: Int,
         paint: Paint
     ) {
-        //TODO implement me
+        paint.forLine {
+            canvas.drawLine(
+                0f, (top + bottom) / 2f,
+                canvas.width.toFloat(), (top + bottom) / 2f, paint
+            )
+        }
     }
 
     private inline fun Paint.forLine(block: () -> Unit) {
-        //TODO implement me
+        val oldColor = color
+        val oldStyle = style
+        val oldWidth = strokeWidth
+        color = ruleColor
+        style = Paint.Style.STROKE // просто линия
+        strokeWidth = ruleWidth
+        block()
+        color = oldColor
+        style = oldStyle
+        strokeWidth = oldWidth
     }
 }

@@ -36,7 +36,8 @@ class ObserveProp<T : Any>(
     private var value: T,
     private val onChange: ((T) -> Unit)? = null
 ) {
-    // when by call
+    // method is called when there is using keyword <by>
+    // i.e. private var content: String by ObserveProp("loading...") { ... }
     operator fun provideDelegate(
         thisRef: Binding,
         prop: KProperty<*>

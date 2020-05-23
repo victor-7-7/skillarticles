@@ -13,7 +13,4 @@
     <color name="color_on_article_bar">#FFFFFF</color>
     <color name="color_divider">#1FFFFFFF</color>
 
-    <link type="text/css" id="dark-mode" rel="stylesheet" href="" />
-    <!--    <style type="text/css" id="dark-mode-custom-style"/>-->
-
 </resources>
