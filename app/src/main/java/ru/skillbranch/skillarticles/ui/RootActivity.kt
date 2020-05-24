@@ -13,6 +13,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.isVisible
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.layout_bottombar.*
@@ -90,7 +91,8 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
     override fun renderSearchResult(searchResult: List<Pair<Int, Int>>) {
         val content = tv_text_content.text as Spannable
-//        tv_text_content.isVisible // ??????????????????????????????????????????????????
+        tv_text_content.isVisible
+        /** <-- ????????????????? */
         clearSearchResult() // results before current render
 
         searchResult.forEach { (start, end) ->

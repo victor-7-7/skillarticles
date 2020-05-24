@@ -3,7 +3,13 @@ package ru.skillbranch.skillarticles.markdown
 import java.util.regex.Pattern
 
 object MarkdownParser {
-    private val LINE_SEPARATOR = System.getProperty("line.separator") ?: "\n"
+    //    private val LINE_SEPARATOR: String
+//    init {
+//        val separ   = System.getProperty("line.separator")
+//        LINE_SEPARATOR = separ ?: "\n"
+//        // for unit tests separ == '\r\n', for android/instrumental = '\n'
+//    }
+    private const val LINE_SEPARATOR = "\n"
     // group regex
     private const val UNORDERED_LIST_ITEM_GROUP = "(^[*+-] .+$)"
     // .+? знак ? означает ленивый поиск (lazy) - удовлетворимся
@@ -19,8 +25,10 @@ object MarkdownParser {
     private const val INLINE_GROUP = "((?<!`)`[^`\\s].*?[^`\\s]?`(?!`))"
     private const val LINK_GROUP = "(\\[[^\\[\\]]*?]\\(.+?\\)|^\\[*?]\\(.*?\\))"
     // (?s) <- embedded flag Pattern.DOTALL для многострочного блока кода
-    private const val BLOCK_CODE_GROUP = "((?s)\\v(?<!`)```[^`\\s].*?[^`\\s]```(?!`)\\v)"
+//    private const val BLOCK_CODE_GROUP = "((?s)\\v(?<!`)```[^`\\s].*?[^`\\s]```(?!`)\\v)"
     private const val ORDERED_LIST_GROUP = "(^\\d+?. .+$)"
+    private const val BLOCK_CODE_GROUP = "(^```[\\S\\s]+?```)"
+//    private const val ORDERED_LIST_GROUP = "(^\\d{1,2}\\.\\s.+?$)"
 
     // result regex
     private const val MARKDOWN_GROUPS =
@@ -197,20 +205,39 @@ object MarkdownParser {
                         startIndex.plus(3),
                         endIndex.minus(3)
                     )
-                    // TODO: type?
-                    val element = Element.BlockCode(text = text)
-                    parents.add(element)
+                    if (text.contains(LINE_SEPARATOR)) {
+                        for ((index, line) in text.lines().withIndex()) {
+                            val element = when (index) {
+                                0 -> Element.BlockCode(
+                                    Element.BlockCode.Type.START,
+                                    line + LINE_SEPARATOR
+                                )
+                                text.lines().lastIndex ->
+                                    Element.BlockCode(Element.BlockCode.Type.END, line)
+                                else -> Element.BlockCode(
+                                    Element.BlockCode.Type.MIDDLE,
+                                    line + LINE_SEPARATOR
+                                )
+                            }
+                            parents.add(element)
+                        }
+                    } else parents.add(
+                        Element.BlockCode(Element.BlockCode.Type.SINGLE, text)
+                    )
                     lastStartIndex = endIndex
                 }
                 // ordered list
                 11 -> {
-                    val reg = "^\\d+?. ".toRegex()
+                    val reg = "^\\d+?.".toRegex()
                         .find(string.subSequence(startIndex, endIndex))
                     val num = reg!!.value
+                    // increment for excluding space character after period
                     text = string.subSequence(
-                        startIndex.plus(num.length), endIndex
+                        startIndex.plus(num.length.inc()), endIndex
                     )
-                    val element = Element.OrderedListItem(num, text)
+                    // find inner elements
+                    val subs = findElements(text)
+                    val element = Element.OrderedListItem(num, text, subs)
                     parents.add(element)
                     lastStartIndex = endIndex
                 }

@@ -34,9 +34,57 @@ class BlockCodeSpan(
         bottom: Int,
         paint: Paint
     ) {
-        paint.forBackground {
-            //            rect.set(x, top.toFloat(), x + measureWidth, bottom.toFloat())
-//            canvas.drawRoundRect(rect, cornerRadius, cornerRadius, paint)
+        when (type) {
+            Element.BlockCode.Type.SINGLE -> paint.forBackground {
+                rect.set(
+                    0f, top + padding, canvas.width.toFloat(),
+                    bottom - padding
+                )
+                canvas.drawRoundRect(rect, cornerRadius, cornerRadius, paint)
+            }
+            Element.BlockCode.Type.START -> paint.forBackground {
+                rect.set(
+                    0f, top + padding, canvas.width.toFloat(),
+                    bottom.toFloat()
+                )
+                path.reset()
+                path.addRoundRect(
+                    rect,
+                    floatArrayOf(
+                        cornerRadius, cornerRadius,
+                        cornerRadius, cornerRadius,
+                        0f, 0f,
+                        0f, 0f
+                    ),
+                    Path.Direction.CW
+                )
+                canvas.drawPath(path, paint)
+            }
+            Element.BlockCode.Type.MIDDLE -> paint.forBackground {
+                rect.set(
+                    0f, top.toFloat(), canvas.width.toFloat(),
+                    bottom.toFloat()
+                )
+                canvas.drawRect(rect, paint)
+            }
+            Element.BlockCode.Type.END -> paint.forBackground {
+                rect.set(
+                    0f, top.toFloat(), canvas.width.toFloat(),
+                    bottom - padding
+                )
+                path.reset()
+                path.addRoundRect(
+                    rect,
+                    floatArrayOf(
+                        0f, 0f,
+                        0f, 0f,
+                        cornerRadius, cornerRadius,
+                        cornerRadius, cornerRadius
+                    ),
+                    Path.Direction.CW
+                )
+                canvas.drawPath(path, paint)
+            }
         }
         paint.forText {
             canvas.drawText(text, start, end, x + padding, y.toFloat(), paint)
@@ -69,6 +117,8 @@ class BlockCodeSpan(
                     fm.descent = (paint.descent() + 2 * padding).toInt()
                 }
             }
+            fm.top = fm.ascent
+            fm.bottom = fm.descent
         }
         return 0
     }

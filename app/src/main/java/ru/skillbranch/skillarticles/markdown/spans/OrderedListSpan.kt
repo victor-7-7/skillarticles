@@ -19,7 +19,7 @@ class OrderedListSpan(
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 
     override fun getLeadingMargin(first: Boolean): Int {
-        return gapWidth.toInt() * 3
+        return gapWidth.toInt() * order.length.inc()
     }
 
     override fun drawLeadingMargin(
@@ -43,14 +43,14 @@ class OrderedListSpan(
 
     private inline fun Paint.withCustomColor(block: () -> Unit) {
         val oldColor = color
-        val oldStyle = style
+//        val oldStyle = style
 
         color = orderColor
-        style = Paint.Style.STROKE
+//        style = Paint.Style.STROKE
 
         block()
 
         color = oldColor
-        style = oldStyle
+//        style = oldStyle
     }
 }
