@@ -25,9 +25,9 @@ object MarkdownParser {
     private const val INLINE_GROUP = "((?<!`)`[^`\\s].*?[^`\\s]?`(?!`))"
     private const val LINK_GROUP = "(\\[[^\\[\\]]*?]\\(.+?\\)|^\\[*?]\\(.*?\\))"
     // (?s) <- embedded flag Pattern.DOTALL для многострочного блока кода
-//    private const val BLOCK_CODE_GROUP = "((?s)\\v(?<!`)```[^`\\s].*?[^`\\s]```(?!`)\\v)"
+    private const val BLOCK_CODE_GROUP = "((?s)(?<=\\v)```[^`\\s][^`]*?[^`\\s]?```(?=\\v))"
     private const val ORDERED_LIST_GROUP = "(^\\d+?. .+$)"
-    private const val BLOCK_CODE_GROUP = "(^```[\\S\\s]+?```)"
+//    private const val BLOCK_CODE_GROUP = "(^```[\\S\\s]+?```)" // пропускает ... after
 //    private const val ORDERED_LIST_GROUP = "(^\\d{1,2}\\.\\s.+?$)"
 
     // result regex
