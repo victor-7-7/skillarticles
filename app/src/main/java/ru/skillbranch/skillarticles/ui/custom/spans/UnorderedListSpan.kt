@@ -1,4 +1,4 @@
-package ru.skillbranch.skillarticles.markdown.spans
+package ru.skillbranch.skillarticles.ui.custom.spans
 
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -6,35 +6,36 @@ import android.text.Layout
 import android.text.style.LeadingMarginSpan
 import androidx.annotation.ColorInt
 import androidx.annotation.Px
-import androidx.annotation.VisibleForTesting
+import ru.skillbranch.skillarticles.extensions.getLineBottomWithoutPadding
 
-
-class OrderedListSpan(
+class UnorderedListSpan(
     @Px
     private val gapWidth: Float,
-    private val order: String,
+    @Px
+    private val bulletRadius: Float,
     @ColorInt
-    private val orderColor: Int
+    private val bulletColor: Int
 ) : LeadingMarginSpan {
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 
     override fun getLeadingMargin(first: Boolean): Int {
-        return gapWidth.toInt() * order.length.inc()
+        return (4 * bulletRadius + gapWidth).toInt()
     }
 
     override fun drawLeadingMargin(
         canvas: Canvas, paint: Paint, currentMarginLocation: Int,
         paragraphDirection: Int, lineTop: Int, lineBaseline: Int,
         lineBottom: Int, text: CharSequence?, lineStart: Int,
-        lineEnd: Int, isFirstLine: Boolean, layout: Layout?
+        lineEnd: Int, isFirstLine: Boolean, layout: Layout
     ) {
-        // Only for first line in paragraph draw num
+        // Only for first line in paragraph draw bullet
         if (isFirstLine) {
             paint.withCustomColor {
-                canvas.drawText(
-                    order,
-                    gapWidth + currentMarginLocation,
-                    lineBaseline.toFloat(),
+                canvas.drawCircle(
+                    gapWidth + currentMarginLocation + bulletRadius,
+                    (lineTop + layout.getLineBottomWithoutPadding(
+                        layout.getLineForOffset(lineStart)
+                    )) / 2f,
+                    bulletRadius,
                     paint
                 )
             }
@@ -43,14 +44,14 @@ class OrderedListSpan(
 
     private inline fun Paint.withCustomColor(block: () -> Unit) {
         val oldColor = color
-//        val oldStyle = style
+        val oldStyle = style
 
-        color = orderColor
-//        style = Paint.Style.STROKE
+        color = bulletColor
+        style = Paint.Style.FILL
 
         block()
 
         color = oldColor
-//        style = oldStyle
+        style = oldStyle
     }
 }

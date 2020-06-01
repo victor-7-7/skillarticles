@@ -1,4 +1,4 @@
-package ru.skillbranch.skillarticles.markdown.spans
+package ru.skillbranch.skillarticles.ui.custom.spans
 
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -32,7 +32,10 @@ class InlineCodeSpan(
         fm: Paint.FontMetricsInt?
     ): Int {
         paint.forText {
-            val measureText = paint.measureText(text.toString(), start, end)
+            // end - 1 поскольку searchResults состоит из пар (it to it + query.length),
+            // т.е. второй член пары указывает на символ, следующий сразу ПОСЛЕ
+            // последнего символа в поисковом запросе
+            val measureText = paint.measureText(text.toString(), start, end - 1)
             measureWidth = (measureText + 2 * padding).toInt()
         }
         return measureWidth
@@ -50,7 +53,7 @@ class InlineCodeSpan(
         paint: Paint
     ) {
         paint.forBackground {
-            rect.set(x, top.toFloat(), x + measureWidth, bottom.toFloat())
+            rect.set(x, top.toFloat(), x + measureWidth, y + paint.descent())
             canvas.drawRoundRect(rect, cornerRadius, cornerRadius, paint)
         }
         paint.forText {

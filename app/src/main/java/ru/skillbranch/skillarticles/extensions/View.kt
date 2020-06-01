@@ -22,3 +22,16 @@ fun View.setMarginOptionally(
         requestLayout()
     }
 }
+
+fun View.setPaddingOptionally(
+    left: Int? = paddingLeft, top: Int? = paddingTop,
+    right: Int? = paddingRight, bottom: Int? = paddingBottom
+) {
+    if (left == null && top == null && right == null && bottom == null) return
+    val l = left ?: paddingLeft
+    val t = top ?: paddingTop
+    val r = right ?: paddingRight
+    val b = bottom ?: paddingBottom
+    setPadding(l, t, r, b)
+    requestLayout()
+}

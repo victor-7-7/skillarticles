@@ -18,8 +18,8 @@ fun String?.indexesOf(query: String, ignoreCase: Boolean = true): List<Int> {
     var wip = true
     var index: Int?
     while (wip) {
-        index = findAnyOf(listOf(query), start, ignoreCase)?.first
-        if (index == null) wip = false
+        index = indexOf(query, start, ignoreCase)
+        if (index == -1) wip = false
         else {
             list.add(index)
             start = index + query.length
