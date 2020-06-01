@@ -141,7 +141,7 @@ class MarkdownImageView private constructor(
         addView(tv_alt)
         iv_image.setOnClickListener {
             if (tv_alt?.isVisible == true) animateHideAlt()
-            else animateShowAlt()
+            else if (!alt.isNullOrEmpty()) animateShowAlt()
         }
     }
 
@@ -208,7 +208,10 @@ class MarkdownImageView private constructor(
 
     private fun animateShowAlt() {
         tv_alt?.isVisible = true
-        val endRadius = hypot(tv_alt?.width?.toFloat() ?: 0f, tv_alt?.height?.toFloat() ?: 0f)
+        val endRadius = hypot(
+            tv_alt?.width?.toFloat() ?: 0f,
+            tv_alt?.height?.toFloat() ?: 0f
+        )
         val va = ViewAnimationUtils.createCircularReveal(
             tv_alt,
             tv_alt?.width ?: 0,
@@ -220,7 +223,10 @@ class MarkdownImageView private constructor(
     }
 
     private fun animateHideAlt() {
-        val endRadius = hypot(tv_alt?.width?.toFloat() ?: 0f, tv_alt?.height?.toFloat() ?: 0f)
+        val endRadius = hypot(
+            tv_alt?.width?.toFloat() ?: 0f,
+            tv_alt?.height?.toFloat() ?: 0f
+        )
         val va = ViewAnimationUtils.createCircularReveal(
             tv_alt,
             tv_alt?.width ?: 0,

@@ -10,7 +10,7 @@ fun List<Pair<Int, Int>>.groupByBounds(intervals: List<Pair<Int, Int>>)
         : List<MutableList<Pair<Int, Int>>> {
     val list = mutableListOf<MutableList<Pair<Int, Int>>>()
 
-/*    var remainder: Pair<Int, Int>? = null
+    var remainder: Pair<Int, Int>? = null
     intervals.forEach { interval ->
         val sublist = mutableListOf<Pair<Int, Int>>()
         if (remainder != null) {
@@ -26,8 +26,8 @@ fun List<Pair<Int, Int>>.groupByBounds(intervals: List<Pair<Int, Int>>)
             remainder = Pair(interval.second, crossPair.first().second)
         }
         list.add(sublist)
-    }*/
-
+    }
+/*
     intervals.forEach { interval ->
         val sublist = mutableListOf<Pair<Int, Int>>()
         sublist.addAll(filter { pair ->
@@ -35,5 +35,6 @@ fun List<Pair<Int, Int>>.groupByBounds(intervals: List<Pair<Int, Int>>)
         })
         list.add(sublist)
     }
+*/
     return list
 }
