@@ -3,7 +3,10 @@ package ru.skillbranch.skillarticles.ui.custom.markdown
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
+import android.os.Parcel
+import android.os.Parcelable
 import android.text.Spannable
+import android.util.SparseArray
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
@@ -48,33 +51,24 @@ class MarkdownImageView private constructor(
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     val iv_image: ImageView
-
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     val tv_title: MarkdownTextView
-
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     var tv_alt: TextView? = null
-
     @Px
     private val titleTopMargin: Int = context.dpToIntPx(8) //8dp
-
     @Px
     private val titlePadding: Int = context.dpToIntPx(56) //56dp
-
     @Px
     private val cornerRadius: Float = context.dpToPx(4) //4dp
-
     @ColorInt
     private val colorSurface: Int = context.attrValue(R.attr.colorSurface)
-
     @ColorInt
     private val colorOnSurface: Int = context.attrValue(R.attr.colorOnSurface)
-
     @ColorInt
     private val colorOnBackground: Int = context.attrValue(R.attr.colorOnBackground)
-
     @ColorInt
-    private var lineColor: Int = context.getColor(R.color.color_divider)
+    private val lineColor: Int = context.getColor(R.color.color_divider)
 
     //for draw object allocation
     private var linePositionY: Float = 0f
@@ -102,9 +96,9 @@ class MarkdownImageView private constructor(
             clipToOutline = true
         }
         addView(iv_image)
+
         tv_title = MarkdownTextView(context, fontSize * .75f)
             .apply {
-                setText("title", TextView.BufferType.SPANNABLE)
                 setTextColor(colorOnBackground)
                 gravity = Gravity.CENTER
                 typeface = Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL)
@@ -138,13 +132,12 @@ class MarkdownImageView private constructor(
                 isVisible = false
             }
         }
-        addView(tv_alt)
+        addView(tv_alt) //<--????????? А если alt и tv_alt == null ????????
         iv_image.setOnClickListener {
             if (tv_alt?.isVisible == true) animateHideAlt()
             else if (!alt.isNullOrEmpty()) animateShowAlt()
         }
     }
-
 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -163,6 +156,7 @@ class MarkdownImageView private constructor(
         val ms = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY)
         iv_image.measure(ms, heightMeasureSpec)
         tv_title.measure(ms, heightMeasureSpec)
+//        if (tv_alt != null) tv_alt?.measure(ms, heightMeasureSpec)
         tv_alt?.measure(ms, heightMeasureSpec)
 
         usedHeight += iv_image.measuredHeight
@@ -194,12 +188,10 @@ class MarkdownImageView private constructor(
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public override fun dispatchDraw(canvas: Canvas) {
         super.dispatchDraw(canvas)
-
         canvas.drawLine(
             0f, linePositionY,
             titlePadding.toFloat(), linePositionY, linePaint
         )
-
         canvas.drawLine(
             canvas.width - titlePadding.toFloat(),
             linePositionY, canvas.width.toFloat(), linePositionY, linePaint
@@ -236,6 +228,51 @@ class MarkdownImageView private constructor(
         )
         va.doOnEnd { tv_alt?.isVisible = false }
         va.start()
+    }
+
+    override fun dispatchSaveInstanceState(container: SparseArray<Parcelable>) {
+        dispatchFreezeSelfOnly(container)
+    }
+
+    override fun dispatchRestoreInstanceState(container: SparseArray<Parcelable>) {
+        dispatchThawSelfOnly(container)
+    }
+
+    // save image state
+    public override fun onSaveInstanceState(): Parcelable? {
+        val savedState = SavedState(super.onSaveInstanceState())
+        savedState.ssIsAltVisible = tv_alt?.isVisible ?: false
+        return savedState
+    }
+
+    // restore image state
+    public override fun onRestoreInstanceState(state: Parcelable?) {
+        if (state is SavedState) {
+            tv_alt?.isVisible = state.ssIsAltVisible
+        }
+        super.onRestoreInstanceState(state)
+    }
+
+    private class SavedState : BaseSavedState, Parcelable {
+        var ssIsAltVisible: Boolean = false
+
+        // Called by derived class when creating its SavedState object
+        constructor(superState: Parcelable?) : super(superState)
+
+        // Used when reading from a parcel. Reads the state of the superclass
+        constructor(src: Parcel) : super(src) {
+            ssIsAltVisible = src.readInt() == 1
+        }
+
+        override fun writeToParcel(out: Parcel, flags: Int) {
+            super.writeToParcel(out, flags)
+            out.writeInt(if (ssIsAltVisible) 1 else 0)
+        }
+
+        companion object CREATOR : Parcelable.Creator<SavedState> {
+            override fun createFromParcel(source: Parcel) = SavedState(source)
+            override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
+        }
     }
 }
 

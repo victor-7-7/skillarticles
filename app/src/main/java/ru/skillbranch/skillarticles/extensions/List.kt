@@ -18,9 +18,11 @@ fun List<Pair<Int, Int>>.groupByBounds(intervals: List<Pair<Int, Int>>)
             remainder = null
         }
         sublist.addAll(filter { pair ->
-            pair.first >= interval.first && pair.second < interval.second })
+            pair.first >= interval.first && pair.second <= interval.second
+        })
         val crossPair = filter { pair ->
-            pair.first < interval.second && pair.second >= interval.second }
+            pair.first < interval.second && pair.second > interval.second
+        }
         if (crossPair.isNotEmpty()) {
             sublist.add(Pair(crossPair.first().first, interval.second))
             remainder = Pair(interval.second, crossPair.first().second)

@@ -5,8 +5,11 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.os.Parcel
+import android.os.Parcelable
 import android.text.Selection
 import android.text.Spannable
+import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
 import android.widget.HorizontalScrollView
@@ -40,10 +43,8 @@ class MarkdownCodeView private constructor(
     //views
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     val iv_copy: ImageView
-
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     val iv_switch: ImageView
-
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     val sv_scroll: HorizontalScrollView
 
@@ -52,16 +53,12 @@ class MarkdownCodeView private constructor(
     //colors
     @ColorInt
     private val darkSurface: Int = context.attrValue(R.attr.darkSurfaceColor)
-
     @ColorInt
     private val darkOnSurface: Int = context.attrValue(R.attr.darkOnSurfaceColor)
-
     @ColorInt
     private val lightSurface: Int = context.attrValue(R.attr.lightSurfaceColor)
-
     @ColorInt
     private val lightOnSurface: Int = context.attrValue(R.attr.lightOnSurfaceColor)
-
     //sizes
     private val iconSize = context.dpToIntPx(12)
     private val radius = context.dpToPx(8)
@@ -96,9 +93,8 @@ class MarkdownCodeView private constructor(
             isFocusableInTouchMode = true
         }
         sv_scroll = object : HorizontalScrollView(context) {
-            override fun getLeftFadingEdgeStrength(): Float {
-                return 0f
-            }
+            override fun getLeftFadingEdgeStrength() = 0f
+            override fun getRightFadingEdgeStrength() = 1f
         }.apply {
             overScrollMode = View.OVER_SCROLL_NEVER
             isHorizontalFadingEdgeEnabled = true
@@ -141,8 +137,8 @@ class MarkdownCodeView private constructor(
             shape = GradientDrawable.RECTANGLE
             cornerRadii = FloatArray(8).apply {
                 fill(radius, 0, size)
-                color = ColorStateList.valueOf(bgColor)
             }
+            color = ColorStateList.valueOf(bgColor)
         }
     }
 
@@ -212,5 +208,52 @@ class MarkdownCodeView private constructor(
         iv_copy.imageTintList = ColorStateList.valueOf(textColor)
         (background as GradientDrawable).color = ColorStateList.valueOf(bgColor)
         tv_codeView.setTextColor(textColor)
+    }
+
+    override fun dispatchSaveInstanceState(container: SparseArray<Parcelable>) {
+        dispatchFreezeSelfOnly(container)
+    }
+
+    override fun dispatchRestoreInstanceState(container: SparseArray<Parcelable>) {
+        dispatchThawSelfOnly(container)
+    }
+
+    override fun onSaveInstanceState(): Parcelable? {
+        val savedState = SavedState(super.onSaveInstanceState())
+        savedState.ssIsDark = isDark
+        savedState.ssIsManual = isManual
+        return savedState
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        if (state is SavedState) {
+            isDark = state.ssIsDark
+            isManual = state.ssIsManual
+            applyColors()
+        }
+        super.onRestoreInstanceState(state)
+    }
+
+    private class SavedState : BaseSavedState, Parcelable {
+        var ssIsDark: Boolean = false
+        var ssIsManual: Boolean = false
+
+        constructor(superState: Parcelable?) : super(superState)
+
+        constructor(src: Parcel) : super(src) {
+            ssIsDark = src.readInt() == 1
+            ssIsManual = src.readInt() == 1
+        }
+
+        override fun writeToParcel(dst: Parcel, flags: Int) {
+            super.writeToParcel(dst, flags)
+            dst.writeInt(if (ssIsDark) 1 else 0)
+            dst.writeInt(if (ssIsManual) 1 else 0)
+        }
+
+        companion object CREATOR : Parcelable.Creator<SavedState> {
+            override fun createFromParcel(parcel: Parcel) = SavedState(parcel)
+            override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
+        }
     }
 }

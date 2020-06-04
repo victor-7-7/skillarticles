@@ -1,13 +1,13 @@
 package ru.skillbranch.skillarticles.extensions
 
+import android.os.Parcelable
+import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.marginBottom
-import androidx.core.view.marginLeft
-import androidx.core.view.marginRight
-import androidx.core.view.marginTop
+import androidx.core.view.*
 
 // https://stackoverflow.com/questions/4472429/change-the-right-margin-of-a-view-programmatically
+/** This method will be useless if this View is not attached to a parent ViewGroup */
 fun View.setMarginOptionally(
     left: Int? = marginLeft, top: Int? = marginTop,
     right: Int? = marginRight, bottom: Int? = marginBottom
@@ -23,6 +23,11 @@ fun View.setMarginOptionally(
     }
 }
 
+/** This method will be useless if this View is not attached to a parent ViewGroup */
+fun View.setMargins(margins: Int) {
+    setMarginOptionally(margins, margins, margins, margins)
+}
+
 fun View.setPaddingOptionally(
     left: Int? = paddingLeft, top: Int? = paddingTop,
     right: Int? = paddingRight, bottom: Int? = paddingBottom
@@ -35,3 +40,26 @@ fun View.setPaddingOptionally(
     setPadding(l, t, r, b)
     requestLayout()
 }
+
+fun View.getIdName() = if (id == View.NO_ID) "NO_ID"
+else try {
+    // Если view-объект создается программно и ему в рантайм присваивается
+    // id методом setId(View.generateViewId()), то у view будет id, но
+    // не будет имени и бросится ошибка -
+    // Resources$NotFoundException: Unable to find resource ID #0x1
+    // No package identifier when getting name for resource number 0x00000001
+    resources.getResourceEntryName(id)
+} catch (e: Exception) {
+    "NO_NAME"
+}
+
+fun ViewGroup.saveChildViewStates(): SparseArray<Parcelable> {
+    val childViewStates = SparseArray<Parcelable>()
+    children.forEach { child -> child.saveHierarchyState(childViewStates) }
+    return childViewStates
+}
+
+fun ViewGroup.restoreChildViewStates(childViewStates: SparseArray<Parcelable>) {
+    children.forEach { child -> child.restoreHierarchyState(childViewStates) }
+}
+
