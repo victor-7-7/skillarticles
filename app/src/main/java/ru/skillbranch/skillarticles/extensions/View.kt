@@ -5,6 +5,9 @@ import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.*
+import androidx.navigation.NavDestination
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import ru.skillbranch.skillarticles.R
 
 // https://stackoverflow.com/questions/4472429/change-the-right-margin-of-a-view-programmatically
 /** This method will be useless if this View is not attached to a parent ViewGroup */
@@ -62,4 +65,20 @@ fun ViewGroup.saveChildViewStates(): SparseArray<Parcelable> {
 fun ViewGroup.restoreChildViewStates(childViewStates: SparseArray<Parcelable>) {
     children.forEach { child -> child.restoreHierarchyState(childViewStates) }
 }
+
+fun BottomNavigationView.selectDestination(destination: NavDestination) {
+/*    when(destination.id) {
+        R.id.nav_articles,
+        R.id.nav_bookmarks,
+        R.id.nav_transcriptions,
+        R.id.nav_profile -> selectedItemId = destination.id
+    }*/
+    val item = menu.findItem(destination.id)
+    if (item != null)
+        item.isChecked = true
+    else {
+        menu.findItem(R.id.nav_profile).isChecked = true
+    }
+}
+
 

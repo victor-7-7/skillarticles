@@ -1,8 +1,9 @@
-package ru.skillbranch.skillarticles.viewmodels
+package ru.skillbranch.skillarticles.viewmodels.article
 
 import androidx.lifecycle.LiveData
 import ru.skillbranch.skillarticles.data.ArticleData
 import ru.skillbranch.skillarticles.data.ArticlePersonalInfo
+import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
 
 interface IArticleViewModel {
 
@@ -10,7 +11,7 @@ interface IArticleViewModel {
      * Получение полной информации о статье из сети
      * (или базы данных если она сохранена, наличие статьи в базе не надо реализовывать в данном уроке)
      */
-    fun getArticleContent(): LiveData<List<Any>?>
+    fun getArticleContent(): LiveData<List<MarkdownElement>?>
 
     /**
      * Получение краткой информации о статье из базы данных
@@ -31,13 +32,13 @@ interface IArticleViewModel {
      * Обработка нажатия на btn_text_up (увеличение шрифта текста)
      * необходимо увеличить шрифт до значения 18
      */
-    fun handleUpText()
+    fun handleUpTextSize()
 
     /**
      * Обработка нажатия на btn_text_down (стандартный размер шрифта)
      * необходимо установить размер шрифта по умолчанию 14
      */
-    fun handleDownText()
+    fun handleDownTextSize()
 
     /**
      * добавление/удалние статьи в закладки, обрабока нажатия на кнопку btn_bookmark
@@ -73,11 +74,11 @@ interface IArticleViewModel {
      * при нажатии на пункту меню тулбара необходимо отобразить searchView и сохранить состояние при
      * изменении конфигурации (пересоздании активити)
      */
-    fun handleSearchMode(isSearch: Boolean)
+    fun handleIsSearch(isSearch: Boolean)
 
     /**
      * обрабока поискового запроса, необходимо сохранить поисковый запрос и отображать его в
      * searchView при изменении конфигурации (пересоздании активити)
      */
-    fun handleSearch(query: String?)
+    fun handleSearchQuery(query: String?)
 }

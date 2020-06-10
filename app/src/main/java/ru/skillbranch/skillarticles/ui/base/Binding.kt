@@ -7,11 +7,35 @@ import kotlin.reflect.KProperty
 
 abstract class Binding {
     val delegates = mutableMapOf<String, RenderProp<out Any>>()
+    var isInflated = false
+    open val afterInflated: (() -> Unit)? = null
 
-    abstract fun onFinishInflate()
+    open fun onFinishInflate() {
+        if (!isInflated) {
+            afterInflated?.invoke()
+            isInflated = true
+        }
+    }
+
     abstract fun bind(data: IViewModelState)
-    abstract fun saveUi(outState: Bundle)
-    abstract fun restoreUi(savedState: Bundle)
+
+    /**
+     * override this if need save binding in bundle
+     */
+    open fun saveUi(outState: Bundle) {
+        //empty default implementation
+    }
+
+    /**
+     * override this if need restore binding from bundle
+     */
+    open fun restoreUi(savedState: Bundle?) {
+        //empty default implementation
+    }
+
+    fun rebind() {
+        delegates.forEach { it.value.bind() }
+    }
 
     @Suppress("UNCHECKED_CAST")
     fun <A, B, C, D> dependsOn(

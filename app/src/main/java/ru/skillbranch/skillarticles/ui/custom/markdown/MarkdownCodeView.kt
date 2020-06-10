@@ -9,7 +9,6 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.text.Selection
 import android.text.Spannable
-import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
 import android.widget.HorizontalScrollView
@@ -210,14 +209,6 @@ class MarkdownCodeView private constructor(
         tv_codeView.setTextColor(textColor)
     }
 
-    override fun dispatchSaveInstanceState(container: SparseArray<Parcelable>) {
-        dispatchFreezeSelfOnly(container)
-    }
-
-    override fun dispatchRestoreInstanceState(container: SparseArray<Parcelable>) {
-        dispatchThawSelfOnly(container)
-    }
-
     override fun onSaveInstanceState(): Parcelable? {
         val savedState = SavedState(super.onSaveInstanceState())
         savedState.ssIsDark = isDark
@@ -226,12 +217,12 @@ class MarkdownCodeView private constructor(
     }
 
     override fun onRestoreInstanceState(state: Parcelable?) {
+        super.onRestoreInstanceState(state)
         if (state is SavedState) {
             isDark = state.ssIsDark
             isManual = state.ssIsManual
             applyColors()
         }
-        super.onRestoreInstanceState(state)
     }
 
     private class SavedState : BaseSavedState, Parcelable {

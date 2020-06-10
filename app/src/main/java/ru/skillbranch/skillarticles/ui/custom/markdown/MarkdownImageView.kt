@@ -6,7 +6,6 @@ import android.graphics.*
 import android.os.Parcel
 import android.os.Parcelable
 import android.text.Spannable
-import android.util.SparseArray
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
@@ -45,14 +44,19 @@ class MarkdownImageView private constructor(
     override val spannableContent: Spannable
         get() = tv_title.text as Spannable
 
+    private var isOpen = false
+    private var aspectRatio = 0f
+
     //views
     private lateinit var imageUrl: String
     private lateinit var imageTitle: CharSequence
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     val iv_image: ImageView
+
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     val tv_title: MarkdownTextView
+
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     var tv_alt: TextView? = null
     @Px
@@ -79,7 +83,7 @@ class MarkdownImageView private constructor(
 
     init {
         layoutParams = LayoutParams(
-            LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT
+            LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT
         )
 
         iv_image = ImageView(context).apply {
@@ -129,7 +133,7 @@ class MarkdownImageView private constructor(
                 gravity = Gravity.CENTER
                 textSize = fontSize
                 setPadding(titleTopMargin)
-                isVisible = false
+                isVisible = isOpen
             }
         }
         addView(tv_alt) //<--????????? А если alt и tv_alt == null ????????
@@ -156,7 +160,6 @@ class MarkdownImageView private constructor(
         val ms = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY)
         iv_image.measure(ms, heightMeasureSpec)
         tv_title.measure(ms, heightMeasureSpec)
-//        if (tv_alt != null) tv_alt?.measure(ms, heightMeasureSpec)
         tv_alt?.measure(ms, heightMeasureSpec)
 
         usedHeight += iv_image.measuredHeight
@@ -230,43 +233,41 @@ class MarkdownImageView private constructor(
         va.start()
     }
 
-    override fun dispatchSaveInstanceState(container: SparseArray<Parcelable>) {
-        dispatchFreezeSelfOnly(container)
-    }
-
-    override fun dispatchRestoreInstanceState(container: SparseArray<Parcelable>) {
-        dispatchThawSelfOnly(container)
-    }
-
     // save image state
     public override fun onSaveInstanceState(): Parcelable? {
         val savedState = SavedState(super.onSaveInstanceState())
-        savedState.ssIsAltVisible = tv_alt?.isVisible ?: false
+        savedState.ssIsOpen = isOpen
+        savedState.ssAspectRatio = iv_image.width.toFloat() / iv_image.height
         return savedState
     }
 
     // restore image state
     public override fun onRestoreInstanceState(state: Parcelable?) {
-        if (state is SavedState) {
-            tv_alt?.isVisible = state.ssIsAltVisible
-        }
         super.onRestoreInstanceState(state)
+        if (state is SavedState) {
+            isOpen = state.ssIsOpen
+            aspectRatio = state.ssAspectRatio
+            tv_alt?.isVisible = isOpen
+        }
     }
 
     private class SavedState : BaseSavedState, Parcelable {
-        var ssIsAltVisible: Boolean = false
+        var ssIsOpen = false
+        var ssAspectRatio = 0f
 
         // Called by derived class when creating its SavedState object
         constructor(superState: Parcelable?) : super(superState)
 
         // Used when reading from a parcel. Reads the state of the superclass
         constructor(src: Parcel) : super(src) {
-            ssIsAltVisible = src.readInt() == 1
+            ssIsOpen = src.readInt() == 1
+            ssAspectRatio = src.readFloat()
         }
 
         override fun writeToParcel(out: Parcel, flags: Int) {
             super.writeToParcel(out, flags)
-            out.writeInt(if (ssIsAltVisible) 1 else 0)
+            out.writeInt(if (ssIsOpen) 1 else 0)
+            out.writeFloat(ssAspectRatio)
         }
 
         companion object CREATOR : Parcelable.Creator<SavedState> {

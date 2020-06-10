@@ -35,4 +35,6 @@ object ArticleRepository {
     fun updateSettings(appSettings: AppSettings) {
         local.updateAppSettings(appSettings)
     }
+
+    fun isAuth(): LiveData<Boolean> = local.isAuth()
 }
