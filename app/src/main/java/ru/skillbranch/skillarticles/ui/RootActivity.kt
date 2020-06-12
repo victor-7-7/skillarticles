@@ -2,6 +2,7 @@ package ru.skillbranch.skillarticles.ui
 
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.navigation.NavOptions
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.google.android.material.snackbar.Snackbar
@@ -43,8 +44,21 @@ class RootActivity : BaseActivity<RootViewModel>() {
             viewModel.navigate(NavigationCommand.To(it.itemId))
             true
         }
-        navController.addOnDestinationChangedListener { roller, dest, args ->
-            // if destination is changed set bottom navigation item selected
+        navController.addOnDestinationChangedListener { _, dest, args ->
+            // if destination has changed check whether it is necessary
+            // to show nav_auth
+            if (viewModel.currentState.isAuth && dest.id == R.id.nav_auth) {
+                // Мы уже авторизованы, поэтому вместо экрана авторизации
+                // следует показать экран, с которого нас перекинуло на авторизацию
+                // и при этом выкинуть из бэкстека контроллера экран авторизации
+                val navOptions = NavOptions.Builder()
+                    .setPopUpTo(dest.id, true).build()
+                // Выполняем навигацию
+                viewModel.navigate(
+                    NavigationCommand.To(R.id.nav_profile, args, navOptions)
+                )
+            }
+            // set bottom navigation item selected
             nav_view.selectDestination(dest)
         }
     }

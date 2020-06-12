@@ -17,7 +17,7 @@ object LocalDataHolder {
 
     fun findArticle(articleId: String): LiveData<ArticleData?> {
         GlobalScope.launch {
-            delay(1000)
+            delay(500)
             articleData.postValue(
                 ArticleData(
                     title = "Drawing a rounded corner background on text",

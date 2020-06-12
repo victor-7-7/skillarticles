@@ -231,12 +231,13 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             bottombar.btn_settings.isChecked = it
             if (it) submenu.open() else submenu.close()
         }
-        private var title: String by RenderProp("loading...") {
-            toolbar.title = it
-        }
-        private var category: String by RenderProp("loading...") {
-            toolbar.subtitle = it
-        }
+
+        //        private var title: String by RenderProp("loading...") {
+//            toolbar.title = it
+//        }
+//        private var category: String by RenderProp("loading...") {
+//            toolbar.subtitle = it
+//        }
         private var categoryIcon: Int by RenderProp(R.drawable.logo_placeholder) {
             toolbar.logo = getDrawable(root, it)
         }
@@ -317,8 +318,8 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             isBigText = data.isBigText
             isDarkMode = data.isDarkMode
 
-            if (data.title != null) title = data.title
-            if (data.category != null) category = data.category
+//            if (data.title != null) title = data.title
+//            if (data.category != null) category = data.category
             if (data.categoryIcon != null) categoryIcon = data.categoryIcon as Int
             content = data.content
 
