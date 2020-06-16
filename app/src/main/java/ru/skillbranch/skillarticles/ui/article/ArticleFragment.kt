@@ -4,33 +4,32 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.WindowManager
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
-import androidx.core.content.ContextCompat.getDrawable
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions.circleCropTransform
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.fragment_article.*
-import kotlinx.android.synthetic.main.layout_bottombar.*
 import kotlinx.android.synthetic.main.layout_bottombar.view.*
-import kotlinx.android.synthetic.main.layout_submenu.*
 import kotlinx.android.synthetic.main.layout_submenu.view.*
 import kotlinx.android.synthetic.main.search_view_layout.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
-import ru.skillbranch.skillarticles.extensions.dpToIntPx
-import ru.skillbranch.skillarticles.extensions.format
-import ru.skillbranch.skillarticles.extensions.hideKeyboard
-import ru.skillbranch.skillarticles.extensions.setMarginOptionally
+import ru.skillbranch.skillarticles.extensions.*
 import ru.skillbranch.skillarticles.ui.base.*
+import ru.skillbranch.skillarticles.ui.custom.ArticleSubmenu
+import ru.skillbranch.skillarticles.ui.custom.Bottombar
 import ru.skillbranch.skillarticles.ui.delegates.RenderProp
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleViewModel
@@ -39,6 +38,19 @@ import ru.skillbranch.skillarticles.viewmodels.base.ViewModelFactory
 
 class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     private val args: ArticleFragmentArgs by navArgs()
+
+    private val commentsAdapter by lazy {
+        CommentsAdapter {
+            Log.d(
+                "M_ArticleFragment", "click on comment: " +
+                        "id > ${it.id} slug > ${it.slug}"
+            )
+            viewModel.handleReplyTo(it.slug, it.user.name)
+            et_comment.requestFocus()
+            scroll.smoothScrollTo(0, til_wrap_comments.top)
+            et_comment.context.showKeyboard(et_comment)
+        }
+    }
 
     override val viewModel: ArticleViewModel by viewModels {
         ViewModelFactory(owner = this, params = args.articleId)
@@ -67,9 +79,9 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             .setVisibility(false)
     }
     private val bottombar
-        get() = root.bottombar
+        get() = root.findViewById<Bottombar>(R.id.bottombar)
     private val submenu
-        get() = root.submenu
+        get() = root.findViewById<ArticleSubmenu>(R.id.submenu)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -157,8 +169,31 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
 
         et_comment.setOnEditorActionListener { view, _, _ ->
             root.hideKeyboard(view)
-            viewModel.handleSendComment()
+            viewModel.handleSendComment(view.text.toString())
+            // TODO см. видео 01:39:35
+            view.text = null
+            view.clearFocus()
             true
+        }
+
+        et_comment.setOnFocusChangeListener { _, hasFocus ->
+            viewModel.handleCommentFocus(hasFocus)
+        }
+
+        til_wrap_comments.setEndIconOnClickListener { view ->
+            view.context.hideKeyboard(view)
+            // TODO см. видео 01:40:10
+            viewModel.handleClearComment()
+            et_comment.text = null
+            et_comment.clearFocus()
+        }
+
+        with(rv_comments) {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = commentsAdapter
+        }
+        viewModel.observeList(viewLifecycleOwner) {
+            commentsAdapter.submitList(it)
         }
     }
 
@@ -221,6 +256,13 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         var isFocusedSearch: Boolean = false
         var searchQuery: String? = null
 
+        private var answerTo: String by RenderProp("Comment") {
+            til_wrap_comments.hint = it
+        }
+        private var isShowBottombar: Boolean by RenderProp(true) {
+            if (it) bottombar.show() else bottombar.hide()
+            if (submenu.isOpen) submenu.isVisible = it
+        }
         private var isLike: Boolean by RenderProp(false) {
             bottombar.btn_like.isChecked = it
         }
@@ -238,9 +280,9 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
 //        private var category: String by RenderProp("loading...") {
 //            toolbar.subtitle = it
 //        }
-        private var categoryIcon: Int by RenderProp(R.drawable.logo_placeholder) {
-            toolbar.logo = getDrawable(root, it)
-        }
+//        private var categoryIcon: Int by RenderProp(R.drawable.logo_placeholder) {
+//            toolbar.logo = getDrawable(root, it)
+//        }
         private var isBigText: Boolean by RenderProp(false) {
             if (it) {
                 tv_text_content.textSize = 18f
@@ -320,7 +362,8 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
 
 //            if (data.title != null) title = data.title
 //            if (data.category != null) category = data.category
-            if (data.categoryIcon != null) categoryIcon = data.categoryIcon as Int
+//            if (data.categoryIcon != null) categoryIcon = data.categoryIcon as Int
+
             content = data.content
 
             isLoadingContent = data.isLoadingContent
@@ -328,6 +371,9 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             searchQuery = data.searchQuery
             searchResults = data.searchResults
             searchPosition = data.searchPosition
+
+            answerTo = data.answerTo ?: "Comment"
+            isShowBottombar = data.showBottombar
         }
 
         override fun saveUi(outState: Bundle) {
@@ -336,7 +382,6 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
 
         override fun restoreUi(savedState: Bundle?) {
             isFocusedSearch = savedState?.getBoolean(::isFocusedSearch.name) ?: false
-
         }
     }
 }

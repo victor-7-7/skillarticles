@@ -12,7 +12,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import ru.skillbranch.skillarticles.R
-import ru.skillbranch.skillarticles.data.ArticleItemData
+import ru.skillbranch.skillarticles.data.models.ArticleItemData
 import ru.skillbranch.skillarticles.extensions.attrValue
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
 import ru.skillbranch.skillarticles.extensions.format
@@ -163,9 +163,8 @@ class ArticleItemView(
         measureChild(ivPoster, widthMeasureSpec, heightMeasureSpec)
         measureChild(ivCategory, widthMeasureSpec, heightMeasureSpec)
         val sizeOfPosterAndCategoryImage = posterSize + (categorySize / 2)
-//        tvTitle.maxWidth = width - (paddingLeft + paddingRight + ivPoster.measuredWidth + tvTitleMarginEnd)
-        tvTitle.maxWidth =
-            width - (paddingRight + paddingLeft + sizeOfPosterAndCategoryImage + context.dpToIntPx(8)) //TODO context.dpToIntPx(4)
+        tvTitle.maxWidth = width - (paddingRight + paddingLeft +
+                sizeOfPosterAndCategoryImage + context.dpToIntPx(8))
         measureChild(tvTitle, widthMeasureSpec, heightMeasureSpec)
         usedHeight += tvTitleMarginTop + max(tvTitle.measuredHeight, sizeOfPosterAndCategoryImage)
 
@@ -178,17 +177,9 @@ class ArticleItemView(
         measureChild(ivComments, widthMeasureSpec, heightMeasureSpec)
         measureChild(tvCommentsCount, widthMeasureSpec, heightMeasureSpec)
         measureChild(ivBookmark, widthMeasureSpec, heightMeasureSpec)
-//        tvReadDuration.maxWidth = width -
-//                (paddingLeft + ivLikes.measuredWidth + tvLikesCountMarginStart + tvLikesCount.measuredWidth +
-//                        ivCommentsMarginStart + ivComments.measuredWidth +
-//                        tvCommentsCountMarginStart + tvCommentsCount.measuredWidth +
-//                        tvReadDurationMarginStart + tvReadDurationMarginEnd +
-//                        ivBookmark.measuredWidth + paddingRight)
         measureChild(tvReadDuration, widthMeasureSpec, heightMeasureSpec)
-//        usedHeight += max(tvReadDuration.measuredHeight, ivLikes.measuredHeight) +
-//                iconRowMarginTop + paddingBottom //consider all icon have same size and counters have same textSize
 
-        usedHeight += ivLikes.measuredHeight + iconRowMarginTop + paddingBottom //Attempt to pass test removing max(tvReadDuration.measuredHeight, ivLikes.measuredHeight)
+        usedHeight += ivLikes.measuredHeight + iconRowMarginTop + paddingBottom
 
         setMeasuredDimension(width, usedHeight)
     }
@@ -258,7 +249,7 @@ class ArticleItemView(
 
         val topOfIcon = usedHeight + iconRowMarginTop
         val diffSizeIconIvAndCounter =
-            (tvLikesCount.measuredHeight - ivLikes.measuredHeight) / 2 //constraintBottom icon toBottom counter and constraintTop icon to Top counter
+            (tvLikesCount.measuredHeight - ivLikes.measuredHeight) / 2
         ivLikes.layout(
             paddingLeft,
             topOfIcon + diffSizeIconIvAndCounter,
@@ -291,7 +282,7 @@ class ArticleItemView(
         tvReadDuration.layout(
             leftOfTvReadDuration,
             topOfIcon,
-            leftOfTvReadDuration + tvReadDuration.measuredWidth, //TODO leftOfIvBookmark - tvReadDurationMarginEnd
+            leftOfTvReadDuration + tvReadDuration.measuredWidth,
             topOfIcon + tvReadDuration.measuredHeight
         )
         ivBookmark.layout(
@@ -321,6 +312,7 @@ class ArticleItemView(
         tvDescription.text = data.description
         tvLikesCount.text = "${data.likeCount}"
         tvCommentsCount.text = "${data.commentCount}"
-        tvReadDuration.text = "${data.readDuration} min read"
+        val text = "${data.readDuration} min read"
+        tvReadDuration.text = text
     }
 }
