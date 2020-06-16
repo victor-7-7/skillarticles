@@ -8,19 +8,22 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.extensions.LayoutContainer
 import ru.skillbranch.skillarticles.data.models.ArticleItemData
 import ru.skillbranch.skillarticles.ui.custom.ArticleItemView
+import ru.skillbranch.skillarticles.ui.custom.CheckableImageView
 
-class ArticlesAdapter(private val listener: (ArticleItemData) -> Unit) :
-    PagedListAdapter<ArticleItemData, ArticleVH>(ArticleDiffCallback()) {
+class ArticlesAdapter(
+    private val bookmarkListener: (ArticleItemData) -> Unit,
+    private val listener: (ArticleItemData) -> Unit
+) : PagedListAdapter<ArticleItemData, ArticleVH>(ArticleDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ArticleVH {
 //        val containerView = LayoutInflater.from(parent.context)
 //            .inflate(R.layout.item_article, parent, false)
-        val view = ArticleItemView(parent.context)
-        return ArticleVH(view)
+        val containerView = ArticleItemView(parent.context)
+        return ArticleVH(containerView)
     }
 
     override fun onBindViewHolder(holder: ArticleVH, position: Int) {
-        holder.bind(getItem(position), listener)
+        holder.bind(getItem(position), listener, bookmarkListener)
     }
 }
 
@@ -42,12 +45,17 @@ class ArticleVH(
 
     fun bind(
         item: ArticleItemData?,
-        listener: (ArticleItemData) -> Unit
+        listener: (ArticleItemData) -> Unit,
+        bookmarkListener: (ArticleItemData) -> Unit
     ) {
         // if use placeholder item may be null
         if (item != null) {
             (containerView as ArticleItemView).bind(item)
             itemView.setOnClickListener { listener(item) }
+            containerView.getBookmark().setOnClickListener { view ->
+                bookmarkListener(item)
+                (view as CheckableImageView).toggle()
+            }
         }
     }
 }

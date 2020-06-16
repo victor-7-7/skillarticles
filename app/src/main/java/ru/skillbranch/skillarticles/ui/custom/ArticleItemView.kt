@@ -32,7 +32,7 @@ class ArticleItemView(
     private val ivComments: ImageView
     private val tvCommentsCount: TextView
     private val tvReadDuration: TextView
-    private val ivBookmark: ImageView
+    private val ivBookmark: CheckableImageView
 
     private val padding = context.dpToIntPx(16)
 
@@ -142,7 +142,7 @@ class ArticleItemView(
         }
         addView(tvReadDuration)
 
-        ivBookmark = ImageView(context).apply {
+        ivBookmark = CheckableImageView(context).apply {
             id = R.id.iv_bookmark
             imageTintList = ColorStateList.valueOf(colorGrey)
             setImageResource(R.drawable.bookmark_states)
@@ -314,5 +314,8 @@ class ArticleItemView(
         tvCommentsCount.text = "${data.commentCount}"
         val text = "${data.readDuration} min read"
         tvReadDuration.text = text
+        ivBookmark.isChecked = data.isBookmark
     }
+
+    fun getBookmark() = ivBookmark
 }

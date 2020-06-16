@@ -54,7 +54,7 @@
         android:id="@+id/group_bottom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:visibility="gone"
+        tools:visibility="visible"
         app:constraint_referenced_ids="btn_share,btn_bookmark,btn_like,btn_settings" />
 
     <LinearLayout
@@ -69,7 +69,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:visibility="visible">
+        tools:visibility="gone">
 
         <ImageView
             android:id="@+id/btn_search_close"

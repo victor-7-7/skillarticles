@@ -29,6 +29,7 @@ class ArticlesViewModel(handle: SavedStateHandle) :
     }
     private val listData = Transformations.switchMap(state) {
         when {
+            it.isBookmark && !it.isSearch -> buildPageList(repository.bookmarkArticles())
             it.isSearch && !it.searchQuery.isNullOrBlank() ->
                 buildPageList(repository.searchArticles(it.searchQuery))
             else -> buildPageList(repository.allArticles())
@@ -62,7 +63,6 @@ class ArticlesViewModel(handle: SavedStateHandle) :
                 )
             )
         }
-
         return builder.setFetchExecutor(Executors.newSingleThreadExecutor()).build()
     }
 
@@ -116,6 +116,10 @@ class ArticlesViewModel(handle: SavedStateHandle) :
             it.copy(searchQuery = query)
         }
     }
+
+    fun handleToggleBookmark(articleId: String, isChecked: Boolean) {
+        repository.updateBookmark(articleId, isChecked)
+    }
 }
 
 //============================================================================
@@ -124,7 +128,8 @@ data class ArticlesState(
 //    val articles: List<ArticleItemData> = emptyList()
     val isSearch: Boolean = false,
     val searchQuery: String? = null,
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val isBookmark: Boolean = false
 ) : IViewModelState
 
 //============================================================================

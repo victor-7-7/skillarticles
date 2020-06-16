@@ -22,8 +22,16 @@ object ArticlesRepository {
         ArticleStrategy.SearchArticles(::searchArticlesByTitle, query)
     )
 
+    fun bookmarkArticles(): ArticlesDataFactory = ArticlesDataFactory(
+        ArticleStrategy.BookmarkArticles(::findArticlesByBookmark)
+    )
+
     private fun findArticlesByRange(start: Int, size: Int) =
         local.localArticleItems.drop(start).take(size)
+
+    private fun findArticlesByBookmark(start: Int, size: Int) =
+        local.localArticleItems.drop(start).take(size).filter { it.isBookmark }
+    // ? local.localArticleItems.filter { it.isBookmark }.drop(start).take(size)
 
     private fun searchArticlesByTitle(start: Int, size: Int, query: String) =
         local.localArticleItems.asSequence()
@@ -35,6 +43,12 @@ object ArticlesRepository {
 
     fun insertArticlesToDb(articles: List<ArticleItemData>) {
         local.localArticleItems.addAll(articles).apply { sleep(100) }
+    }
+
+    fun updateBookmark(articleId: String, isChecked: Boolean) {
+        local.localArticleItems.find { it.id == articleId }?.apply {
+            this.isBookmark = isChecked
+        }
     }
 }
 
@@ -98,4 +112,11 @@ sealed class ArticleStrategy() {
     }
 
     // TODO bookmaks strategy
+    class BookmarkArticles(
+        private val itemProvider: (Int, Int) -> List<ArticleItemData>
+    ) : ArticleStrategy() {
+        override fun getItems(start: Int, size: Int) =
+            itemProvider(start, size)
+    }
+
 }
