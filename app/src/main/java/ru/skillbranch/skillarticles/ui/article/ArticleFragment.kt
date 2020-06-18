@@ -299,12 +299,13 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             }
         }
         private var isDarkMode: Boolean by RenderProp(
-            value = false, needInit = false
+            value = false
         ) {
             // bind submenu views
             submenu.switch_mode.isChecked = it
-            root.delegate.localNightMode = if (it) AppCompatDelegate.MODE_NIGHT_YES
+            val mode = if (it) AppCompatDelegate.MODE_NIGHT_YES
             else AppCompatDelegate.MODE_NIGHT_NO
+            root.delegate.localNightMode = mode
         }
         private var isLoadingContent by RenderProp(true)
 

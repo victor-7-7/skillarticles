@@ -66,7 +66,9 @@ abstract class BaseFragment<T : BaseViewModel<out IViewModelState>> : Fragment()
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
-        binding?.rebind()
+        viewModel.restoreState()
+        binding?.restoreUi(savedInstanceState)
+//        binding?.rebind()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

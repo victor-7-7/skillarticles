@@ -42,7 +42,8 @@ class BookmarksFragment : BaseFragment<BookmarksViewModel>() {
             viewModel.handleToggleBookmark(articleId, !isBookmark)
         },
         listener = { item ->
-            Log.d("M_ArticlesFragment", "click on article: ${item.id}")
+            Log.d("M_BookmarksFragment", "click on article: ${item.id}")
+            // TODO fix bug
             val action = ArticlesFragmentDirections.actionNavArticlesToPageArticle(
                 item.id, item.author, item.authorAvatar, item.category,
                 item.categoryIcon, item.date, item.poster, item.title
