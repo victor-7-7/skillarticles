@@ -118,6 +118,7 @@ class ArticlesViewModel(handle: SavedStateHandle) :
 
     fun handleToggleBookmark(articleId: String, isChecked: Boolean) {
         repository.updateBookmark(articleId, isChecked)
+//        listData.value?.dataSource?.invalidate()
     }
 }
 

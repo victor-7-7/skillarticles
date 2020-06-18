@@ -189,19 +189,24 @@ class ArticleViewModel(
         notify(Notify.TextMessage("Code copy to clipboard"))
     }
 
-    fun handleSendComment(comment: String) {
-        if (!currentState.isAuth) navigate(NavigationCommand.StartLogin())
-//        viewModelScope.launch {
-//            repository.sendComment(articleId, comment, currentState.answerToSlug)
-//            withContext(Dispatchers.Main) {
-//                updateState { it.copy(answerTo = null, answerToSlug = null) }
-//            }
-//        }
-        else {
-            viewModelScope.launch {
-                repository.sendComment(articleId, comment, currentState.answerToSlug)
-                withContext(Dispatchers.Main) {
-                    updateState { it.copy(answerTo = null, answerToSlug = null) }
+    fun handleSendComment(comment: String?) {
+        updateState { it.copy(comment = comment) }
+        if (comment.isNullOrBlank()) {
+            notify(Notify.TextMessage("Comment must not be empty"))
+            return
+        }
+        if (!currentState.isAuth) {
+            navigate(NavigationCommand.StartLogin())
+            return
+        }
+        viewModelScope.launch {
+            repository.sendComment(articleId, comment, currentState.answerToSlug)
+            withContext(Dispatchers.Main) {
+                updateState {
+                    it.copy(
+                        answerTo = null,
+                        answerToSlug = null, comment = null
+                    )
                 }
             }
         }
@@ -233,6 +238,10 @@ class ArticleViewModel(
 
     fun handleReplyTo(slug: String, name: String) {
         updateState { it.copy(answerTo = "Reply to $name", answerToSlug = slug) }
+    }
+
+    fun saveComment(comment: String) {
+        updateState { it.copy(comment = comment) }
     }
 }
 
@@ -272,17 +281,14 @@ data class ArticleState(
      * свой комментарий. Если юзер комментирует саму статью, то данное
      * значение - null */
     val answerToSlug: String? = null,
-    val showBottombar: Boolean = true // при написании коммента боттомбар д/б скрыт
+    val showBottombar: Boolean = true, // при написании коммента боттомбар д/б скрыт
+    val comment: String? = null
 ) : IViewModelState {
     override fun save(outState: SavedStateHandle) {
         outState.set("isSearch", isSearch)
         outState.set("searchQuery", searchQuery)
         outState.set("searchResults", searchResults)
         outState.set("searchPosition", searchPosition)
-
-        outState.set("answerTo", answerTo)
-        outState.set("answerToSlug", answerToSlug)
-        outState.set("showBottombar", showBottombar)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -291,11 +297,7 @@ data class ArticleState(
             isSearch = savedState["isSearch"] ?: false,
             searchQuery = savedState["searchQuery"],
             searchResults = savedState["searchResults"] ?: emptyList(),
-            searchPosition = savedState["searchPosition"] ?: 0,
-
-            answerTo = savedState["answerTo"],
-            answerToSlug = savedState["answerToSlug"],
-            showBottombar = savedState["showBottombar"] ?: false
+            searchPosition = savedState["searchPosition"] ?: 0
         )
     }
 }

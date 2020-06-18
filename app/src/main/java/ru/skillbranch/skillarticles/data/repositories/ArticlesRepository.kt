@@ -54,9 +54,10 @@ object ArticlesRepository {
     }
 
     fun updateBookmark(articleId: String, isChecked: Boolean) {
-        local.localArticleItems.find { it.id == articleId }?.apply {
-            this.isBookmark = isChecked
-        }
+        val index = local.localArticleItems.indexOfFirst { it.id == articleId }
+        if (index == -1) return
+        local.localArticleItems[index] =
+            local.localArticleItems[index].copy(isBookmark = isChecked)
     }
 }
 

@@ -170,9 +170,10 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         et_comment.setOnEditorActionListener { view, _, _ ->
             root.hideKeyboard(view)
             viewModel.handleSendComment(view.text.toString())
-            // TODO см. видео 01:39:35
-            view.text = null
-            view.clearFocus()
+            if (viewModel.currentState.isAuth) {
+                view.text = null
+                view.clearFocus()
+            }
             true
         }
 
@@ -182,7 +183,6 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
 
         wrap_comments.setEndIconOnClickListener { view ->
             view.context.hideKeyboard(view)
-            // TODO см. видео 01:40:10
             viewModel.handleClearComment()
             et_comment.text = null
             et_comment.clearFocus()
@@ -249,6 +249,12 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        if (et_comment.text.isNotBlank())
+            viewModel.saveComment(et_comment.text.toString())
+    }
+
 
     //===================================================================
 
@@ -262,6 +268,9 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
          * вида - Comment */
         private var answerTo: String by RenderProp("Comment") {
             wrap_comments.hint = it
+        }
+        private var comment: String by RenderProp("") {
+            et_comment.setText(it)
         }
         private var isShowBottombar: Boolean by RenderProp(true) {
             if (it) bottombar.show() else bottombar.hide()
@@ -365,18 +374,15 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
 
             answerTo = data.answerTo ?: "Comment"
             isShowBottombar = data.showBottombar
+            comment = data.comment ?: ""
         }
 
         override fun saveUi(outState: Bundle) {
             outState.putBoolean(::isFocusedSearch.name, search_view?.hasFocus() ?: false)
-            outState.putBoolean(::isShowBottombar.name, bottombar.isVisible)
-            outState.putString(::answerTo.name, answerTo)
         }
 
         override fun restoreUi(savedState: Bundle?) {
             isFocusedSearch = savedState?.getBoolean(::isFocusedSearch.name) ?: false
-            isShowBottombar = savedState?.getBoolean(::isShowBottombar.name) ?: false
-            answerTo = savedState?.getString(::answerTo.name) ?: "Comment"
         }
     }
 }

@@ -16,8 +16,6 @@ class ArticlesAdapter(
 ) : PagedListAdapter<ArticleItemData, ArticleVH>(ArticleDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ArticleVH {
-//        val containerView = LayoutInflater.from(parent.context)
-//            .inflate(R.layout.item_article, parent, false)
         val containerView = ArticleItemView(parent.context)
         return ArticleVH(containerView)
     }
