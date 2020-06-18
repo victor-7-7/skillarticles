@@ -12,8 +12,6 @@ object ArticlesRepository {
     private val local = LocalDataHolder
     private val network = NetworkDataHolder
 
-//    fun loadArticles(): LiveData<List<ArticleItemData>?> = local.findArticles()
-
     fun allArticles(): ArticlesDataFactory = ArticlesDataFactory(
         ArticleStrategy.AllArticles(::findArticlesByRange)
     )

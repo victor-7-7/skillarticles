@@ -36,24 +36,18 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
         )
     }
 
-    private val articlesAdapter = ArticlesAdapter({ item ->
-        Log.d(
-            "M_ArticlesFragment", "click on bookmark: ${item.id} " +
-                    "isBookmark(before toggle)=${item.isBookmark}"
-        )
-        viewModel.handleToggleBookmark(item.id, !item.isBookmark)
-        Log.d(
-            "M_ArticlesFragment", "click on bookmark: ${item.id} " +
-                    "isBookmark(after toggle)=${item.isBookmark}"
-        )
-    }) { item ->
-        Log.d("M_ArticlesFragment", "click on article: ${item.id}")
-        val action = ArticlesFragmentDirections.actionNavArticlesToPageArticle(
-            item.id, item.author, item.authorAvatar, item.category,
-            item.categoryIcon, item.date, item.poster, item.title
-        )
-        viewModel.navigate(NavigationCommand.To(action.actionId, action.arguments))
-    }
+    private val articlesAdapter = ArticlesAdapter(
+        bookmarkListener = { articleId, isBookmark ->
+            viewModel.handleToggleBookmark(articleId, !isBookmark)
+        },
+        listener = { item ->
+            Log.d("M_ArticlesFragment", "click on article: ${item.id}")
+            val action = ArticlesFragmentDirections.actionNavArticlesToPageArticle(
+                item.id, item.author, item.authorAvatar, item.category,
+                item.categoryIcon, item.date, item.poster, item.title
+            )
+            viewModel.navigate(NavigationCommand.To(action.actionId, action.arguments))
+        })
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,10 +106,6 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
     }
 
     inner class ArticlesBinding : Binding() {
-//        private var articles: List<ArticleItemData>
-//                by RenderProp(emptyList<ArticleItemData>()) {
-//                    articlesAdapter.submitList(it)
-//                }
 
         var isFocusedSearch: Boolean = false
         var searchQuery: String? = null

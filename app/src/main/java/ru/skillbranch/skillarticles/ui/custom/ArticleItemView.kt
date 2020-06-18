@@ -293,7 +293,10 @@ class ArticleItemView(
         )
     }
 
-    fun bind(data: ArticleItemData) {
+    fun bind(
+        data: ArticleItemData,
+        bookmarkListener: (String, Boolean) -> Unit
+    ) {
         Glide.with(context)
             .load(data.poster)
             .transform(CenterCrop(), RoundedCorners(cornerRadius))
@@ -315,7 +318,8 @@ class ArticleItemView(
         val text = "${data.readDuration} min read"
         tvReadDuration.text = text
         ivBookmark.isChecked = data.isBookmark
+        ivBookmark.setOnClickListener {
+            bookmarkListener.invoke(data.id, data.isBookmark)
+        }
     }
-
-    fun getBookmark() = ivBookmark
 }

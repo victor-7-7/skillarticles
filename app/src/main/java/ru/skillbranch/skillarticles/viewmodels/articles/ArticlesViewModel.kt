@@ -35,13 +35,6 @@ class ArticlesViewModel(handle: SavedStateHandle) :
         }
     }
 
-//    init {
-//        subscribeOnDataSource(repository.loadArticles()) { articles, state ->
-//            articles ?: return@subscribeOnDataSource null
-//            state.copy(articles = articles)
-//        }
-//    }
-
     fun observeList(
         owner: LifecycleOwner,
         onChange: (list: PagedList<ArticleItemData>) -> Unit
@@ -118,14 +111,13 @@ class ArticlesViewModel(handle: SavedStateHandle) :
 
     fun handleToggleBookmark(articleId: String, isChecked: Boolean) {
         repository.updateBookmark(articleId, isChecked)
-//        listData.value?.dataSource?.invalidate()
+        listData.value?.dataSource?.invalidate()
     }
 }
 
 //============================================================================
 
 data class ArticlesState(
-//    val articles: List<ArticleItemData> = emptyList()
     val isSearch: Boolean = false,
     val searchQuery: String? = null,
     val isLoading: Boolean = true

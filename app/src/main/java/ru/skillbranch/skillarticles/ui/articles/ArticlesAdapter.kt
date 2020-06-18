@@ -8,10 +8,9 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.extensions.LayoutContainer
 import ru.skillbranch.skillarticles.data.models.ArticleItemData
 import ru.skillbranch.skillarticles.ui.custom.ArticleItemView
-import ru.skillbranch.skillarticles.ui.custom.CheckableImageView
 
 class ArticlesAdapter(
-    private val bookmarkListener: (ArticleItemData) -> Unit,
+    private val bookmarkListener: (String, Boolean) -> Unit,
     private val listener: (ArticleItemData) -> Unit
 ) : PagedListAdapter<ArticleItemData, ArticleVH>(ArticleDiffCallback()) {
 
@@ -44,16 +43,12 @@ class ArticleVH(
     fun bind(
         item: ArticleItemData?,
         listener: (ArticleItemData) -> Unit,
-        bookmarkListener: (ArticleItemData) -> Unit
+        bookmarkListener: (String, Boolean) -> Unit
     ) {
         // if use placeholder item may be null
         if (item != null) {
-            (containerView as ArticleItemView).bind(item)
+            (containerView as ArticleItemView).bind(item, bookmarkListener)
             itemView.setOnClickListener { listener(item) }
-            containerView.getBookmark().setOnClickListener { view ->
-                bookmarkListener(item)
-                (view as CheckableImageView).toggle()
-            }
         }
     }
 }
