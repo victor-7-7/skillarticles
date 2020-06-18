@@ -26,16 +26,24 @@ object ArticlesRepository {
         ArticleStrategy.BookmarkArticles(::findArticlesByBookmark)
     )
 
+    fun searchBookmark(query: String) = ArticlesDataFactory(
+        ArticleStrategy.SearchBookmark(::searchBookmarkArticlesByTitle, query)
+    )
+
     private fun findArticlesByRange(start: Int, size: Int) =
         local.localArticleItems.drop(start).take(size)
 
     private fun findArticlesByBookmark(start: Int, size: Int) =
-        local.localArticleItems.drop(start).take(size).filter { it.isBookmark }
-    // ? local.localArticleItems.filter { it.isBookmark }.drop(start).take(size)
+        local.localArticleItems.filter { it.isBookmark }.drop(start).take(size)
 
     private fun searchArticlesByTitle(start: Int, size: Int, query: String) =
         local.localArticleItems.asSequence()
             .filter { it.title.contains(query, true) }
+            .drop(start).take(size).toList()
+
+    private fun searchBookmarkArticlesByTitle(start: Int, size: Int, query: String) =
+        local.localArticleItems.asSequence()
+            .filter { it.isBookmark && it.title.contains(query, true) }
             .drop(start).take(size).toList()
 
     fun loadArticlesFromNetwork(start: Int, size: Int) =
@@ -73,8 +81,9 @@ class ArticleDataSource(private val strategy: ArticleStrategy) :
             params.requestedLoadSize
         )
         Log.d(
-            "M_ArticlesRepository", "loadInitial: start - " +
-                    "${params.requestedStartPosition} size - ${params.requestedLoadSize} " +
+            "M_ArticlesRepository", "loadInitial: " +
+                    "start - ${params.requestedStartPosition} " +
+                    "size - ${params.requestedLoadSize} " +
                     "resultSize - ${result.size}"
         )
         callback.onResult(result, params.requestedStartPosition)
@@ -83,8 +92,9 @@ class ArticleDataSource(private val strategy: ArticleStrategy) :
     override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<ArticleItemData>) {
         val result = strategy.getItems(params.startPosition, params.loadSize)
         Log.d(
-            "M_ArticlesRepository", "loadRange: start - " +
-                    "${params.startPosition} size - ${params.loadSize} " +
+            "M_ArticlesRepository", "loadRange: " +
+                    "start - ${params.startPosition} " +
+                    "size - ${params.loadSize} " +
                     "resultSize - ${result.size}"
         )
         callback.onResult(result)
@@ -111,7 +121,6 @@ sealed class ArticleStrategy() {
             itemProvider(start, size, query)
     }
 
-    // TODO bookmaks strategy
     class BookmarkArticles(
         private val itemProvider: (Int, Int) -> List<ArticleItemData>
     ) : ArticleStrategy() {
@@ -119,4 +128,11 @@ sealed class ArticleStrategy() {
             itemProvider(start, size)
     }
 
+    class SearchBookmark(
+        private val itemProvider: (Int, Int, String) -> List<ArticleItemData>,
+        private val query: String
+    ) : ArticleStrategy() {
+        override fun getItems(start: Int, size: Int) =
+            itemProvider(start, size, query)
+    }
 }

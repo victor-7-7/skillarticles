@@ -60,7 +60,9 @@ object LocalDataHolder {
     fun incrementCommentsCount(articleId: String) {
         val old =
             localArticles[articleId]?.value ?: error("Local article with id: $articleId not found")
-        localArticles[articleId]!!.postValue(old.copy(commentCount = old.commentCount.inc()))
+        localArticles[articleId]!!.postValue(
+            old.copy(commentCount = old.commentCount.inc())
+        )
     }
 }
 
@@ -101,9 +103,9 @@ object NetworkDataHolder {
                 articleId,
                 user,
                 body = text,
+                date = Date(),
                 slug = "${answerToSlug ?: ""}$id/",
-                answerTo = mess?.user?.name,
-                date = Date()
+                answerTo = mess?.user?.name
             )
         )
     }

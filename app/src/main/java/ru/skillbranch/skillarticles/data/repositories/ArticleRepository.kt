@@ -109,8 +109,10 @@ class CommentsDataSource(
             params.requestedLoadSize, articleId
         )
         Log.d(
-            "M_ArticleRepository", "loadInitial: key > " +
-                    "${params.requestedInitialKey} size > ${result.size} total > $totalCount"
+            "M_ArticleRepository", "loadInitial: " +
+                    "key: ${params.requestedInitialKey} " +
+                    "size: ${result.size} " +
+                    "total: $totalCount"
         )
         callback.onResult(
             if (totalCount > 0) result else emptyList(),
@@ -125,8 +127,9 @@ class CommentsDataSource(
     ) {
         val result = itemProvider(params.key, params.requestedLoadSize, articleId)
         Log.d(
-            "M_ArticleRepository", "loadAfter: key > ${params.key} " +
-                    "size > ${result.size}"
+            "M_ArticleRepository", "loadAfter: " +
+                    "key: ${params.key} " +
+                    "size: ${result.size}"
         )
         callback.onResult(result)
     }
@@ -137,8 +140,9 @@ class CommentsDataSource(
     ) {
         val result = itemProvider(params.key, -params.requestedLoadSize, articleId)
         Log.d(
-            "M_ArticleRepository", "loadBefore: key > ${params.key} " +
-                    "size > ${result.size}"
+            "M_ArticleRepository", "loadBefore: " +
+                    "key: ${params.key} " +
+                    "size: ${result.size}"
         )
         callback.onResult(result)
     }

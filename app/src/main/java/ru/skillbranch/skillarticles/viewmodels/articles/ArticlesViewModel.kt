@@ -29,7 +29,6 @@ class ArticlesViewModel(handle: SavedStateHandle) :
     }
     private val listData = Transformations.switchMap(state) {
         when {
-            it.isBookmark && !it.isSearch -> buildPageList(repository.bookmarkArticles())
             it.isSearch && !it.searchQuery.isNullOrBlank() ->
                 buildPageList(repository.searchArticles(it.searchQuery))
             else -> buildPageList(repository.allArticles())
@@ -128,8 +127,7 @@ data class ArticlesState(
 //    val articles: List<ArticleItemData> = emptyList()
     val isSearch: Boolean = false,
     val searchQuery: String? = null,
-    val isLoading: Boolean = true,
-    val isBookmark: Boolean = false
+    val isLoading: Boolean = true
 ) : IViewModelState
 
 //============================================================================

@@ -43,27 +43,27 @@ object EntityGenerator {
                 )
             }
 
-    fun generateComments(articleId: String, count: Int): List<CommentItemData> = Array(count) {
-        CommentItemData(
-            id = "$it",
-            articleId = articleId,
-            user = users[users.indices.random()],
-            body = commentsContent[commentsContent.indices.random()],
-            date = Date().add(-it, TimeUnits.DAY),
-            slug = "$it/"
-        )
-    }
-        .toList()
-        .fold(mutableListOf()) { acc, comment ->
-            val hasAnswer = nextBoolean()
-            if (hasAnswer && acc.isNotEmpty()) {
-                acc.add(
-                    comment.copy(
-                        answerTo = acc.last().user.name,
-                        slug = "${acc.last().slug}${comment.slug}"
+    fun generateComments(articleId: String, count: Int): List<CommentItemData> =
+        Array(count) {
+            CommentItemData(
+                id = "$it",
+                articleId = articleId,
+                user = users[users.indices.random()],
+                body = commentsContent[commentsContent.indices.random()],
+                date = Date().add(-it, TimeUnits.DAY),
+                slug = "$it/"
+            )
+        }.toList()
+            .fold(mutableListOf()) { acc, comment ->
+                val hasAnswer = nextBoolean()
+                if (hasAnswer && acc.isNotEmpty()) {
+                    acc.add(
+                        comment.copy(
+                            answerTo = acc.last().user.name,
+                            slug = "${acc.last().slug}${comment.slug}"
+                        )
                     )
-                )
-            } else acc.add(comment)
+                } else acc.add(comment)
             acc
         }
 

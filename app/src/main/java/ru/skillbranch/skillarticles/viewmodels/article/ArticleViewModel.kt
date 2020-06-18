@@ -191,10 +191,18 @@ class ArticleViewModel(
 
     fun handleSendComment(comment: String) {
         if (!currentState.isAuth) navigate(NavigationCommand.StartLogin())
-        viewModelScope.launch {
-            repository.sendComment(articleId, comment, currentState.answerToSlug)
-            withContext(Dispatchers.Main) {
-                updateState { it.copy(answerTo = null, answerToSlug = null) }
+//        viewModelScope.launch {
+//            repository.sendComment(articleId, comment, currentState.answerToSlug)
+//            withContext(Dispatchers.Main) {
+//                updateState { it.copy(answerTo = null, answerToSlug = null) }
+//            }
+//        }
+        else {
+            viewModelScope.launch {
+                repository.sendComment(articleId, comment, currentState.answerToSlug)
+                withContext(Dispatchers.Main) {
+                    updateState { it.copy(answerTo = null, answerToSlug = null) }
+                }
             }
         }
     }
@@ -254,26 +262,40 @@ data class ArticleState(
     val poster: String? = null, // обложка статьи
     val content: List<MarkdownElement> = emptyList(), // контент
     val commentsCount: Int = 0, // число комментариев к статье
-    val answerTo: String? = null, // ответный коммент на коммент
-    val answerToSlug: String? = null, // коммент
+    /** Подсказка, появляющаяся в редактируемом поле комментария. Если
+     * юзер отвечает на комментарий юзера [name], то подсказка будет вида -
+     * Reply to [name]. Если юзер комментирует саму статью, то подсказка
+     * будет вида - Comment */
+    val answerTo: String? = null,
+    /** Текстовый ключ (slug) коммента, в ответ на который в данный момент
+     * (ArticleState в момент редактирования комментария) юзер набирает
+     * свой комментарий. Если юзер комментирует саму статью, то данное
+     * значение - null */
+    val answerToSlug: String? = null,
     val showBottombar: Boolean = true // при написании коммента боттомбар д/б скрыт
 ) : IViewModelState {
     override fun save(outState: SavedStateHandle) {
-        // TODO save comments state
         outState.set("isSearch", isSearch)
         outState.set("searchQuery", searchQuery)
         outState.set("searchResults", searchResults)
         outState.set("searchPosition", searchPosition)
+
+        outState.set("answerTo", answerTo)
+        outState.set("answerToSlug", answerToSlug)
+        outState.set("showBottombar", showBottombar)
     }
 
     @Suppress("UNCHECKED_CAST")
     override fun restore(savedState: SavedStateHandle): ArticleState {
-        // TODO restore comments state
         return copy(
             isSearch = savedState["isSearch"] ?: false,
             searchQuery = savedState["searchQuery"],
             searchResults = savedState["searchResults"] ?: emptyList(),
-            searchPosition = savedState["searchPosition"] ?: 0
+            searchPosition = savedState["searchPosition"] ?: 0,
+
+            answerTo = savedState["answerTo"],
+            answerToSlug = savedState["answerToSlug"],
+            showBottombar = savedState["showBottombar"] ?: false
         )
     }
 }

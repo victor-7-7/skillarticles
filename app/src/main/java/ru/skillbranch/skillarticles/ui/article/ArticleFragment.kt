@@ -43,11 +43,11 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         CommentsAdapter {
             Log.d(
                 "M_ArticleFragment", "click on comment: " +
-                        "id > ${it.id} slug > ${it.slug}"
+                        "id: ${it.id} slug: ${it.slug}"
             )
             viewModel.handleReplyTo(it.slug, it.user.name)
             et_comment.requestFocus()
-            scroll.smoothScrollTo(0, til_wrap_comments.top)
+            scroll.smoothScrollTo(0, wrap_comments.top)
             et_comment.context.showKeyboard(et_comment)
         }
     }
@@ -58,7 +58,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     override val layout = R.layout.fragment_article
 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
-    public override val binding: ArticleBinding by lazy { ArticleBinding() }
+    override val binding: ArticleBinding by lazy { ArticleBinding() }
 
     override val prepareToolbar: (ToolbarBuilder.() -> Unit)? = {
         this.setTitle(args.title)
@@ -180,7 +180,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             viewModel.handleCommentFocus(hasFocus)
         }
 
-        til_wrap_comments.setEndIconOnClickListener { view ->
+        wrap_comments.setEndIconOnClickListener { view ->
             view.context.hideKeyboard(view)
             // TODO см. видео 01:40:10
             viewModel.handleClearComment()
@@ -256,8 +256,12 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         var isFocusedSearch: Boolean = false
         var searchQuery: String? = null
 
+        /** Подсказка, появляющаяся в редактируемом поле комментария. Если
+         * юзер отвечает на комментарий юзера [name], то подсказка будет вида -
+         * Reply to [name]. Если юзер комментирует статью, то подсказка будет
+         * вида - Comment */
         private var answerTo: String by RenderProp("Comment") {
-            til_wrap_comments.hint = it
+            wrap_comments.hint = it
         }
         private var isShowBottombar: Boolean by RenderProp(true) {
             if (it) bottombar.show() else bottombar.hide()
@@ -274,15 +278,6 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             if (it) submenu.open() else submenu.close()
         }
 
-        //        private var title: String by RenderProp("loading...") {
-//            toolbar.title = it
-//        }
-//        private var category: String by RenderProp("loading...") {
-//            toolbar.subtitle = it
-//        }
-//        private var categoryIcon: Int by RenderProp(R.drawable.logo_placeholder) {
-//            toolbar.logo = getDrawable(root, it)
-//        }
         private var isBigText: Boolean by RenderProp(false) {
             if (it) {
                 tv_text_content.textSize = 18f
@@ -360,13 +355,9 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             isBigText = data.isBigText
             isDarkMode = data.isDarkMode
 
-//            if (data.title != null) title = data.title
-//            if (data.category != null) category = data.category
-//            if (data.categoryIcon != null) categoryIcon = data.categoryIcon as Int
-
             content = data.content
-
             isLoadingContent = data.isLoadingContent
+
             isSearch = data.isSearch
             searchQuery = data.searchQuery
             searchResults = data.searchResults
@@ -378,10 +369,14 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
 
         override fun saveUi(outState: Bundle) {
             outState.putBoolean(::isFocusedSearch.name, search_view?.hasFocus() ?: false)
+            outState.putBoolean(::isShowBottombar.name, bottombar.isVisible)
+            outState.putString(::answerTo.name, answerTo)
         }
 
         override fun restoreUi(savedState: Bundle?) {
             isFocusedSearch = savedState?.getBoolean(::isFocusedSearch.name) ?: false
+            isShowBottombar = savedState?.getBoolean(::isShowBottombar.name) ?: false
+            answerTo = savedState?.getString(::answerTo.name) ?: "Comment"
         }
     }
 }

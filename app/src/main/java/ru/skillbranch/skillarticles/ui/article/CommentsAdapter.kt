@@ -13,8 +13,6 @@ class CommentsAdapter(private val listener: (CommentItemData) -> Unit) :
     PagedListAdapter<CommentItemData, CommentVH>(CommentsDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentVH {
-//        val containerView = LayoutInflater.from(parent.context)
-//            .inflate(R.layout.item_comment, parent, false)
         val containerView = CommentItemView(parent.context)
         return CommentVH(containerView, listener)
     }
