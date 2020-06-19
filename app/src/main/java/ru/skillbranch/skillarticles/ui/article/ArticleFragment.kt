@@ -286,7 +286,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             bottombar.btn_settings.isChecked = it
             if (it) submenu.open() else submenu.close()
         }
-
+        // bind submenu views
         private var isBigText: Boolean by RenderProp(false) {
             if (it) {
                 tv_text_content.textSize = 18f
@@ -299,9 +299,9 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             }
         }
         private var isDarkMode: Boolean by RenderProp(
-            value = false
+            value = false,
+            needInit = false
         ) {
-            // bind submenu views
             submenu.switch_mode.isChecked = it
             val mode = if (it) AppCompatDelegate.MODE_NIGHT_YES
             else AppCompatDelegate.MODE_NIGHT_NO

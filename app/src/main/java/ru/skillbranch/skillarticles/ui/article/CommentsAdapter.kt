@@ -12,6 +12,8 @@ import ru.skillbranch.skillarticles.ui.custom.CommentItemView
 class CommentsAdapter(private val listener: (CommentItemData) -> Unit) :
     PagedListAdapter<CommentItemData, CommentVH>(CommentsDiffCallback()) {
 
+    private val placeHolder = null
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentVH {
         val containerView = CommentItemView(parent.context)
         return CommentVH(containerView, listener)
@@ -30,6 +32,7 @@ class CommentVH(
 ) : RecyclerView.ViewHolder(containerView), LayoutContainer {
 
     fun bind(item: CommentItemData?) {
+        // Мы разрешили плейсхолдеры, поэтому item может быть null
         (containerView as CommentItemView).bind(item)
         if (item != null) itemView.setOnClickListener { listener(item) }
     }

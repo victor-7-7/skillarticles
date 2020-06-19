@@ -178,6 +178,14 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
     fun bind(item: CommentItemData?) {
         if (item == null) {
             //TODO show shimmer
+            iv_avatar.setImageDrawable(
+                resources.getDrawable(
+                    R.drawable.ic_account_circle_black_24dp
+                )
+            )
+            tv_author.text = "Name loading..."
+            tv_date.text = "time loading..."
+            tv_body.text = "Comment loading..."
         } else {
             val level = min(item.slug.split("/").size.dec(), 5)
             setPaddingOptionally(left = level * defaultHSpace)
