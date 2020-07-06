@@ -67,12 +67,6 @@ fun ViewGroup.restoreChildViewStates(childViewStates: SparseArray<Parcelable>) {
 }
 
 fun BottomNavigationView.selectDestination(destination: NavDestination) {
-/*    when(destination.id) {
-        R.id.nav_articles,
-        R.id.nav_bookmarks,
-        R.id.nav_transcriptions,
-        R.id.nav_profile -> selectedItemId = destination.id
-    }*/
     val item = menu.findItem(destination.id)
     if (item != null)
         item.isChecked = true

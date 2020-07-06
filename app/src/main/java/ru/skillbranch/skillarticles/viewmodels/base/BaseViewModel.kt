@@ -18,7 +18,7 @@ abstract class BaseViewModel<T : IViewModelState>(
     val navigation = MutableLiveData<Event<NavigationCommand>>()
 
     /***
-     * Инициализация начального состояния аргументом конструктоа, и объявления состояния как
+     * Инициализация начального состояния аргументом конструктора, и объявления состояния как
      * MediatorLiveData - медиатор исспользуется для того чтобы учитывать изменяемые данные модели
      * и обновлять состояние ViewModel исходя из полученных данных
      */
@@ -111,7 +111,9 @@ abstract class BaseViewModel<T : IViewModelState>(
 
     @Suppress("UNCHECKED_CAST")
     fun restoreState() {
-        state.value = currentState.restore(handleState) as T
+        val restoredState = currentState.restore(handleState) as T
+        if (currentState == restoredState) return
+        state.value = restoredState
     }
 }
 

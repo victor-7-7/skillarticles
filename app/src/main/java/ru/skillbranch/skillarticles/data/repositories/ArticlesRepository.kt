@@ -20,12 +20,12 @@ object ArticlesRepository {
         ArticleStrategy.SearchArticles(::searchArticlesByTitle, query)
     )
 
-    fun bookmarkArticles(): ArticlesDataFactory = ArticlesDataFactory(
+    fun allBookmarkedArticles(): ArticlesDataFactory = ArticlesDataFactory(
         ArticleStrategy.BookmarkArticles(::findArticlesByBookmark)
     )
 
-    fun searchBookmark(query: String) = ArticlesDataFactory(
-        ArticleStrategy.SearchBookmark(::searchBookmarkArticlesByTitle, query)
+    fun searchBookmarkedArticles(query: String) = ArticlesDataFactory(
+        ArticleStrategy.SearchBookmark(::searchBookmarkedArticlesByTitle, query)
     )
 
     private fun findArticlesByRange(start: Int, size: Int) =
@@ -39,7 +39,7 @@ object ArticlesRepository {
             .filter { it.title.contains(query, true) }
             .drop(start).take(size).toList()
 
-    private fun searchBookmarkArticlesByTitle(start: Int, size: Int, query: String) =
+    private fun searchBookmarkedArticlesByTitle(start: Int, size: Int, query: String) =
         local.localArticleItems.asSequence()
             .filter { it.isBookmark && it.title.contains(query, true) }
             .drop(start).take(size).toList()

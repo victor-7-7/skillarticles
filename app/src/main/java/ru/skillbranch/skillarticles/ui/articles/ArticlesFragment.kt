@@ -5,7 +5,8 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.widget.SearchView
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_articles.*
@@ -22,9 +23,11 @@ import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 
 class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
 
-    override val viewModel: ArticlesViewModel by viewModels()
+    override val viewModel: ArticlesViewModel by activityViewModels()
     override val layout = R.layout.fragment_articles
     override val binding: ArticlesBinding by lazy { ArticlesBinding() }
+    private val args: ArticlesFragmentArgs by navArgs()
+
     override val prepareToolbar: (ToolbarBuilder.() -> Unit)? = {
         addMenuItem(
             MenuItemHolder(
@@ -42,7 +45,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
         },
         listener = { item ->
             Log.d("M_ArticlesFragment", "click on article: ${item.id}")
-            val action = ArticlesFragmentDirections.actionNavArticlesToPageArticle(
+            val action = ArticlesFragmentDirections.actionToPageArticle(
                 item.id, item.author, item.authorAvatar, item.category,
                 item.categoryIcon, item.date, item.poster, item.title
             )
@@ -100,13 +103,12 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
             adapter = articlesAdapter
             addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
         }
-        viewModel.observeList(viewLifecycleOwner) {
+        viewModel.observeList(viewLifecycleOwner, args.onlyBookmarkedArticles) {
             articlesAdapter.submitList(it)
         }
     }
 
     inner class ArticlesBinding : Binding() {
-
         var isFocusedSearch: Boolean = false
         var searchQuery: String? = null
         var isSearch: Boolean = false
@@ -117,12 +119,11 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
 
         override fun bind(data: IViewModelState) {
             data as ArticlesState
-//            articles = data.articles
             searchQuery = data.searchQuery
             isSearch = data.isSearch
             isLoading = data.isLoading
         }
-        // коммент на 47:20. Сохранение UI-элементов реализовать самим.
+        // коммент на 47:20 (лекц 8). Сохранение UI-элементов реализовать самим.
         // Пишем значения в бандл. Для этого надо переопределить всего
         // два метода - saveUi и restoreUi. И то же самое сделать с вьюмоделью.
         // TODO save UI
