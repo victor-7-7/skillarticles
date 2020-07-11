@@ -192,7 +192,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = commentsAdapter
         }
-        viewModel.observeList(viewLifecycleOwner) {
+        viewModel.observeCommentList(viewLifecycleOwner) {
             commentsAdapter.submitList(it)
         }
     }
@@ -286,9 +286,10 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             bottombar.btn_settings.isChecked = it
             if (it) submenu.open() else submenu.close()
         }
+
         // bind submenu views
-        private var isBigText: Boolean by RenderProp(false) {
-            if (it) {
+        private var isBigText: Boolean by RenderProp(false) { bigText ->
+            if (bigText) {
                 tv_text_content.textSize = 18f
                 submenu.btn_text_up.isChecked = true
                 submenu.btn_text_down.isChecked = false
@@ -301,9 +302,9 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         private var isDarkMode: Boolean by RenderProp(
             value = false,
             needInit = false
-        ) {
-            submenu.switch_mode.isChecked = it
-            val mode = if (it) AppCompatDelegate.MODE_NIGHT_YES
+        ) { dark ->
+            submenu.switch_mode.isChecked = dark
+            val mode = if (dark) AppCompatDelegate.MODE_NIGHT_YES
             else AppCompatDelegate.MODE_NIGHT_NO
             root.delegate.localNightMode = mode
         }

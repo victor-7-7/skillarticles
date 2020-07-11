@@ -4,12 +4,11 @@ import ru.skillbranch.skillarticles.data.local.PrefManager
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-class PrefDelegate<T>(private val defaultValue: T) : ReadWriteProperty<PrefManager, T?> {
+class PrefDelegate<T>(private val defaultValue: T) : ReadWriteProperty<PrefManager, T> {
 
     private var storedValue: T? = null
 
-
-    override fun getValue(thisRef: PrefManager, property: KProperty<*>): T? {
+    override fun getValue(thisRef: PrefManager, property: KProperty<*>): T {
         if (storedValue == null) {
             with(thisRef.preferences) {
                 @Suppress("UNCHECKED_CAST")
@@ -25,10 +24,10 @@ class PrefDelegate<T>(private val defaultValue: T) : ReadWriteProperty<PrefManag
                 }
             }
         }
-        return storedValue
+        return storedValue!!
     }
 
-    override fun setValue(thisRef: PrefManager, property: KProperty<*>, value: T?) {
+    override fun setValue(thisRef: PrefManager, property: KProperty<*>, value: T) {
         with(thisRef.preferences.edit()) {
             when (value) {
                 is Boolean -> putBoolean(property.name, value)

@@ -48,6 +48,9 @@
             android:name="onlyBookmarkedArticles"
             app:argType="boolean"
             android:defaultValue="false" />
+        <action
+            android:id="@+id/action_choose_category"
+            app:destination="@id/dialog_choose_category" />
     </fragment>
 
     <fragment
@@ -62,6 +65,9 @@
             android:name="onlyBookmarkedArticles"
             app:argType="boolean"
             android:defaultValue="true" />
+        <action
+            android:id="@+id/action_choose_category"
+            app:destination="@id/dialog_choose_category" />
     </fragment>
 
     <fragment
@@ -110,5 +116,17 @@
         android:id="@+id/finish_login"
         app:popUpTo="@id/auth"
         app:popUpToInclusive="true" />
+
+    <dialog
+        android:id="@+id/dialog_choose_category"
+        android:name="ru.skillbranch.skillarticles.ui.dialogs.ChooseCategoryDialog"
+        android:label="Choose category">
+        <argument
+            android:name="selected_categories"
+            app:argType="string[]" />
+        <argument
+            android:name="categories"
+            app:argType="ru.skillbranch.skillarticles.data.local.entities.CategoryData[]" />
+    </dialog>
 
 </navigation>

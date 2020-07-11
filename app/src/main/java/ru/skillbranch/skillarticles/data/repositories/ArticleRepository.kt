@@ -2,55 +2,90 @@ package ru.skillbranch.skillarticles.data.repositories
 
 import android.util.Log
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.Transformations
 import androidx.paging.DataSource
 import androidx.paging.ItemKeyedDataSource
-import ru.skillbranch.skillarticles.data.LocalDataHolder
 import ru.skillbranch.skillarticles.data.NetworkDataHolder
+import ru.skillbranch.skillarticles.data.local.DbManager.db
+import ru.skillbranch.skillarticles.data.local.PrefManager
+import ru.skillbranch.skillarticles.data.local.dao.ArticleContentsDao
+import ru.skillbranch.skillarticles.data.local.dao.ArticleCountsDao
+import ru.skillbranch.skillarticles.data.local.dao.ArticlePersonalInfosDao
+import ru.skillbranch.skillarticles.data.local.dao.ArticlesDao
+import ru.skillbranch.skillarticles.data.local.entities.ArticleFull
 import ru.skillbranch.skillarticles.data.models.AppSettings
-import ru.skillbranch.skillarticles.data.models.ArticlePersonalInfo
 import ru.skillbranch.skillarticles.data.models.CommentItemData
 import ru.skillbranch.skillarticles.data.models.User
+import ru.skillbranch.skillarticles.extensions.data.toArticleContent
+import java.lang.Thread.sleep
 import kotlin.math.abs
 
-object ArticleRepository {
-    private val local = LocalDataHolder
+interface IArticleRepository {
+    fun findArticle(articleId: String): LiveData<ArticleFull>
+    fun getAppSettings(): LiveData<AppSettings>
+    fun updateSettings(appSettings: AppSettings)
+    fun isAuth(): LiveData<Boolean>
+    fun toggleLike(articleId: String)
+    fun toggleBookmark(articleId: String)
+    fun loadCommentsByRange(slug: String?, size: Int, articleId: String): List<CommentItemData>
+    fun sendMessage(articleId: String, text: String, answerToSlug: String?)
+    fun loadAllComments(articleId: String, totalCount: Int): CommentsDataFactory
+    fun decrementLike(articleId: String)
+    fun incrementLike(articleId: String)
+    fun fetchArticleContent(articleId: String)
+    fun findArticleCommentCount(articleId: String): LiveData<Int>
+}
+
+object ArticleRepository : IArticleRepository {
     private val network = NetworkDataHolder
+    private val prefManager = PrefManager
+    private var articlesDao = db.articlesDao()
+    private var articlePersonalInfosDao = db.articlePersonalInfosDao()
+    private var articleCountsDao = db.articleCountsDao()
+    private var articleContentsDao = db.articleContentsDao()
 
-    fun getArticle(articleId: String) =
-        local.findArticle(articleId) //2s delay from db
+    override fun findArticle(articleId: String): LiveData<ArticleFull> =
+        articlesDao.findFullArticle(articleId)
 
-    fun loadArticleContent(articleId: String): LiveData<List<MarkdownElement>?> =
-//        network.loadArticleContent(articleId) //5s delay from network
-        Transformations.map(network.loadArticleContent(articleId)) {
-            return@map if (it == null) null
-            else MarkdownParser.parse(it)
-        }
-
-    fun loadArticlePersonalInfo(articleId: String): LiveData<ArticlePersonalInfo?> {
-        return local.findArticlePersonalInfo(articleId) //1s delay from db
+    override fun fetchArticleContent(articleId: String) {
+        val content = network.loadArticleContent(articleId).apply { sleep(1500) }
+        articleContentsDao.insert(content.toArticleContent())
     }
 
-    fun updateArticlePersonalInfo(info: ArticlePersonalInfo) {
-        local.updateArticlePersonalInfo(info)
-    }
+    override fun findArticleCommentCount(articleId: String): LiveData<Int> =
+        articleCountsDao.getCommentsCount(articleId)
 
     //from preferences
-    fun getAppSettings(): LiveData<AppSettings> = local.getAppSettings()
+    override fun getAppSettings(): LiveData<AppSettings> = prefManager.getAppSettings()
 
-    fun updateSettings(appSettings: AppSettings) {
-        local.updateAppSettings(appSettings)
+    override fun updateSettings(appSettings: AppSettings) {
+        prefManager.updateAppSettings(appSettings)
     }
 
-    fun isAuth(): LiveData<Boolean> = local.isAuth()
+    override fun isAuth(): LiveData<Boolean> = RootRepository.isAuth()
 
-    fun allComments(articleId: String, totalCount: Int) =
+    override fun toggleLike(articleId: String) {
+        articlePersonalInfosDao.toggleLikeOrInsert(articleId)
+    }
+
+    override fun toggleBookmark(articleId: String) {
+        articlePersonalInfosDao.toggleBookmarkOrInsert(articleId)
+    }
+
+    override fun loadAllComments(articleId: String, totalCount: Int) =
         CommentsDataFactory(
             itemProvider = ::loadCommentsByRange,
             articleId = articleId, totalCount = totalCount
         )
 
-    private fun loadCommentsByRange(
+    override fun decrementLike(articleId: String) {
+        articleCountsDao.decrementLike(articleId)
+    }
+
+    override fun incrementLike(articleId: String) {
+        articleCountsDao.incrementLike(articleId)
+    }
+
+    override fun loadCommentsByRange(
         slug: String?,
         size: Int,
         articleId: String
@@ -69,15 +104,28 @@ object ArticleRepository {
         } //.apply { sleep(3000) }
     }
 
-    fun sendComment(articleId: String, comment: String, answerToSlug: String?) {
+    override fun sendMessage(articleId: String, text: String, answerToSlug: String?) {
         network.sendMessage(
-            articleId, comment, answerToSlug,
+            articleId, text, answerToSlug,
             User(
                 "777", "John Doe",
                 "https://skill-branch.ru/img/mail/bot/android-category.png"
             )
         )
-        local.incrementCommentsCount(articleId)
+        articleCountsDao.incrementCommentsCount(articleId)
+    }
+
+    // Для тестов
+    fun setupTestDao(
+        articlesDao: ArticlesDao,
+        articleCountsDao: ArticleCountsDao,
+        articleContentDao: ArticleContentsDao,
+        articlePersonalDao: ArticlePersonalInfosDao
+    ) {
+        this.articlesDao = articlesDao
+        this.articleCountsDao = articleCountsDao
+        this.articleContentsDao = articleContentDao
+        this.articlePersonalInfosDao = articlePersonalDao
     }
 }
 

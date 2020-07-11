@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Skill Articles</string>
     <string name="menu_search_title">Поиск</string>
+    <string name="menu_filter_title">Фильтр</string>
     <string name="article_search_placeholder">Найти</string>
     <string name="title_articles">Articles</string>
     <string name="title_bookmarks">Bookmarks</string>

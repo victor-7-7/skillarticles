@@ -68,7 +68,7 @@ private const val IMAGE_GROUP = "(^!\\[[^\\[\\]]*?\\]\\(.*?\\)$)" // group 12
     /**
      * parse raw string to markdown text
      */
-    fun parse2(string: String): MarkdownText {
+    fun parseToMarkdownText(string: String): MarkdownText {
         val elements = mutableListOf<Element>()
         elements.addAll(findElements(string))
         return MarkdownText(elements)
@@ -81,7 +81,7 @@ private const val IMAGE_GROUP = "(^!\\[[^\\[\\]]*?\\]\\(.*?\\)$)" // group 12
         string ?: return null
         // Очищаем размеченный текст от разметочных символов
         return buildPlainText(
-            parse2(string).elements,
+            parseToMarkdownText(string).elements,
             StringBuilder("")
         ).toString()
     }

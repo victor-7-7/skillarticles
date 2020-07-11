@@ -12,7 +12,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import ru.skillbranch.skillarticles.R
-import ru.skillbranch.skillarticles.data.models.ArticleItemData
+import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
 import ru.skillbranch.skillarticles.extensions.attrValue
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
 import ru.skillbranch.skillarticles.extensions.format
@@ -110,7 +110,7 @@ class ArticleItemView(
         ivLikes = ImageView(context).apply {
             id = R.id.iv_likes
             imageTintList = ColorStateList.valueOf(colorGrey)
-            setImageResource(R.drawable.ic_favorite_black_24dp)
+            setImageResource(R.drawable.ic_favorite_border_black_24dp)
         }
         addView(ivLikes, LayoutParams(iconSize, iconSize))
 
@@ -293,10 +293,7 @@ class ArticleItemView(
         )
     }
 
-    fun bind(
-        data: ArticleItemData,
-        bookmarkListener: (String, Boolean) -> Unit
-    ) {
+    fun bind(data: ArticleItem, listener: (ArticleItem, Boolean) -> Unit) {
         Glide.with(context)
             .load(data.poster)
             .transform(CenterCrop(), RoundedCorners(cornerRadius))
@@ -318,8 +315,7 @@ class ArticleItemView(
         val text = "${data.readDuration} min read"
         tvReadDuration.text = text
         ivBookmark.isChecked = data.isBookmark
-        ivBookmark.setOnClickListener {
-            bookmarkListener.invoke(data.id, data.isBookmark)
-        }
+        ivBookmark.setOnClickListener { listener.invoke(data, true) }
+        this.setOnClickListener { listener.invoke(data, false) }
     }
 }

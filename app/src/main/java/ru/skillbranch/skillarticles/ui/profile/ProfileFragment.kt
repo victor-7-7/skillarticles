@@ -11,10 +11,6 @@ import ru.skillbranch.skillarticles.viewmodels.profile.ProfileViewModel
 
 class ProfileFragment : Fragment() {
 
-    companion object {
-        fun newInstance() = ProfileFragment()
-    }
-
     private lateinit var viewModel: ProfileViewModel
 
     override fun onCreateView(

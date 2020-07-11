@@ -23,4 +23,6 @@ class AuthViewModel(handle: SavedStateHandle) : BaseViewModel<AuthState>(handle,
     }
 }
 
-data class AuthState(val isAuth: Boolean = false) : IViewModelState
+data class AuthState(
+    val isAuth: Boolean = false
+) : IViewModelState

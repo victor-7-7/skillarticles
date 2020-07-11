@@ -7,4 +7,9 @@
         android:icon="@drawable/ic_search_black_24dp"
         app:actionLayout="@layout/search_view_layout"
         app:showAsAction="always|collapseActionView" />
+
+    <item
+        android:id="@+id/action_filter"
+        android:title="@string/menu_filter_title"
+        android:icon="@drawable/ic_round_filter_list_24" />
 </menu>
