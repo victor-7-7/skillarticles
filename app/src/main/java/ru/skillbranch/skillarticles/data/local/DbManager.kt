@@ -9,6 +9,7 @@ import ru.skillbranch.skillarticles.BuildConfig
 import ru.skillbranch.skillarticles.data.local.dao.*
 import ru.skillbranch.skillarticles.data.local.entities.*
 
+
 object DbManager {
     val db = Room.databaseBuilder(
         App.appContext(),

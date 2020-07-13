@@ -39,6 +39,7 @@ class ArticleViewModel(
     private val commentsListData = Transformations.switchMap(
         repository.findArticleCommentCount(articleId)
     ) {
+        // Текущее количество комментариев у статьи известно заранее
         buildPageList(repository.loadAllComments(articleId, it))
     }
 

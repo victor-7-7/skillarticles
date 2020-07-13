@@ -34,7 +34,7 @@ class ChooseCategoryDialog : DialogFragment() {
             .setNegativeButton("Reset") { _, _ ->
                 viewModel.applyCategories(emptyList())
             }
-            .setMultiChoiceItems(categories, checked) { dialog, which, isChecked ->
+            .setMultiChoiceItems(categories, checked) { _, which, isChecked ->
                 if (isChecked)
                     selectedCategories.add(args.categories[which].categoryId)
                 else selectedCategories.remove(args.categories[which].categoryId)

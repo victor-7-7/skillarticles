@@ -108,7 +108,7 @@ object ArticleRepository : IArticleRepository {
         network.sendMessage(
             articleId, text, answerToSlug,
             User(
-                "777", "John Doe",
+                "777", "John Doe John Doe John Doe",
                 "https://skill-branch.ru/img/mail/bot/android-category.png"
             )
         )

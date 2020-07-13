@@ -28,7 +28,7 @@
         app:layout_constraintBottom_toBottomOf="@id/iv_avatar"
         app:layout_constraintStart_toEndOf="@id/iv_avatar"
         app:layout_constraintTop_toTopOf="@id/iv_avatar"
-        tools:text="John Doe John Doe" />
+        tools:text="John Doe" />
 
     <TextView
         android:id="@+id/tv_comment_date"
@@ -36,6 +36,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:text="time loading..."
+        android:ellipsize="end"
+        android:maxLines="1"
         app:layout_constraintBottom_toBottomOf="@id/tv_author_name"
         app:layout_constraintStart_toEndOf="@id/tv_author_name"
         app:layout_constraintTop_toTopOf="@id/tv_author_name"

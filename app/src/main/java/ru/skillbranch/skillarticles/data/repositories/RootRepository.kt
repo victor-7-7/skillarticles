@@ -9,6 +9,7 @@ object RootRepository {
     private var isAuth = MutableLiveData(PrefManager.authorization())
 
     fun isAuth(): LiveData<Boolean> = isAuth
+
     fun setAuth(auth: Boolean) {
         PrefManager.setAuthorization(auth)
         isAuth.value = auth

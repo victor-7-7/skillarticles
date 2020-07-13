@@ -39,6 +39,14 @@ import ru.skillbranch.skillarticles.viewmodels.base.ViewModelFactory
 class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     private val args: ArticleFragmentArgs by navArgs()
 
+    override val viewModel: ArticleViewModel by viewModels {
+        ViewModelFactory(owner = this, params = args.articleId)
+    }
+    override val layout = R.layout.fragment_article
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    override val binding: ArticleBinding by lazy { ArticleBinding() }
+
     private val commentsAdapter by lazy {
         CommentsAdapter {
             Log.d(
@@ -51,15 +59,6 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             et_comment.context.showKeyboard(et_comment)
         }
     }
-
-    override val viewModel: ArticleViewModel by viewModels {
-        ViewModelFactory(owner = this, params = args.articleId)
-    }
-    override val layout = R.layout.fragment_article
-
-    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
-    override val binding: ArticleBinding by lazy { ArticleBinding() }
-
     override val prepareToolbar: (ToolbarBuilder.() -> Unit)? = {
         this.setTitle(args.title)
             .setSubtitle(args.category)
@@ -299,7 +298,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
                 submenu.btn_text_down.isChecked = true
             }
         }
-        private var isDarkMode: Boolean by RenderProp(
+        var isDarkMode: Boolean by RenderProp(
             value = false,
             needInit = false
         ) { dark ->

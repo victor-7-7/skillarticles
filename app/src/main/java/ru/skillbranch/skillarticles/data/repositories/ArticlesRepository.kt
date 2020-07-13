@@ -45,7 +45,6 @@ object ArticlesRepository : IArticlesRepository {
         articleCountsDao.upsert(articles.map {
             it.counts.toArticleCounts()
         })
-
         // Для того, чтобы собрать все теги в две таблицы
         val refs = articles.map { it.data }
             .fold(mutableListOf<Pair<String, String>>()) { acc, res ->
@@ -168,9 +167,15 @@ sealed class ArticleStrategy() {
 }
 
 class ArticleFilter(
+    // Только статьи, содержащие в названии поисковый запрос (если это не хэштэг)
     val search: String? = null,
+    // Только статьи с пометкой: в закладках
     val isBookmark: Boolean = false,
+    // Только статьи, относящиеся хотя бы к одной из выбранных юзером категорий.
+    // Поле содержит список идентификаторов категорий, например - ["1", "4", "9"]
     val categories: List<String> = listOf(),
+    // Только статьи, связанные с хэштэгом, набранном в поисковом запросе
+    // (запрос начинается с символа #)
     val isHashtag: Boolean = false
 ) {
     fun toQuery(): String {
@@ -183,6 +188,10 @@ class ArticleFilter(
                 appendWhere("refs.t_id = '$search'")
             }
             if (isBookmark) appendWhere("is_bookmark = 1")
+            // Элементы списка, если они не числа, должны обрамляться апострофами,
+            // чтобы запрос выглядел так - WHERE first_name IN ('Sarah', 'Jane', 'Heather')
+            // Если элементы - числа, то апострофы не нужны, например
+            // WHERE employee_id IN (1, 2, 3, 4)
             if (categories.isNotEmpty()) appendWhere(
                 "category_id IN (${categories.joinToString(", ")})"
             )

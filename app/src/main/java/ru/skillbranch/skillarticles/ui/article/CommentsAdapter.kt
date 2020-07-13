@@ -12,8 +12,6 @@ import ru.skillbranch.skillarticles.ui.custom.CommentItemView
 class CommentsAdapter(private val listener: (CommentItemData) -> Unit) :
     PagedListAdapter<CommentItemData, CommentVH>(CommentsDiffCallback()) {
 
-    private val placeHolder = null
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentVH {
         val containerView = CommentItemView(parent.context)
         return CommentVH(containerView, listener)
@@ -40,7 +38,7 @@ class CommentVH(
 
 //============================================================================
 
-class CommentsDiffCallback() : DiffUtil.ItemCallback<CommentItemData>() {
+class CommentsDiffCallback : DiffUtil.ItemCallback<CommentItemData>() {
     override fun areItemsTheSame(
         oldItem: CommentItemData,
         newItem: CommentItemData

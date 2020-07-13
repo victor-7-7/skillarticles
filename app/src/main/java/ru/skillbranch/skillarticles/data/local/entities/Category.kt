@@ -15,6 +15,7 @@ data class Category(
     val title: String
 )
 
+// Экземпляр класса формируется с помощью запроса в файле CategoriesDao
 data class CategoryData(
     @ColumnInfo(name = "category_id")
     val categoryId: String,
@@ -23,6 +24,7 @@ data class CategoryData(
     @ColumnInfo(name = "articles_count")
     val articlesCount: Int = 0
 ) : Parcelable {
+
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
         parcel.readString()!!,
