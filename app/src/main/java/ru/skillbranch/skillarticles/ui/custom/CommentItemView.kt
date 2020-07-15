@@ -88,12 +88,22 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
         if (tv_answer_to.isVisible) usedHeight += tv_answer_to.measuredHeight
 
         tv_date.minWidth = avatarSize
-        measureChild(tv_date, widthMeasureSpec, heightMeasureSpec)
 
+        //============== ВАРИАНТ 1 ===================
+        // Дата в полную ширину, имя автора, если не вмещается, переносится
+        // на вторую строку
+        measureChild(tv_date, widthMeasureSpec, heightMeasureSpec)
         tv_author.width =
             width - paddingLeft - paddingRight - avatarSize - defaultHSpace - tv_date.measuredWidth
         measureChild(tv_author, widthMeasureSpec, heightMeasureSpec)
 
+        //============== ВАРИАНТ 2 ===================
+//        // Имя автора в полную ширину, дата, если не вмещается, обрезана
+//        measureChild(tv_author, widthMeasureSpec, heightMeasureSpec)
+//        tv_date.width = width - paddingLeft - paddingRight - avatarSize - defaultHSpace - tv_author.measuredWidth
+//        measureChild(tv_date, widthMeasureSpec, heightMeasureSpec)
+
+        //============================================
         usedHeight += avatarSize + defaultVSpace
         tv_body.width = width - paddingLeft - paddingRight
         measureChild(tv_body, widthMeasureSpec, heightMeasureSpec)

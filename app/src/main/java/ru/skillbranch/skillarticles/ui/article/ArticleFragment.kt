@@ -4,10 +4,13 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
+import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.view.WindowManager
+import android.widget.TextView
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
@@ -25,11 +28,13 @@ import kotlinx.android.synthetic.main.layout_bottombar.view.*
 import kotlinx.android.synthetic.main.layout_submenu.view.*
 import kotlinx.android.synthetic.main.search_view_layout.*
 import ru.skillbranch.skillarticles.R
+import ru.skillbranch.skillarticles.data.repositories.Element
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
 import ru.skillbranch.skillarticles.extensions.*
 import ru.skillbranch.skillarticles.ui.base.*
 import ru.skillbranch.skillarticles.ui.custom.ArticleSubmenu
 import ru.skillbranch.skillarticles.ui.custom.Bottombar
+import ru.skillbranch.skillarticles.ui.custom.markdown.MarkdownBuilder
 import ru.skillbranch.skillarticles.ui.delegates.RenderProp
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleViewModel
@@ -166,6 +171,9 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         tv_author.text = args.author
         tv_date.text = args.date.format()
 
+        tv_source.movementMethod = LinkMovementMethod.getInstance()
+        tv_hashtags.setLineSpacing(tv_hashtags.textSize * .5f, 1f)
+
         et_comment.setOnEditorActionListener { view, _, _ ->
             root.hideKeyboard(view)
             viewModel.handleSendComment(view.text.toString())
@@ -290,15 +298,17 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         private var isBigText: Boolean by RenderProp(false) { bigText ->
             if (bigText) {
                 tv_text_content.textSize = 18f
+                tv_source.textSize = 18f
                 submenu.btn_text_up.isChecked = true
                 submenu.btn_text_down.isChecked = false
             } else {
                 tv_text_content.textSize = 14f
+                tv_source.textSize = 14f
                 submenu.btn_text_up.isChecked = false
                 submenu.btn_text_down.isChecked = true
             }
         }
-        var isDarkMode: Boolean by RenderProp(
+        private var isDarkMode: Boolean by RenderProp(
             value = false,
             needInit = false
         ) { dark ->
@@ -336,6 +346,32 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
                     tv_text_content.setContent(it)
                     if (it.isNotEmpty()) setupCopyListener()
                 }
+
+        private var source by RenderProp("") { source ->
+            if (source.isEmpty()) tv_source.visibility = View.GONE
+            else {
+                val element = Element.Link(source, "Article source")
+                val markdownElem = MarkdownElement.Text(mutableListOf(element))
+                val spannedString = MarkdownBuilder(context!!).markdownToSpan(markdownElem)
+                tv_source.visibility = View.VISIBLE
+                tv_source.setText(spannedString, TextView.BufferType.SPANNABLE)
+            }
+        }
+        private var tags by RenderProp(emptyList<String>()) { tags ->
+            if (tags.isEmpty()) tv_hashtags.visibility = View.GONE
+            else {
+                val elements = mutableListOf<Element>()
+                tags.forEachIndexed { index, tag ->
+                    elements.add(Element.InlineCode("$tag "))
+                    if (index < tags.size - 1)
+                        elements.add(Element.Text(" ")) // Для пробелов между тегами
+                }
+                val markdownElem = MarkdownElement.Text(elements)
+                val spannedString = MarkdownBuilder(context!!).markdownToSpan(markdownElem)
+                tv_hashtags.visibility = View.VISIBLE
+                tv_hashtags.setText(spannedString, TextView.BufferType.SPANNABLE)
+            }
+        }
 
         override val afterInflated: (() -> Unit)? = {
             dependsOn<Boolean, Boolean, List<Pair<Int, Int>>, Int>(
@@ -376,6 +412,9 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             answerTo = data.answerTo ?: "Comment"
             isShowBottombar = data.showBottombar
             comment = data.comment ?: ""
+
+            source = data.source ?: ""
+            tags = data.tags
         }
 
         override fun saveUi(outState: Bundle) {

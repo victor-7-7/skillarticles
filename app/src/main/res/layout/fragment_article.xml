@@ -79,6 +79,27 @@
             app:layout_constraintTop_toBottomOf="@id/iv_author_avatar"
             tools:src="@drawable/ic_launcher_background" />
 
+        <TextView
+            android:id="@+id/tv_source"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/spacing_normal_16"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/iv_poster"
+            tools:text="Article source" />
+
+        <TextView
+            android:id="@+id/tv_hashtags"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/spacing_small_8"
+            android:paddingEnd="@dimen/spacing_small_8"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_source"
+            tools:text="#hashtags" />
+
         <ru.skillbranch.skillarticles.ui.custom.markdown.MarkdownContentView
             android:id="@+id/tv_text_content"
             android:layout_width="match_parent"
@@ -89,7 +110,7 @@
             android:clipToPadding="false"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/iv_poster" />
+            app:layout_constraintTop_toBottomOf="@id/tv_hashtags" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/wrap_comments"

@@ -30,3 +30,4 @@ data class ArticleTagXRef(
     @ColumnInfo(name = "t_id")
     val tagId: String
 )
+

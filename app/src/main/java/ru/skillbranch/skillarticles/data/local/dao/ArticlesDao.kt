@@ -60,6 +60,7 @@ interface ArticlesDao : BaseDao<Article> {
     )
     fun findArticlesByTagId(tag: String): LiveData<List<ArticleItem>>
 
+
     @RawQuery(observedEntities = [ArticleItem::class])
     fun findArticlesByRaw(simpleSQLiteQuery: SimpleSQLiteQuery):
             DataSource.Factory<Int, ArticleItem>

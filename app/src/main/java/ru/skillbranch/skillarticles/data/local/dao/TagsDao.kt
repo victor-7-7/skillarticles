@@ -19,6 +19,15 @@ interface TagsDao : BaseDao<Tag> {
 
     @Query(
         """
+        SELECT tag FROM article_tags 
+        INNER JOIN article_tag_x_ref AS refs ON refs.t_id = tag 
+        WHERE refs.a_id = :articleId
+    """
+    )
+    fun findTagsByArticleId(articleId: String): LiveData<List<String>>
+
+    @Query(
+        """
         UPDATE article_tags SET use_count = use_count + 1
         WHERE tag = :tag
     """

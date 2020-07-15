@@ -20,3 +20,10 @@ class MarkdownConverter {
             MarkdownParser.parse(it)
         }
 }
+
+class StringToListConverter {
+    @TypeConverter
+    fun toList(tags: String): List<String> =
+        tags.split(',')
+}
+

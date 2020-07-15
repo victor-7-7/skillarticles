@@ -57,7 +57,9 @@ class ArticleViewModel(
                 isBookmark = article.isBookmark,
                 isLike = article.isLike,
                 content = article.content ?: emptyList(),
-                isLoadingContent = article.content == null
+                isLoadingContent = article.content == null,
+                source = article.source,
+                tags = article.tags
             )
         }
         subscribeOnDataSource(repository.getAppSettings()) { settings, state ->
@@ -242,7 +244,7 @@ data class ArticleState(
     val isDarkMode: Boolean = false, // темный режим
     val isSearch: Boolean = false, // режим поиска
     val searchQuery: String? = null, // поисковый запрос
-    // результаты поиска (стартовая и конечная позиции фрагментов)
+    // результаты поиска (список стартовых/конечных позиций фрагментов)
     val searchResults: List<Pair<Int, Int>> = emptyList(),
     // текущая индексная (zero-based) позиция найденного результата
     val searchPosition: Int = 0,
@@ -266,7 +268,9 @@ data class ArticleState(
      * значение - null */
     val answerToSlug: String? = null,
     val showBottombar: Boolean = true, // при написании коммента боттомбар д/б скрыт
-    val comment: String? = null
+    val comment: String? = null,
+    val source: String? = null,
+    val tags: List<String> = emptyList()
 ) : IViewModelState {
     override fun save(outState: SavedStateHandle) {
         outState.set("isSearch", isSearch)
