@@ -148,7 +148,7 @@ private fun ArticlesState.toArticleFilter() =
     ArticleFilter(
         search = searchQuery,
         isBookmark = onlyBookmarkedArticles,
-        categories = selectedCategories,
+        categories = selectedCategories, // e.g. ["1","5","7"]
         isHashtag = isHashtagSearch
     )
 
@@ -158,9 +158,9 @@ private fun ArticlesState.toArticleFilter() =
 data class ArticlesState(
     val isSearch: Boolean = false,
     val searchQuery: String? = null,
-    val isLoading: Boolean = true,
+    val isLoading: Boolean = true, // статьи в процессе загрузки из сети?
     val onlyBookmarkedArticles: Boolean = false,
-    val selectedCategories: List<String> = emptyList(),
+    val selectedCategories: List<String> = emptyList(), // e.g. ["1","5","7"]
     val isHashtagSearch: Boolean = false
 ) : IViewModelState
 

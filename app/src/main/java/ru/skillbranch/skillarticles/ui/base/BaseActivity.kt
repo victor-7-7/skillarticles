@@ -79,7 +79,7 @@ abstract class BaseActivity<T : BaseViewModel<out IViewModelState>> : AppCompatA
             }
             is NavigationCommand.FinishLogin -> {
                 navController.navigate(R.id.finish_login)
-                // Если мы успешно авторизовались, то переходим к
+                // Поскольку мы успешно авторизовались, то переходим к
                 // представлению, с которого нас перекинуло на авторизацию
                 if (command.privateDestination != null)
                     navController.navigate(command.privateDestination)
@@ -189,7 +189,7 @@ data class MenuItemHolder(
     val clickListener: ((MenuItem) -> Unit)? = null
 )
 
-class BottombarBuilder() {
+class BottombarBuilder {
     private var visible: Boolean = true
     private val views = mutableListOf<Int>()
     private val viewsIds = mutableListOf<Int>()

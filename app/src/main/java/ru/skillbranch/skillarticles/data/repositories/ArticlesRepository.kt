@@ -98,74 +98,6 @@ object ArticlesRepository : IArticlesRepository {
 
 //============================================================================
 
-class ArticleDataSource(private val strategy: ArticleStrategy) :
-    PositionalDataSource<ArticleItem>() {
-
-    override fun loadInitial(
-        params: LoadInitialParams,
-        callback: LoadInitialCallback<ArticleItem>
-    ) {
-        val result = strategy.getItems(
-            params.requestedStartPosition,
-            params.requestedLoadSize
-        )
-        Log.d(
-            "M_ArticlesRepository", "loadInitial: " +
-                    "start - ${params.requestedStartPosition} " +
-                    "size - ${params.requestedLoadSize} " +
-                    "resultSize - ${result.size}"
-        )
-        callback.onResult(result, params.requestedStartPosition)
-    }
-
-    override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<ArticleItem>) {
-        val result = strategy.getItems(params.startPosition, params.loadSize)
-        Log.d(
-            "M_ArticlesRepository", "loadRange: " +
-                    "start - ${params.startPosition} " +
-                    "size - ${params.loadSize} " +
-                    "resultSize - ${result.size}"
-        )
-        callback.onResult(result)
-    }
-}
-
-//============================================================================
-
-sealed class ArticleStrategy() {
-    abstract fun getItems(start: Int, size: Int): List<ArticleItem>
-
-    class AllArticles(
-        private val itemProvider: (Int, Int) -> List<ArticleItem>
-    ) : ArticleStrategy() {
-        override fun getItems(start: Int, size: Int) =
-            itemProvider(start, size)
-    }
-
-    class SearchArticles(
-        private val itemProvider: (Int, Int, String) -> List<ArticleItem>,
-        private val query: String
-    ) : ArticleStrategy() {
-        override fun getItems(start: Int, size: Int) =
-            itemProvider(start, size, query)
-    }
-
-    class BookmarkArticles(
-        private val itemProvider: (Int, Int) -> List<ArticleItem>
-    ) : ArticleStrategy() {
-        override fun getItems(start: Int, size: Int) =
-            itemProvider(start, size)
-    }
-
-    class SearchBookmark(
-        private val itemProvider: (Int, Int, String) -> List<ArticleItem>,
-        private val query: String
-    ) : ArticleStrategy() {
-        override fun getItems(start: Int, size: Int) =
-            itemProvider(start, size, query)
-    }
-}
-
 class ArticleFilter(
     // Только статьи, содержащие в названии поисковый запрос (если это не хэштэг)
     val search: String? = null,
@@ -245,5 +177,73 @@ class QueryBuilder {
 }
 
 
+//============================================================================
+
+class ArticleDataSource(private val strategy: ArticleStrategy) :
+    PositionalDataSource<ArticleItem>() {
+
+    override fun loadInitial(
+        params: LoadInitialParams,
+        callback: LoadInitialCallback<ArticleItem>
+    ) {
+        val result = strategy.getItems(
+            params.requestedStartPosition,
+            params.requestedLoadSize
+        )
+        Log.d(
+            "M_ArticlesRepository", "loadInitial: " +
+                    "start - ${params.requestedStartPosition} " +
+                    "size - ${params.requestedLoadSize} " +
+                    "resultSize - ${result.size}"
+        )
+        callback.onResult(result, params.requestedStartPosition)
+    }
+
+    override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<ArticleItem>) {
+        val result = strategy.getItems(params.startPosition, params.loadSize)
+        Log.d(
+            "M_ArticlesRepository", "loadRange: " +
+                    "start - ${params.startPosition} " +
+                    "size - ${params.loadSize} " +
+                    "resultSize - ${result.size}"
+        )
+        callback.onResult(result)
+    }
+}
+
+
+sealed class ArticleStrategy() {
+    abstract fun getItems(start: Int, size: Int): List<ArticleItem>
+
+    class AllArticles(
+        private val itemProvider: (Int, Int) -> List<ArticleItem>
+    ) : ArticleStrategy() {
+        override fun getItems(start: Int, size: Int) =
+            itemProvider(start, size)
+    }
+
+    class SearchArticles(
+        private val itemProvider: (Int, Int, String) -> List<ArticleItem>,
+        private val query: String
+    ) : ArticleStrategy() {
+        override fun getItems(start: Int, size: Int) =
+            itemProvider(start, size, query)
+    }
+
+    class BookmarkArticles(
+        private val itemProvider: (Int, Int) -> List<ArticleItem>
+    ) : ArticleStrategy() {
+        override fun getItems(start: Int, size: Int) =
+            itemProvider(start, size)
+    }
+
+    class SearchBookmark(
+        private val itemProvider: (Int, Int, String) -> List<ArticleItem>,
+        private val query: String
+    ) : ArticleStrategy() {
+        override fun getItems(start: Int, size: Int) =
+            itemProvider(start, size, query)
+    }
+}
 
 

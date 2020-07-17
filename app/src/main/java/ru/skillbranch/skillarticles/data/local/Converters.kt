@@ -23,7 +23,6 @@ class MarkdownConverter {
 
 class StringToListConverter {
     @TypeConverter
-    fun toList(tags: String): List<String> =
-        tags.split(',')
+    fun toList(tags: String?): List<String> = tags?.split(',') ?: emptyList()
 }
 

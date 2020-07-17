@@ -24,7 +24,6 @@ data class CategoryData(
     @ColumnInfo(name = "articles_count")
     val articlesCount: Int = 0
 ) : Parcelable {
-
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
         parcel.readString()!!,

@@ -6,7 +6,6 @@ import androidx.paging.DataSource
 import androidx.paging.ItemKeyedDataSource
 import ru.skillbranch.skillarticles.data.NetworkDataHolder
 import ru.skillbranch.skillarticles.data.local.DbManager.db
-import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.data.local.dao.ArticleContentsDao
 import ru.skillbranch.skillarticles.data.local.dao.ArticleCountsDao
 import ru.skillbranch.skillarticles.data.local.dao.ArticlePersonalInfosDao
@@ -37,7 +36,7 @@ interface IArticleRepository {
 
 object ArticleRepository : IArticleRepository {
     private val network = NetworkDataHolder
-    private val prefManager = PrefManager
+    private val rootRepository = RootRepository
     private var articlesDao = db.articlesDao()
     private var articlePersonalInfosDao = db.articlePersonalInfosDao()
     private var articleCountsDao = db.articleCountsDao()
@@ -55,13 +54,13 @@ object ArticleRepository : IArticleRepository {
         articleCountsDao.getCommentsCount(articleId)
 
     //from preferences
-    override fun getAppSettings(): LiveData<AppSettings> = prefManager.getAppSettings()
+    override fun getAppSettings(): LiveData<AppSettings> = rootRepository.appSettings()
 
     override fun updateSettings(appSettings: AppSettings) {
-        prefManager.updateAppSettings(appSettings)
+        rootRepository.updateSettings(appSettings)
     }
 
-    override fun isAuth(): LiveData<Boolean> = RootRepository.isAuth()
+    override fun isAuth(): LiveData<Boolean> = rootRepository.isAuth()
 
     override fun toggleLike(articleId: String) {
         articlePersonalInfosDao.toggleLikeOrInsert(articleId)

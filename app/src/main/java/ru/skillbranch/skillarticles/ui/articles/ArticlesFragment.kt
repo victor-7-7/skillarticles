@@ -118,7 +118,8 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
             if (binding.isFocusedSearch) searchView.requestFocus()
             else searchView.clearFocus()
         }
-        val autoComplTv = searchView.findViewById<AutoCompleteTextView>(R.id.search_src_text)
+        val autoComplTv = searchView
+            .findViewById<AutoCompleteTextView>(R.id.search_src_text)
         autoComplTv.threshold = 1
 
         searchView.suggestionsAdapter = suggestionsAdapter

@@ -17,12 +17,11 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        val dark = PrefManager.getAppSettings().value?.isDarkMode
-        if (dark != null) {
-            val mode = if (dark) AppCompatDelegate.MODE_NIGHT_YES
-            else AppCompatDelegate.MODE_NIGHT_NO
-            AppCompatDelegate.setDefaultNightMode(mode)
-        }
+
+        val mode = if (PrefManager.isDarkMode) AppCompatDelegate.MODE_NIGHT_YES
+        else AppCompatDelegate.MODE_NIGHT_NO
+        AppCompatDelegate.setDefaultNightMode(mode)
+
         Stetho.initializeWithDefaults(this)
     }
 }

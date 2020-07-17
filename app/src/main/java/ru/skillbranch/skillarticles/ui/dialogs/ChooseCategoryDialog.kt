@@ -14,7 +14,7 @@ import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesViewModel
  */
 class ChooseCategoryDialog : DialogFragment() {
     private val viewModel: ArticlesViewModel by activityViewModels()
-    private val selectedCategories = mutableListOf<String>()
+    private val selectedCategories = mutableListOf<String>() // e.g. ["1","5","7"]
     private val args: ChooseCategoryDialogArgs by navArgs()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -34,6 +34,8 @@ class ChooseCategoryDialog : DialogFragment() {
             .setNegativeButton("Reset") { _, _ ->
                 viewModel.applyCategories(emptyList())
             }
+            // which: the position of the item in the list that was clicked
+            // isChecked: true if the click checked the item, else false
             .setMultiChoiceItems(categories, checked) { _, which, isChecked ->
                 if (isChecked)
                     selectedCategories.add(args.categories[which].categoryId)
