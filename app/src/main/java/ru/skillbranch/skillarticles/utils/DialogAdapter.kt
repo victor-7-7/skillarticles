@@ -17,7 +17,7 @@ import ru.skillbranch.skillarticles.extensions.dpToIntPx
 class DialogAdapter(
     private val cxt: Context,
     val categories: Array<CategoryData>,
-    var checked: BooleanArray,
+    private var checked: BooleanArray,
     private val listener: (view: View) -> Unit
 ) : ArrayAdapter<CategoryData>(cxt, 0, categories) {
 

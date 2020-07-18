@@ -15,7 +15,7 @@ import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesViewModel
 /**
  * A simple [Fragment] subclass
  */
-class ChooseCategoryDialog : DialogFragment() {
+class ChoseCategoryDialog : DialogFragment() {
     private val viewModel: ArticlesViewModel by activityViewModels()
     private val selectedCats = mutableListOf<String>() // e.g. ["1","5","7"]
     private val args: ChooseCategoryDialogArgs by navArgs()
