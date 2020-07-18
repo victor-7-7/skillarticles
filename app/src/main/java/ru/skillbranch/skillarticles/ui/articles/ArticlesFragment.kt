@@ -191,7 +191,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
             // https://blog.mindorks.com/using-shimmer-effect-placeholder-in-android
             // TODO show shimmer on rv_list
         }
-        var isHashtagSearch: Boolean by RenderProp(false)
+        private var isHashtagSearch: Boolean by RenderProp(false)
         var tags: List<String> by RenderProp(emptyList<String>())
 
         var categories: List<CategoryData> = emptyList()

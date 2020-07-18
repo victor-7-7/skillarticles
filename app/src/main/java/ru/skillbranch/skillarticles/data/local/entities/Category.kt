@@ -44,7 +44,6 @@ data class CategoryData(
         override fun createFromParcel(parcel: Parcel): CategoryData {
             return CategoryData(parcel)
         }
-
         override fun newArray(size: Int): Array<CategoryData?> {
             return arrayOfNulls(size)
         }
