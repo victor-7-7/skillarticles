@@ -18,7 +18,7 @@ import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesViewModel
 class ChoseCategoryDialog : DialogFragment() {
     private val viewModel: ArticlesViewModel by activityViewModels()
     private val selectedCats = mutableListOf<String>() // e.g. ["1","5","7"]
-    private val args: ChooseCategoryDialogArgs by navArgs()
+    private val args: ChoseCategoryDialogArgs by navArgs()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         // todo save checked state and implement custom items
