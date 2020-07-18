@@ -1,4 +1,4 @@
-package ru.skillbranch.skillarticles.ui.dialogs
+package ru.skillbranch.skillarticles.utils
 
 import android.content.Context
 import android.view.LayoutInflater

@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
 import ru.skillbranch.skillarticles.R
+import ru.skillbranch.skillarticles.utils.DialogAdapter
 import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesViewModel
 
 /**
@@ -53,7 +54,11 @@ class ChooseCategoryDialog : DialogFragment() {
 //                else selectedCats.remove(args.categories[which].categoryId)
 //            }
         //====================== ВАРИАНТ 2 ===================================
-        val adapter = DialogAdapter(requireContext(), args.categories, checked) { view ->
+        val adapter = DialogAdapter(
+            requireContext(),
+            args.categories,
+            checked
+        ) { view ->
             val box = view.findViewById<CheckBox>(R.id.ch_select)
             val position = view.tag as Int
             if (box.isChecked) {
