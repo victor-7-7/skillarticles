@@ -80,17 +80,21 @@ class ArticleViewModel(
     // personal article info
     override fun handleLike() {
         val isLiked = currentState.isLike
-        val msg = if (isLiked) Notify.TextMessage("Mark is liked")
+        val msg = if (!isLiked) Notify.TextMessage("Mark is liked")
         else Notify.ActionMessage(
             "Don`t like it anymore", // snackbar message
             "No, still like it" // action btn on snackbar
-        ) { handleLike() } // handler, if action btn will be pressed
+        ) {
+            handleLike()
+        } // handler, if action btn will be pressed
 
         viewModelScope.launch(Dispatchers.IO) {
             repository.toggleLike(articleId)
-            if (isLiked) repository.incrementLike(articleId)
+            if (!isLiked) repository.incrementLike(articleId)
             else repository.decrementLike(articleId)
-            withContext(Dispatchers.Main) { notify(msg) }
+            withContext(Dispatchers.Main) {
+                notify(msg)
+            }
         }
     }
 

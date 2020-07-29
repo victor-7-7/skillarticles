@@ -99,9 +99,9 @@ abstract class BaseActivity<T : BaseViewModel<out IViewModelState>> : AppCompatA
 
 class ToolbarBuilder {
     var title: String? = null
-    var subtitle: String? = null
-    var logo: String? = null
-    var visibility: Boolean = true
+    private var subtitle: String? = null
+    private var logo: String? = null
+    private var visibility: Boolean = true
     val items: MutableList<MenuItemHolder> = mutableListOf()
 
     fun setTitle(title: String): ToolbarBuilder {

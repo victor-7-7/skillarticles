@@ -1,14 +1,16 @@
 package ru.skillbranch.skillarticles
 
 import android.app.Application
+import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import com.facebook.stetho.Stetho
 import ru.skillbranch.skillarticles.data.local.PrefManager
 
 class App : Application() {
+
     companion object {
         private var instance: App? = null
-        fun appContext() = instance!!.applicationContext
+        fun appContext(): Context = instance!!.applicationContext
     }
 
     init {

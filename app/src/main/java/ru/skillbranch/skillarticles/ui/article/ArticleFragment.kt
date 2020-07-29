@@ -362,9 +362,12 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             else {
                 val elements = mutableListOf<Element>()
                 tags.forEachIndexed { index, tag ->
+                    // Пробел в конце тега - для симметрии бэкграунда
                     elements.add(Element.InlineCode("$tag "))
                     if (index < tags.size - 1)
-                        elements.add(Element.Text(" ")) // Для пробелов между тегами
+                    // Между тегами добавляем пробел, чтобы их
+                    // бэкграунды не слипались
+                        elements.add(Element.Text(" "))
                 }
                 val markdownElem = MarkdownElement.Text(elements)
                 val spannedString = MarkdownBuilder(context!!).markdownToSpan(markdownElem)

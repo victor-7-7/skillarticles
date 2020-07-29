@@ -6,7 +6,6 @@ buildscript {
     repositories {
         jcenter()
         google()
-
     }
     dependencies {
         classpath "com.android.tools.build:gradle:$gradle_version"

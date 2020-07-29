@@ -92,6 +92,10 @@ class RootActivity : BaseActivity<RootViewModel>() {
                 }
             }
         }
+        // После навигаций по разным фрагментам и возврата на экран статьи
+        // нажатие на кнопку Like не ведет к появлению снэкбара, хотя
+        // метод snackbar.show() вызывается
+        //todo - fix bug
         snackbar.show()
     }
 
