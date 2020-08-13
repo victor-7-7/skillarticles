@@ -7,12 +7,10 @@ import com.facebook.stetho.Stetho
 import ru.skillbranch.skillarticles.data.local.PrefManager
 
 class App : Application() {
-
     companion object {
         private var instance: App? = null
         fun appContext(): Context = instance!!.applicationContext
     }
-
     init {
         instance = this
     }

@@ -171,7 +171,7 @@ class ToolbarBuilder {
         }
     }
 
-    fun invalidate(): ToolbarBuilder {
+    private fun invalidate(): ToolbarBuilder {
         this.title = null
         this.subtitle = null
         this.logo = null

@@ -117,6 +117,7 @@ private val users = Array(5) {
         )
     }
 }.toList()
+
 private val commentsContent = listOf(
     "Nice.Thanks for sharing. Next you asked? We need to add math/scientific notations to TextView and also draw curvy (and straight, of course) microeconomics graphs e.g cost curve, demand and supply curve etc. It’d be nice if you can write about it for your next piece.",
     "Nice article,thanks for sharing",
@@ -138,8 +139,7 @@ private val comments: List<CommentItemData> = Array(40) {
         date = Date().add(-it, TimeUnits.DAY),
         slug = "$it/"
     )
-}
-    .toList()
+}.toList()
     .fold(mutableListOf()) { acc, comment ->
         val hasAnswer = nextBoolean()
         if (hasAnswer && acc.isNotEmpty()) {

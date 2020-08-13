@@ -70,7 +70,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             .setLogo(args.categoryIcon)
             .addMenuItem(
                 MenuItemHolder(
-                    "search",
+                    "Search",
                     R.id.action_search,
                     R.drawable.ic_search_black_24dp,
                     R.layout.search_view_layout
@@ -127,7 +127,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         searchView.setOnQueryTextListener(
             object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String): Boolean {
-//                viewModel.handleSearchQuery(query)
+//                    viewModel.handleSearchQuery(query)
                     return true
                 }
 
