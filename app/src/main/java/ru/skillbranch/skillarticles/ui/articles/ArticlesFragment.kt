@@ -53,7 +53,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
                 actionViewLayout = null
             ) {
                 val action = ArticlesFragmentDirections.actionChooseCategory(
-                    binding.selectedCategories.toTypedArray(),
+                    binding.selectedCategories.toTypedArray(), // e.g. ["1","5","7"]
                     binding.categories.toTypedArray()
                 )
                 viewModel.navigate(
@@ -187,15 +187,15 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
         var isFocusedSearch: Boolean = false
         var searchQuery: String? = null
         var isSearch: Boolean = false
-        var isLoading: Boolean by RenderProp(true) {
+        private var isLoading: Boolean by RenderProp(true) {
             // https://blog.mindorks.com/using-shimmer-effect-placeholder-in-android
             // TODO show shimmer on rv_list
         }
         private var isHashtagSearch: Boolean by RenderProp(false)
-        var tags: List<String> by RenderProp(emptyList<String>())
+        var tags: List<String> by RenderProp(emptyList())
 
         var categories: List<CategoryData> = emptyList()
-        var selectedCategories: List<String> by RenderProp(emptyList<String>()) {
+        var selectedCategories: List<String> by RenderProp(emptyList()) {
             // todo selected color on icon
         }
 
@@ -213,7 +213,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
                 val cursor = MatrixCursor(arrayOf(BaseColumns._ID, "tag"))
                 if (ihs && tags.isNotEmpty())
                     for ((counter, tag) in tags.withIndex()) {
-                        cursor.addRow(arrayOf<Any>(counter, tag))
+                        cursor.addRow(arrayOf(counter, tag))
                     }
             }
         }

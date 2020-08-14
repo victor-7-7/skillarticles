@@ -27,7 +27,7 @@ import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesViewModel
  */
 class ChoseCategoryDialog : DialogFragment() {
     private val viewModel: ArticlesViewModel by activityViewModels()
-    private val selectedCats = mutableListOf<String>() // e.g. ["1","5","7"]
+    private val selectedCats = mutableSetOf<String>() // e.g. ["1","5","7"]
     private val args: ChoseCategoryDialogArgs by navArgs()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -39,18 +39,24 @@ class ChoseCategoryDialog : DialogFragment() {
         //====================================================================
         // Для передачи в метод setMultiChoiceItems (вариант 1) или в
         // конструктор адаптера (вариант 2)
-        val checked = BooleanArray(args.categories.size)
-        checked.forEachIndexed { index, _ ->
-            if (args.selectedCategories.contains(args.categories[index].categoryId)) {
-                checked[index] = true
-                selectedCats.add(args.categories[index].categoryId)
+        selectedCats.clear()
+        selectedCats.addAll(
+            // Если диалог создается заново в результате поворота экрана
+            savedInstanceState?.getStringArray("checked")
+            // Если диалог создается после нажатия юзером кнопки
+            // Filter в экшнбаре
+                ?: args.selectedCategories
+        )
+        val checkedArr = BooleanArray(args.categories.size)
+        checkedArr.forEachIndexed { index, _ ->
+            if (selectedCats.contains(args.categories[index].categoryId)) {
+                checkedArr[index] = true
             }
         }
-
         val adb = AlertDialog.Builder(requireContext())
             .setTitle("Choose category")
             .setPositiveButton("Apply") { _, _ ->
-                viewModel.applyCategories(selectedCats)
+                viewModel.applyCategories(selectedCats.toList())
             }
             .setNegativeButton("Reset") { _, _ ->
                 viewModel.applyCategories(emptyList())
@@ -67,7 +73,7 @@ class ChoseCategoryDialog : DialogFragment() {
         val adapter = DialogAdapter(
             requireContext(),
             args.categories,
-            checked
+            checkedArr
         ) { view ->
             val box = view.findViewById<CheckBox>(R.id.ch_select)
             val position = view.tag as Int
@@ -83,12 +89,17 @@ class ChoseCategoryDialog : DialogFragment() {
         //====================================================================
         return adb.create()
     }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putStringArray("checked", selectedCats.toTypedArray())
+        super.onSaveInstanceState(outState)
+    }
 }
 
 class DialogAdapter(
     private val cxt: Context,
     private val categories: Array<CategoryData>,
-    private var checked: BooleanArray,
+    private var checkedArr: BooleanArray,
     private val listener: (view: View) -> Unit
 ) : ArrayAdapter<CategoryData>(cxt, 0, categories) {
 
@@ -105,7 +116,7 @@ class DialogAdapter(
 
         val box = view.findViewById<CheckBox>(R.id.ch_select)
         box.isClickable = false
-        box.isChecked = checked[position]
+        box.isChecked = checkedArr[position]
         val iconView = view.findViewById<ImageView>(R.id.iv_icon)
         Glide.with(cxt)
             .load(data?.icon)

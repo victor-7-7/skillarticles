@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 import java.util.*
 
 @Entity(
-    tableName = "article_contents",
+    tableName = "article_content",
     foreignKeys = [ForeignKey(
         entity = Article::class,
         parentColumns = ["id"],

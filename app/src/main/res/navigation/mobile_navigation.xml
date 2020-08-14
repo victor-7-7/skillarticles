@@ -82,7 +82,19 @@
         android:label="@string/title_transcriptions"
         tools:layout="@layout/fragment_transcriptions" />
 
-    <!-- вложенный навигационный узел -->
+    <dialog
+        android:id="@+id/dialog_choose_category"
+        android:name="ru.skillbranch.skillarticles.ui.dialogs.ChoseCategoryDialog"
+        android:label="Choose category">
+        <argument
+            android:name="selected_categories"
+            app:argType="string[]" />
+        <argument
+            android:name="categories"
+            app:argType="ru.skillbranch.skillarticles.data.local.entities.CategoryData[]" />
+    </dialog>
+
+    <!-- ВЛОЖЕННЫЙ НАВИГАЦИОННЫЙ УЗЕЛ -->
     <navigation
         android:id="@+id/auth"
         android:label="@string/title_authorization"
@@ -107,7 +119,7 @@
             tools:layout="@layout/fragment_privacy_policy" />
     </navigation>
 
-    <!-- global actions -->
+    <!-- GLOBAL ACTIONS -->
     <action
         android:id="@+id/start_login"
         app:destination="@id/auth" />
@@ -116,17 +128,5 @@
         android:id="@+id/finish_login"
         app:popUpTo="@id/auth"
         app:popUpToInclusive="true" />
-
-    <dialog
-        android:id="@+id/dialog_choose_category"
-        android:name="ru.skillbranch.skillarticles.ui.dialogs.ChoseCategoryDialog"
-        android:label="Choose category">
-        <argument
-            android:name="selected_categories"
-            app:argType="string[]" />
-        <argument
-            android:name="categories"
-            app:argType="ru.skillbranch.skillarticles.data.local.entities.CategoryData[]" />
-    </dialog>
 
 </navigation>

@@ -9,11 +9,11 @@ object RootRepository {
 
     private var isAuth = MutableLiveData(PrefManager.isAuthorized)
 
-    private var appSettings = MutableLiveData(
-        AppSettings(
-            PrefManager.isDarkMode, PrefManager.isBigText
-        )
-    )
+//    private var appSettings = MutableLiveData(
+//        AppSettings(
+//            PrefManager.isDarkMode, PrefManager.isBigText
+//        )
+//    )
 
     fun isAuth(): LiveData<Boolean> = isAuth
 
@@ -22,11 +22,9 @@ object RootRepository {
         isAuth.value = auth
     }
 
-    fun appSettings(): LiveData<AppSettings> = appSettings
+    fun appSettings(): LiveData<AppSettings> = PrefManager.appSettings
 
     fun updateSettings(settings: AppSettings) {
-        PrefManager.isDarkMode = settings.isDarkMode
-        PrefManager.isBigText = settings.isBigText
-        appSettings.value = settings
+        PrefManager.appSettings.value = settings
     }
 }

@@ -67,25 +67,20 @@ data class ArticleItem(
     var isBookmark: Boolean = false
 )
 
-
 @DatabaseView(
     """
         SELECT id, article.title AS title, description, author_user_id, author_avatar, 
         author_name, date, category.category_id AS category_category_id, 
         category.title AS category_title, category.icon AS category_icon,
-        contents.share_link AS share_link, contents.content AS content, 
-        contents.source AS source, tags_groups.tags AS tags,
+        content.share_link AS share_link, content.content AS content, 
+        content.source AS source, GROUP_CONCAT(refs.t_id) AS tags,
         personal.is_bookmark AS is_bookmark, personal.is_like AS is_like
         FROM articles AS article
-        INNER JOIN article_categories AS category 
+        LEFT JOIN article_categories AS category 
         ON category.category_id = article.category_id
-        LEFT JOIN article_contents AS contents ON contents.article_id = id
+        LEFT JOIN article_content AS content ON content.article_id = id
         LEFT JOIN article_personal_infos AS personal ON personal.article_id = id
-        LEFT JOIN (
-            SELECT a_id AS article_id, GROUP_CONCAT(t_id) AS tags  
-            FROM article_tag_x_ref
-            GROUP BY article_id
-        ) AS tags_groups ON tags_groups.article_id = id
+        LEFT JOIN article_tag_x_ref AS refs ON refs.a_id = id GROUP BY id
     """
 )
 @TypeConverters(MarkdownConverter::class, StringToListConverter::class)
