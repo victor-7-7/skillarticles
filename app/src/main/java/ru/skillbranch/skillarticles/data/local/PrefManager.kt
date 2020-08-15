@@ -20,10 +20,10 @@ object PrefManager {
     var isBigText by PrefDelegate(false)
 
     val isAuthLive: LiveData<Boolean> by PrefLiveDelegate(
-        "isAuth", false, preferences
+        "isAuthorized", false, preferences
     )
 
-    val appSettings = MediatorLiveData<AppSettings>().apply {
+    val appSettingsLive = MediatorLiveData<AppSettings>().apply {
         val isDarkModeLive: LiveData<Boolean> by PrefLiveDelegate(
             "isDarkMode", false, preferences
         )

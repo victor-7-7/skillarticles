@@ -28,6 +28,7 @@ class PrefDelegate<T>(private val defaultValue: T) : ReadWriteProperty<PrefManag
     }
 
     override fun setValue(thisRef: PrefManager, property: KProperty<*>, value: T) {
+        if (storedValue != null && storedValue == value) return
         with(thisRef.preferences.edit()) {
             when (value) {
                 is Boolean -> putBoolean(property.name, value)

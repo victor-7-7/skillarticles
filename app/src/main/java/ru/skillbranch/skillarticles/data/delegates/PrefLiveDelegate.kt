@@ -8,25 +8,25 @@ import kotlin.reflect.KProperty
 class PrefLiveDelegate<T>(
     private val fieldKey: String,
     private val defaultValue: T,
-    private val preferences: SharedPreferences
+    private val prefs: SharedPreferences
 ) : ReadOnlyProperty<Any?, LiveData<T>> {
 
     private var storedValue: LiveData<T>? = null
 
     override fun getValue(thisRef: Any?, property: KProperty<*>): LiveData<T> {
         if (storedValue == null) {
-            storedValue = SharedPreferenceLiveData(preferences, fieldKey, defaultValue)
+            storedValue = SharedPreferenceLiveData(prefs, fieldKey, defaultValue)
         }
         return storedValue!!
     }
 }
 
 internal class SharedPreferenceLiveData<T>(
-    var sharedPrefs: SharedPreferences,
+    var prefs: SharedPreferences,
     var key: String,
     var defValue: T
 ) : LiveData<T>() {
-    private val prefChangeListener =
+    private val prefsChangeListener =
         SharedPreferences.OnSharedPreferenceChangeListener { _, shKey ->
             if (shKey == key) {
                 value = readValue(defValue)
@@ -36,24 +36,24 @@ internal class SharedPreferenceLiveData<T>(
     override fun onActive() {
         super.onActive()
         value = readValue(defValue)
-        sharedPrefs.registerOnSharedPreferenceChangeListener(prefChangeListener)
+        prefs.registerOnSharedPreferenceChangeListener(prefsChangeListener)
     }
 
     override fun onInactive() {
-        sharedPrefs.unregisterOnSharedPreferenceChangeListener(prefChangeListener)
+        prefs.unregisterOnSharedPreferenceChangeListener(prefsChangeListener)
         super.onInactive()
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun readValue(defaultValue: T): T {
-        return when (defaultValue) {
-            is Int -> sharedPrefs.getInt(key, defaultValue as Int) as T
-            is Long -> sharedPrefs.getLong(key, defaultValue as Long) as T
-            is Float -> sharedPrefs.getFloat(key, defaultValue as Float) as T
-            is String -> sharedPrefs.getString(key, defaultValue as String) as T
-            is Boolean -> sharedPrefs.getBoolean(key, defaultValue as Boolean) as T
+    private fun readValue(default: T): T {
+        return when (default) {
+            is Int -> prefs.getInt(key, default as Int) as T
+            is Long -> prefs.getLong(key, default as Long) as T
+            is Float -> prefs.getFloat(key, default as Float) as T
+            is String -> prefs.getString(key, default as String) as T
+            is Boolean -> prefs.getBoolean(key, default as Boolean) as T
             else -> throw IllegalArgumentException(
-                "Illegal preference type $defaultValue"
+                "Illegal preference type $default"
             )
         }
     }
