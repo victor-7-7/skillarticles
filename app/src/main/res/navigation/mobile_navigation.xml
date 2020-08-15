@@ -8,7 +8,8 @@
     <fragment
         android:id="@+id/page_article"
         android:name="ru.skillbranch.skillarticles.ui.article.ArticleFragment"
-        android:label="ArticleFragment">
+        android:label="{title}">
+        <!-- label="{title}" => look at video (lecture 11, time code 58:00) -->
         <argument
             android:name="article_id"
             app:argType="string"
