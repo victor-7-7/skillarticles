@@ -1,7 +1,9 @@
 package ru.skillbranch.skillarticles.data.remote.res
 
+import com.squareup.moshi.JsonClass
 import java.util.*
 
+@JsonClass(generateAdapter = true)
 data class ArticleDataRes(
     val id: String,
     val date: Date,

@@ -51,6 +51,10 @@ interface RestService {
     @POST("auth/login")
     suspend fun login(@Body loginReq: LoginReq): AuthRes
 
+    // Метод имеется в приложенном к уроку (lecture 11) коде
+    @POST("auth/login")
+    fun loginCall(@Body loginReq: LoginReq): Call<AuthRes>
+
     // https://skill-articles.skill-branch.ru/api/v1/articles/{articleId}/decrementLikes
     @POST("articles/{article}/decrementLikes")
     suspend fun decrementLike(
