@@ -10,12 +10,15 @@ import android.view.MenuItem
 import android.widget.AutoCompleteTextView
 import android.widget.CursorAdapter
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.isVisible
 import androidx.cursoradapter.widget.SimpleCursorAdapter
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.fragment_articles.*
+import kotlinx.android.synthetic.main.search_view_layout.view.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.data.local.entities.CategoryData
 import ru.skillbranch.skillarticles.ui.base.BaseFragment
@@ -26,6 +29,7 @@ import ru.skillbranch.skillarticles.ui.delegates.RenderProp
 import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesState
 import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
+import ru.skillbranch.skillarticles.viewmodels.base.Loading
 import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 
 class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
@@ -180,6 +184,27 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
         }
         viewModel.observeCategories(viewLifecycleOwner) {
             binding.categories = it
+        }
+        // Корневая для фрагмента вьюгруппа - SwipeRefreshLayout
+        refresh.setOnRefreshListener {
+            viewModel.refresh()
+        }
+    }
+
+    override fun onDestroyView() {
+        toolbar.search_view?.setOnQueryTextListener(null)
+        super.onDestroyView()
+    }
+
+    override fun renderLoading(loadingState: Loading) {
+        val progressBar = root.progress
+        when (loadingState) {
+            Loading.SHOW_LOADING -> if (!refresh.isRefreshing) progressBar.isVisible = true
+            Loading.SHOW_BLOCKING_LOADING -> progressBar.isVisible = false
+            Loading.HIDE_LOADING -> {
+                progressBar.isVisible = false
+                if (refresh.isRefreshing) refresh.isRefreshing = false
+            }
         }
     }
 

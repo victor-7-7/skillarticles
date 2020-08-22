@@ -21,10 +21,7 @@ import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
 import kotlinx.android.synthetic.main.activity_root.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
-import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
-import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
-import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
-import ru.skillbranch.skillarticles.viewmodels.base.Notify
+import ru.skillbranch.skillarticles.viewmodels.base.*
 
 abstract class BaseActivity<T : BaseViewModel<out IViewModelState>> : AppCompatActivity() {
 
@@ -50,6 +47,8 @@ abstract class BaseActivity<T : BaseViewModel<out IViewModelState>> : AppCompatA
             renderNotification(it)
         }
         viewModel.observeNavigation(this) { subscribeOnNavigation(it) }
+        viewModel.observeLoading(this) { renderLoading(it) }
+
         navController = findNavController(R.id.nav_host_fragment)
     }
 
@@ -93,6 +92,19 @@ abstract class BaseActivity<T : BaseViewModel<out IViewModelState>> : AppCompatA
                     )
                 )
             }
+        }
+    }
+
+    // open для того, чтобы мы могли переопределить эту функцию
+    // в любой другой дочерней активити
+    open fun renderLoading(loadingState: Loading) {
+        when (loadingState) {
+            Loading.SHOW_LOADING -> progress.isVisible = true
+            Loading.SHOW_BLOCKING_LOADING -> {
+                progress.isVisible = true
+                // todo: block interact with UI
+            }
+            Loading.HIDE_LOADING -> progress.isVisible = false
         }
     }
 }

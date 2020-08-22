@@ -6,6 +6,13 @@ import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.*
 import androidx.navigation.NavOptions
 import androidx.navigation.Navigator
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
+import ru.skillbranch.skillarticles.data.remote.err.ApiError
+import ru.skillbranch.skillarticles.data.remote.err.NoNetworkError
+import java.net.SocketTimeoutException
 
 abstract class BaseViewModel<T : IViewModelState>(
     private val handleState: SavedStateHandle,
@@ -17,10 +24,13 @@ abstract class BaseViewModel<T : IViewModelState>(
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     val navigation = MutableLiveData<Event<NavigationCommand>>()
 
+    private val loading = MutableLiveData<Loading>(Loading.HIDE_LOADING)
+
     /***
-     * Инициализация начального состояния аргументом конструктора, и объявления состояния как
-     * MediatorLiveData - медиатор исспользуется для того чтобы учитывать изменяемые данные модели
-     * и обновлять состояние ViewModel исходя из полученных данных
+     * Инициализация начального состояния аргументом конструктора, и объявление
+     * состояния как MediatorLiveData - медиатор исспользуется для того, чтобы
+     * учитывать изменяемые данные модели и обновлять состояние ViewModel,
+     * исходя из полученных данных
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     val state: MediatorLiveData<T> = MediatorLiveData<T>().apply {
@@ -28,7 +38,7 @@ abstract class BaseViewModel<T : IViewModelState>(
     }
 
     /***
-     * getter для получения not null значения текущего состояния ViewModel
+     * Геттер для получения not null значения текущего состояния ViewModel
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     val currentState
@@ -36,8 +46,9 @@ abstract class BaseViewModel<T : IViewModelState>(
 
 
     /***
-     * лямбда выражение принимает в качестве аргумента текущее состояние и возвращает
-     * модифицированное состояние, которое присваивается текущему состоянию
+     * Лямбда-выражение, принимающее в качестве аргумента текущее состояние и
+     * возвращающее модифицированное состояние, которое присваивается
+     * текущему состоянию
      */
     @UiThread
     protected inline fun updateState(update: (currentState: T) -> T) {
@@ -46,9 +57,9 @@ abstract class BaseViewModel<T : IViewModelState>(
     }
 
     /***
-     * функция для создания уведомления пользователя о событии (событие обрабатывается только один раз)
-     * соответсвенно при изменении конфигурации и пересоздании Activity уведомление не будет вызвано
-     * повторно
+     * Функция для создания уведомления пользователя о событии (событие
+     * обрабатывается только один раз), соответсвенно при изменении конфигурации
+     * и пересоздании Activity уведомление не будет вызвано повторно
      */
     @UiThread
     protected fun notify(content: Notify) {
@@ -60,18 +71,41 @@ abstract class BaseViewModel<T : IViewModelState>(
         navigation.value = Event(command)
     }
 
-    /***
-     * более компактная форма записи observe() метода LiveData принимает последним аргумент лямбда
-     * выражение обрабатывающее изменение текущего состостояния
+    /**
+     * Отображение индикатора загрузки. По умолчанию - не блокирующая загрузка
+     * */
+    protected fun setLoading(loadingType: Loading = Loading.SHOW_LOADING) {
+        loading.value = loadingType
+    }
+
+    /**
+     * Скрытие индикатора загрузки
+     * */
+    protected fun hideLoading() {
+        loading.value = Loading.HIDE_LOADING
+    }
+
+    /**
+     * Более компактная форма записи observe() метода LiveData. Функция принимает
+     * последним аргументом лямбда-выражение, обрабатывающее изменившееся состояние
+     * индикатора загрузки
+     */
+    fun observeLoading(owner: LifecycleOwner, onChanged: (newState: Loading) -> Unit) {
+        loading.observe(owner, Observer { onChanged(it!!) })
+    }
+
+    /**
+     * Более компактная форма записи observe() метода LiveData. Функция принимает
+     * последним аргументом лямбда-выражение, обрабатывающее изменившееся состояние
      */
     fun observeState(owner: LifecycleOwner, onChanged: (newState: T) -> Unit) {
         state.observe(owner, Observer { onChanged(it!!) })
     }
 
     /***
-     * более компактная форма записи observe() метода LiveData вызывает лямбда выражение обработчик
-     * только в том случае если уведомление не было уже обработанно ранее,
-     * реализует данное поведение с помощью EventObserver
+     * Более компактная форма записи observe() метода LiveData, вызывает лямбду
+     * обработчик только в том случае, если уведомление не было уже обработанно
+     * ранее, реализует данное поведение с помощью EventObserver
      */
     fun observeNotification(
         owner: LifecycleOwner,
@@ -92,9 +126,10 @@ abstract class BaseViewModel<T : IViewModelState>(
     }
 
     /***
-     * Функция принимает источник данных и лямбда выражение, обрабатывающее поступающие данные источника.
-     * Лямбда принимает новые данные и текущее состояние ViewModel в качестве аргументов,
-     * изменяет его и возвращает модифицированное состояние, которое устанавливается как текущее.
+     * Функция принимает источник данных и лямбду, обрабатывающую изменяющиеся
+     * данные источника. В лямбду передаются изменившиеся данные и текущее
+     * состояние ViewModel в качестве аргументов. Лямбда изменяет состояние
+     * ViewModel и возвращает это состояние, установив его как текущее.
      */
     protected fun <S> subscribeOnDataSource(
         source: LiveData<S>,
@@ -115,13 +150,60 @@ abstract class BaseViewModel<T : IViewModelState>(
         if (currentState == restoredState) return
         state.value = restoredState
     }
+
+    // look at video (lecture 11, time codes 01:17:50 & 02:03:17)
+    protected fun launchSafety(
+        // on error
+        errHandler: ((Throwable) -> Unit)? = null,
+        // on complete
+        complHandler: ((Throwable?) -> Unit)? = null,
+        // payload coroutine
+        payloadBlock: suspend CoroutineScope.() -> Unit
+    ) {
+        val errHand = CoroutineExceptionHandler { _, err ->
+            errHandler?.invoke(err) ?: when (err) {
+                is NoNetworkError -> notify(
+                    Notify.TextMessage(
+                        "Network not available, check internet connection"
+                    )
+                )
+                is SocketTimeoutException -> notify(Notify.ActionMessage(
+                    "Network timeout exception - please try again",
+                    "Retry"
+                ) {
+                    launchSafety(errHandler, complHandler, payloadBlock)
+                })
+                is ApiError.InternalServerError -> notify(Notify.ErrorMessage(
+                    err.message, "Retry"
+                ) {
+                    launchSafety(errHandler, complHandler, payloadBlock)
+                })
+                is ApiError -> notify(Notify.ErrorMessage(err.message))
+                else -> notify(
+                    Notify.ErrorMessage(
+                        err.message ?: "Something went wrong"
+                    )
+                )
+            }
+        }
+        (viewModelScope + errHand).launch {
+            // отобразить неблокирующий прогресс-бар
+            setLoading()
+            // выполнить в фоне полезную работу
+            payloadBlock()
+            // после завершения фоновой задачи
+        }.invokeOnCompletion {
+            hideLoading()
+            complHandler?.invoke(it)
+        }
+    }
 }
 
 class Event<out E>(private val content: E) {
     private var hasBeenHandled = false
 
     /***
-     * возвращает контент который еще не был обработан иначе null
+     * Возвращает контент, который еще не был обработан, иначе null
      */
     fun getContentIfNotHandled(): E? {
         return if (hasBeenHandled) null
@@ -134,14 +216,14 @@ class Event<out E>(private val content: E) {
 }
 
 /***
- * в качестве аргумента конструктора принимает лямбда выражение обработчик в аргумент которой передается
- * необработанное ранее событие получаемое в реализации метода Observer`a onChanged
+ * В качестве аргумента конструктора класс-обзервер события принимает лямбду,
+ * которая будет вызвана только если это событие произошло в первый раз
  */
-class EventObserver<E>(private val onEventUnhandledContent: (E) -> Unit) : Observer<Event<E>> {
+class EventObserver<E>(
+    private val onEventUnhandledContent: (E) -> Unit
+) : Observer<Event<E>> {
 
     override fun onChanged(event: Event<E>?) {
-        //если есть необработанное событие (контент) передай в качестве аргумента в лямбду
-        // onEventUnhandledContent
         event?.getContentIfNotHandled()?.let {
             onEventUnhandledContent(it)
         }
@@ -161,8 +243,8 @@ sealed class Notify {
 
     data class ErrorMessage(
         override val message: String,
-        val errLabel: String?,
-        val errHandler: (() -> Unit)?
+        val errLabel: String? = null,
+        val errHandler: (() -> Unit)? = null
     ) : Notify()
 }
 
@@ -183,4 +265,11 @@ sealed class NavigationCommand {
         val privateDestination: Int? = null
     ) : NavigationCommand()
 }
+
+enum class Loading {
+    SHOW_LOADING, SHOW_BLOCKING_LOADING, HIDE_LOADING
+}
+
+
+
 

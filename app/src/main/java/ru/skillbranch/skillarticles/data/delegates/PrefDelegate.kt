@@ -1,5 +1,6 @@
 package ru.skillbranch.skillarticles.data.delegates
 
+import com.squareup.moshi.JsonAdapter
 import ru.skillbranch.skillarticles.data.local.PrefManager
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -43,3 +44,26 @@ class PrefDelegate<T>(private val defaultValue: T) : ReadWriteProperty<PrefManag
         storedValue = value
     }
 }
+
+class PrefObjDelegate<T>(
+    private val adapter: JsonAdapter<T>
+) : ReadWriteProperty<PrefManager, T?> {
+
+    private var storedValue: T? = null
+
+    override fun getValue(thisRef: PrefManager, property: KProperty<*>): T? {
+        if (storedValue == null) {
+            thisRef.preferences.getString(property.name, null)
+                ?.let { adapter.fromJson(it) }
+        }
+        return storedValue
+    }
+
+    override fun setValue(thisRef: PrefManager, property: KProperty<*>, value: T?) {
+        storedValue = value
+        thisRef.preferences.edit()
+            .putString(property.name, value?.let { adapter.toJson(it) })
+            .apply()
+    }
+}
+

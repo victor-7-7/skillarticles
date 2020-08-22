@@ -5,40 +5,49 @@ import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.paging.PositionalDataSource
 import androidx.sqlite.db.SimpleSQLiteQuery
-import ru.skillbranch.skillarticles.data.NetworkDataHolder
 import ru.skillbranch.skillarticles.data.local.DbManager.db
 import ru.skillbranch.skillarticles.data.local.dao.*
 import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
 import ru.skillbranch.skillarticles.data.local.entities.ArticleTagXRef
 import ru.skillbranch.skillarticles.data.local.entities.CategoryData
 import ru.skillbranch.skillarticles.data.local.entities.Tag
+import ru.skillbranch.skillarticles.data.remote.NetworkManager
 import ru.skillbranch.skillarticles.data.remote.res.ArticleRes
 import ru.skillbranch.skillarticles.extensions.data.toArticle
+import ru.skillbranch.skillarticles.extensions.data.toArticleContent
 import ru.skillbranch.skillarticles.extensions.data.toArticleCounts
+import ru.skillbranch.skillarticles.extensions.data.toCategory
 
 interface IArticlesRepository {
-    fun loadArticlesFromNetwork(start: Int = 0, size: Int): List<ArticleRes>
-    fun insertArticlesToDb(articles: List<ArticleRes>)
-    fun toggleBookmark(articleId: String)
-    fun toggleLike(articleId: String)
+    suspend fun loadArticlesFromNetwork(last: String? = null, size: Int = 10): Int
+    suspend fun insertArticlesToDb(articles: List<ArticleRes>)
+    suspend fun toggleBookmark(articleId: String): Boolean
+    suspend fun toggleLike(articleId: String)
     fun findTags(): LiveData<List<String>>
     fun findCategoriesData(): LiveData<List<CategoryData>>
     fun rawQueryArticles(filter: ArticleFilter): DataSource.Factory<Int, ArticleItem>
-    fun incrementTagUseCount(tag: String)
+    suspend fun incrementTagUseCount(tag: String)
+    suspend fun findLastArticleId(): String?
+    suspend fun fetchArticleContent(articleId: String)
+    suspend fun removeArticleContent(articleId: String)
 }
 
 object ArticlesRepository : IArticlesRepository {
-    private val network = NetworkDataHolder
+    private val network = NetworkManager.api
     private var articlesDao = db.articlesDao()
+    private var articleContentsDao = db.articleContentsDao()
     private var articleCountsDao = db.articleCountsDao()
     private var categoriesDao = db.categoriesDao()
     private var tagsDao = db.tagsDao()
     private var articlePersonalInfosDao = db.articlePersonalInfosDao()
 
-    override fun loadArticlesFromNetwork(start: Int, size: Int): List<ArticleRes> =
-        network.findArticlesItem(start, size)
+    override suspend fun loadArticlesFromNetwork(last: String?, size: Int): Int {
+        val items = network.articles(last, size)
+        if (items.isNotEmpty()) insertArticlesToDb(items)
+        return items.size
+    }
 
-    override fun insertArticlesToDb(articles: List<ArticleRes>) {
+    override suspend fun insertArticlesToDb(articles: List<ArticleRes>) {
         articlesDao.upsert(articles.map {
             it.data.toArticle()
         })
@@ -52,17 +61,17 @@ object ArticlesRepository : IArticlesRepository {
             }
         val tags = refs.map { it.second }.distinct().map { Tag(it) }
 
-        val categories = articles.map { it.data.category }
+        val categories = articles.map { it.data.category.toCategory() }
         categoriesDao.insert(categories)
         tagsDao.insert(tags)
         tagsDao.insertRefs(refs.map { ArticleTagXRef(it.first, it.second) })
     }
 
-    override fun toggleBookmark(articleId: String) {
-        articlePersonalInfosDao.toggleBookmarkOrInsert(articleId)
+    override suspend fun toggleBookmark(articleId: String): Boolean {
+        return articlePersonalInfosDao.toggleBookmarkOrInsert(articleId)
     }
 
-    override fun toggleLike(articleId: String) {
+    override suspend fun toggleLike(articleId: String) {
         articlePersonalInfosDao.toggleLikeOrInsert(articleId)
     }
 
@@ -76,9 +85,21 @@ object ArticlesRepository : IArticlesRepository {
             DataSource.Factory<Int, ArticleItem> =
         articlesDao.findArticlesByRaw(SimpleSQLiteQuery(filter.toQuery()))
 
-    override fun incrementTagUseCount(tag: String) {
+    override suspend fun incrementTagUseCount(tag: String) {
         tagsDao.incrementTagUseCount(tag)
     }
+
+    override suspend fun findLastArticleId(): String? =
+        articlesDao.findLastArticleId()
+
+    override suspend fun fetchArticleContent(articleId: String) {
+        val content = network.loadArticleContent(articleId)
+        articleContentsDao.insert(content.toArticleContent())
+    }
+
+    override suspend fun removeArticleContent(articleId: String) =
+        articleContentsDao.deleteById(articleId)
+
 
     // Для тестов
     fun setupTestDao(
@@ -86,13 +107,15 @@ object ArticlesRepository : IArticlesRepository {
         articleCountsDao: ArticleCountsDao,
         categoriesDao: CategoriesDao,
         tagsDao: TagsDao,
-        articlePersonalDao: ArticlePersonalInfosDao
+        articlePersonalDao: ArticlePersonalInfosDao,
+        articlesContentDao: ArticleContentsDao
     ) {
         this.articlesDao = articlesDao
         this.articleCountsDao = articleCountsDao
         this.categoriesDao = categoriesDao
         this.tagsDao = tagsDao
         this.articlePersonalInfosDao = articlePersonalDao
+        this.articleContentsDao = articlesContentDao
     }
 }
 

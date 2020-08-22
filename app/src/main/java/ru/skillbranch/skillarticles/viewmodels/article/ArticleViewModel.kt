@@ -3,10 +3,8 @@ package ru.skillbranch.skillarticles.viewmodels.article
 import androidx.lifecycle.*
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import ru.skillbranch.skillarticles.data.models.CommentItemData
+import ru.skillbranch.skillarticles.data.remote.res.CommentRes
 import ru.skillbranch.skillarticles.data.repositories.ArticleRepository
 import ru.skillbranch.skillarticles.data.repositories.CommentsDataFactory
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
@@ -40,7 +38,7 @@ class ArticleViewModel(
         repository.findArticleCommentCount(articleId)
     ) {
         // Текущее количество комментариев у статьи известно заранее
-        buildPageList(repository.loadAllComments(articleId, it))
+        buildPageList(repository.loadAllComments(articleId, it, ::commentLoadErrorHandler))
     }
 
     // subscribe on mutable data
@@ -73,8 +71,26 @@ class ArticleViewModel(
         }
     }
 
+    /** Метод вызывается, когда юзер на экране статьи делает свайп
+     * вниз при крайнем верхнем показе контента (тянет контент вниз
+     * при том, что статья и так показывает самый верх контента) */
+    fun refresh() {
+        // Параллельно запускаем фоновые задачи
+        launchSafety {
+            // Загружаем контент статьи с сервера
+            launch { repository.fetchArticleContent(articleId) }
+            // Синхронизируем локальные метрики статьи с серверными
+            launch { repository.refreshCommentsCount(articleId) }
+        }
+    }
+
+    private fun commentLoadErrorHandler(throwable: Throwable) {
+        // todo: handle errors
+    }
+
+    /** Метод вызывается, если контент статьи равен null (не загружен) */
     private fun fetchContent() {
-        viewModelScope.launch(Dispatchers.IO) { repository.fetchArticleContent(articleId) }
+        launchSafety { repository.fetchArticleContent(articleId) }
     }
 
     // personal article info
@@ -88,13 +104,11 @@ class ArticleViewModel(
             handleLike()
         } // handler, if action btn will be pressed
 
-        viewModelScope.launch(Dispatchers.IO) {
+        launchSafety(null, { notify(msg) }) {
             repository.toggleLike(articleId)
+            //
             if (!isLiked) repository.incrementLike(articleId)
             else repository.decrementLike(articleId)
-            withContext(Dispatchers.Main) {
-                notify(msg)
-            }
         }
     }
 
@@ -102,9 +116,15 @@ class ArticleViewModel(
     override fun handleBookmark() {
         val msg = if (!currentState.isBookmark) "Add to bookmarks"
         else "Remove from bookmarks"
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.toggleBookmark(articleId)
-            withContext(Dispatchers.Main) { notify(Notify.TextMessage(msg)) }
+        launchSafety(null, {
+            notify(Notify.TextMessage(msg))
+        }) {
+            // Сохраняем клик юзера по закладке в локальной БД
+            val bookmarked = repository.toggleBookmark(articleId)
+            // Если юзер установил закладку, то пробуем сообщить серверу об этом
+            if (bookmarked) repository.addBookmark(articleId)
+            // Юзер снял закладку - пробуем сообщить серверу об этом
+            else repository.removeBookmark(articleId)
         }
     }
 
@@ -157,23 +177,25 @@ class ArticleViewModel(
 
     fun handleUpResult() {
         updateState {
-            //            val newPos = when {
-//                it.searchPosition.dec() < 0 -> it.searchResults.lastIndex
-//                else -> it.searchPosition.dec()
-//            }
-//            it.copy(searchPosition = newPos)
-            it.copy(searchPosition = it.searchPosition.dec())
+            val newPos = when {
+                it.searchPosition.dec() < 0 -> it.searchResults.lastIndex
+                else -> it.searchPosition.dec()
+            }
+            it.copy(searchPosition = newPos)
+
+//            it.copy(searchPosition = it.searchPosition.dec())
         }
     }
 
     fun handleDownResult() {
         updateState {
-            //            val newPos = when {
-//                it.searchPosition.inc() > it.searchResults.lastIndex -> 0
-//                else -> it.searchPosition.inc()
-//            }
-//            it.copy(searchPosition = newPos)
-            it.copy(searchPosition = it.searchPosition.inc())
+            val newPos = when {
+                it.searchPosition.inc() > it.searchResults.lastIndex -> 0
+                else -> it.searchPosition.inc()
+            }
+            it.copy(searchPosition = newPos)
+
+//            it.copy(searchPosition = it.searchPosition.inc())
         }
     }
 
@@ -186,33 +208,37 @@ class ArticleViewModel(
             notify(Notify.TextMessage("Comment must not be empty"))
             return
         }
-        updateState { it.copy(comment = comment) }
+        updateState { it.copy(commentText = comment) }
         if (!currentState.isAuth) {
             navigate(NavigationCommand.StartLogin())
-        } else viewModelScope.launch(Dispatchers.IO) {
-            repository.sendMessage(articleId, comment, currentState.answerToSlug)
-            withContext(Dispatchers.Main) {
-                updateState {
-                    it.copy(
-                        answerTo = null,
-                        answerToSlug = null, comment = null
-                    )
-                }
+        } else launchSafety(null, {
+            updateState {
+                it.copy(
+                    answerTo = null,
+                    answerToMessageId = null,
+                    commentText = null
+                )
             }
+        }) {
+            repository.sendMessage(
+                articleId,
+                currentState.commentText!!,
+                currentState.answerToMessageId
+            )
         }
     }
 
     fun observeCommentList(
         owner: LifecycleOwner,
-        onChange: (list: PagedList<CommentItemData>) -> Unit
+        onChange: (list: PagedList<CommentRes>) -> Unit
     ) {
         commentsListData.observe(owner, Observer { onChange(it) })
     }
 
     private fun buildPageList(
         dataFactory: CommentsDataFactory
-    ): LiveData<PagedList<CommentItemData>> {
-        return LivePagedListBuilder<String, CommentItemData>(
+    ): LiveData<PagedList<CommentRes>> {
+        return LivePagedListBuilder<String, CommentRes>(
             dataFactory,
             listConfig
         ).setFetchExecutor(Executors.newSingleThreadExecutor()).build()
@@ -223,17 +249,18 @@ class ArticleViewModel(
     }
 
     fun handleClearComment() {
-        updateState { it.copy(answerTo = null, answerToSlug = null) }
+        updateState { it.copy(answerTo = null, answerToMessageId = null) }
     }
 
-    fun handleReplyTo(slug: String, name: String) {
-        updateState { it.copy(answerTo = "Reply to $name", answerToSlug = slug) }
+    fun handleReplyTo(messageId: String, name: String) {
+        updateState { it.copy(answerTo = "Reply to $name", answerToMessageId = messageId) }
     }
 
     fun saveComment(comment: String) {
-        updateState { it.copy(comment = comment) }
+        updateState { it.copy(commentText = comment) }
     }
 }
+
 
 //============================================================================
 
@@ -270,9 +297,9 @@ data class ArticleState(
      * (ArticleState в момент редактирования комментария) юзер набирает
      * свой комментарий. Если юзер комментирует саму статью, то данное
      * значение - null */
-    val answerToSlug: String? = null,
+    val answerToMessageId: String? = null,
     val showBottombar: Boolean = true, // при написании коммента боттомбар д/б скрыт
-    val comment: String? = null,
+    val commentText: String? = null,
     val source: String? = null,
     val tags: List<String> = emptyList()
 ) : IViewModelState {

@@ -8,6 +8,7 @@ import kotlinx.android.synthetic.main.activity_root.*
 import ru.skillbranch.skillarticles.ui.RootActivity
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
+import ru.skillbranch.skillarticles.viewmodels.base.Loading
 
 abstract class BaseFragment<T : BaseViewModel<out IViewModelState>> : Fragment() {
     val root: RootActivity
@@ -60,6 +61,7 @@ abstract class BaseFragment<T : BaseViewModel<out IViewModelState>> : Fragment()
 
         viewModel.observeNotification(viewLifecycleOwner) { root.renderNotification(it) }
         viewModel.observeNavigation(viewLifecycleOwner) { root.viewModel.navigate(it) }
+        viewModel.observeLoading(viewLifecycleOwner) { renderLoading(it) }
 
         setupViews()
     }
@@ -94,4 +96,9 @@ abstract class BaseFragment<T : BaseViewModel<out IViewModelState>> : Fragment()
         super.onPrepareOptionsMenu(menu)
     }
 
+    // open для того, чтобы мы могли переопределить эту функцию
+    // в любом другом дочернем фрагменте
+    open fun renderLoading(loadingState: Loading) {
+        root.renderLoading(loadingState)
+    }
 }

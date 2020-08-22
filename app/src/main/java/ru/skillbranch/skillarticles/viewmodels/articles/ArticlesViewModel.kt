@@ -5,11 +5,10 @@ import androidx.lifecycle.*
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
 import ru.skillbranch.skillarticles.data.local.entities.CategoryData
+import ru.skillbranch.skillarticles.data.remote.err.NoNetworkError
 import ru.skillbranch.skillarticles.data.repositories.ArticleFilter
 import ru.skillbranch.skillarticles.data.repositories.ArticlesRepository
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
@@ -20,6 +19,11 @@ import java.util.concurrent.Executors
 class ArticlesViewModel(handle: SavedStateHandle) :
     BaseViewModel<ArticlesState>(handle, ArticlesState()) {
     private val repository = ArticlesRepository
+
+    // For paging
+    private var isLoadingInitial = false
+    private var isLoadingAfter = false
+
     private val listConfig by lazy {
         PagedList.Config.Builder()
             .setEnablePlaceholders(false)
@@ -73,42 +77,60 @@ class ArticlesViewModel(handle: SavedStateHandle) :
             && currentState.selectedCategories.isEmpty()
             && !currentState.isHashtagSearch
 
-    private fun itemAtEndHandle(item: ArticleItem) {
+    private fun itemAtEndHandle(lastLoadArticle: ArticleItem) {
         Log.d("M_ArticlesViewModel", "itemAtEndHandle: ")
-        viewModelScope.launch(Dispatchers.IO) {
-            val items = repository.loadArticlesFromNetwork(
-                start = item.id.toInt().inc(),
+        // Если запрос уже отправлен, то не надо дублировать
+        if (isLoadingAfter) return
+        // Запрос еще не отправлялся -> поднимаем флаг
+        else isLoadingAfter = true
+
+        launchSafety(
+            complHandler = { isLoadingAfter = false }
+        ) {
+            // look at video (lecture 11, time code 01:08:10)
+            repository.loadArticlesFromNetwork(
+                last = lastLoadArticle.id,
                 size = listConfig.pageSize
             )
-            if (items.isNotEmpty()) {
-                repository.insertArticlesToDb(items)
-                // invalidate data -> create new LiveData<PagedList>
-                listData.value?.dataSource?.invalidate()
-            }
-            withContext(Dispatchers.Main) {
-                notify(
-                    Notify.TextMessage(
-                        "Load network articles from " +
-                                "${items.firstOrNull()?.data?.id} to ${items.lastOrNull()?.data?.id}"
-                    )
-                )
-            }
         }
+
+/*      if (items.isNotEmpty()) {
+            repository.insertArticlesToDb(items)
+            // invalidate data -> create new LiveData<PagedList>
+            listData.value?.dataSource?.invalidate()
+        }
+        withContext(Dispatchers.Main) {
+            notify(
+                Notify.TextMessage(
+                    "Load network articles from " +
+                            "${items.firstOrNull()?.data?.id} to ${items.lastOrNull()?.data?.id}"
+                )
+            )
+        }
+        */
     }
 
     private fun zeroLoadingHandle() {
         Log.d("M_ArticlesViewModel", "zeroLoadingHandle: ")
+        // Если запрос уже отправлен, то не надо дублировать
+        if (isLoadingInitial) return
+        // Запрос еще не отправлялся -> поднимаем флаг
+        else isLoadingInitial = true
+
         notify(Notify.TextMessage("Storage is empty"))
-        viewModelScope.launch(Dispatchers.IO) {
-            val items = repository.loadArticlesFromNetwork(
-                start = 0, size = listConfig.initialLoadSizeHint
+
+        launchSafety(
+            complHandler = { isLoadingInitial = false }
+        ) {
+            repository.loadArticlesFromNetwork(
+                last = null, size = listConfig.initialLoadSizeHint
             )
-            if (items.isNotEmpty()) {
-                repository.insertArticlesToDb(items)
-                // invalidate data -> create new LiveData<PagedList>
-                listData.value?.dataSource?.invalidate()
-            }
         }
+/*      if (items.isNotEmpty()) {
+            repository.insertArticlesToDb(items)
+            // invalidate data -> create new LiveData<PagedList>
+            listData.value?.dataSource?.invalidate()
+        }*/
     }
 
     fun handleIsSearch(isSearch: Boolean) {
@@ -128,19 +150,55 @@ class ArticlesViewModel(handle: SavedStateHandle) :
     }
 
     fun handleToggleBookmark(articleId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.toggleBookmark(articleId)
+        launchSafety(
+            complHandler = {
+                when (it) {
+                    is NoNetworkError -> notify(
+                        Notify.TextMessage(
+                            "Network not available, failed to fetch article"
+                        )
+                    )
+                    else -> notify(
+                        Notify.ErrorMessage(
+                            it?.message ?: "Something went wrong"
+                        )
+                    )
+                }
+            }
+        ) {
+            val isBookmarked = repository.toggleBookmark(articleId)
+            // Если юзер добавляет статейный айтем на заметку, то загружаем
+            // из сети контент статьи и сохраняем его в БД устройства
+            if (isBookmarked) repository.fetchArticleContent(articleId)
+            // Если юзер снимает закладку, то удаляем контент статьи из БД
+            else repository.removeArticleContent(articleId)
         }
     }
 
     fun handleSuggestion(tag: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             repository.incrementTagUseCount(tag)
         }
     }
 
     fun applyCategories(selectedCategories: List<String>) {
         updateState { it.copy(selectedCategories = selectedCategories) }
+    }
+
+    /** Метод вызывается, когда юзер на экране списка статей делает свайп
+     * вниз при крайнем верхнем показе списка (тянет список вниз
+     * при том, что экран и так показывает самый верх списка статей) */
+    fun refresh() {
+        launchSafety {
+            val lastArticleId = repository.findLastArticleId()
+            // about minus-sign look at video (lecture 11, time code 01:31:13)
+            val count = repository.loadArticlesFromNetwork(
+                last = lastArticleId,
+                size = if (lastArticleId == null) listConfig.initialLoadSizeHint
+                else -listConfig.pageSize
+            )
+            notify(Notify.TextMessage("Load $count new articles"))
+        }
     }
 }
 

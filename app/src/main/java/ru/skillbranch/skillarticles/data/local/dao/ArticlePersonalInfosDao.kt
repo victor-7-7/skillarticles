@@ -10,7 +10,7 @@ import ru.skillbranch.skillarticles.data.local.entities.ArticlePersonalInfo
 interface ArticlePersonalInfosDao : BaseDao<ArticlePersonalInfo> {
 
     @Transaction
-    fun upsert(list: List<ArticlePersonalInfo>) {
+    suspend fun upsert(list: List<ArticlePersonalInfo>) {
         insert(list).mapIndexed { index, recordResult ->
             if (recordResult == -1L) list[index] else null
         }.filterNotNull().also { if (it.isNotEmpty()) update(it) }
@@ -21,14 +21,20 @@ interface ArticlePersonalInfosDao : BaseDao<ArticlePersonalInfo> {
         SELECT * FROM article_personal_infos
     """
     )
-    fun findPersonalInfos(): LiveData<List<ArticlePersonalInfo>> // Для тестов
+    // Для тестов
+    fun findPersonalInfos(): LiveData<List<ArticlePersonalInfo>>
+
+    @Query("SELECT * FROM article_personal_infos WHERE article_id = :articleId")
+    // Для тестов
+    suspend fun findPersonalInfosTest(articleId: String): ArticlePersonalInfo
 
     @Query(
         """
         SELECT * FROM article_personal_infos WHERE article_id = :articleId
     """
     )
-    fun findPersonalInfos(articleId: String): LiveData<ArticlePersonalInfo> // Для тестов
+    // Для тестов
+    fun findPersonalInfos(articleId: String): LiveData<ArticlePersonalInfo>
 
     @Query(
         """
@@ -37,14 +43,31 @@ interface ArticlePersonalInfosDao : BaseDao<ArticlePersonalInfo> {
         WHERE article_id = :articleId
     """
     )
-    fun toggleLike(articleId: String): Int // Возвращает количество обновленных строк
+    // https://developer.android.com/reference/androidx/room/Query
+    // UPDATE or DELETE queries can return void or int. If it is an int,
+    // the value is the number of rows affected by this query
+    // Возвращает количество обновленных строк
+    suspend fun toggleLike(articleId: String): Int
 
     @Transaction
-    fun toggleLikeOrInsert(articleId: String) {
+    suspend fun toggleLikeOrInsert(articleId: String): Boolean {
+        // Делаем попытку обновить запись в article_personal_infos.
+        // Если метод toggleLike вернул 0, значит в таблице еще
+        // нет записи с article_id == :articleId, а значит эту
+        // статью юзер никогда не лайкал, поэтому создаем сущность
+        // ArticlePersonalInfo (isLike = true) и вставляем ее в таблицу
         if (toggleLike(articleId) == 0) insert(
             ArticlePersonalInfo(articleId = articleId, isLike = true)
         )
+        return isLiked(articleId)
     }
+
+    @Query(
+        """
+        SELECT is_like FROM article_personal_infos WHERE article_id = :articleId
+    """
+    )
+    suspend fun isLiked(articleId: String): Boolean
 
     @Query(
         """
@@ -53,12 +76,22 @@ interface ArticlePersonalInfosDao : BaseDao<ArticlePersonalInfo> {
         WHERE article_id = :articleId
     """
     )
-    fun toggleBookmark(articleId: String): Int // Возвращает количество обновленных строк
+    // Возвращает количество обновленных строк
+    suspend fun toggleBookmark(articleId: String): Int
 
     @Transaction
-    fun toggleBookmarkOrInsert(articleId: String) {
+    suspend fun toggleBookmarkOrInsert(articleId: String): Boolean {
         if (toggleBookmark(articleId) == 0) insert(
             ArticlePersonalInfo(articleId = articleId, isBookmark = true)
         )
+        return isBookmarked(articleId)
     }
+
+    @Query(
+        """
+        SELECT is_bookmark FROM article_personal_infos WHERE article_id = :articleId
+    """
+    )
+    suspend fun isBookmarked(articleId: String): Boolean
+
 }

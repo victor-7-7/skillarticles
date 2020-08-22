@@ -33,6 +33,12 @@ android {
                 arg("room.expandProjection", "true")
             }
         }
+        // look at video (lecture 11, time code 01:56:16)
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
     }
 
     buildTypes {
@@ -64,7 +70,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.core:core-ktx:1.3.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-rc1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.0'
 
     // Material
     implementation "com.google.android.material:material:$material_version"
@@ -74,6 +80,8 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle_version"
+    // https://proandroiddev.com/livedata-transformations-4f120ac046fc
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
 
     // Navigation
     implementation "androidx.navigation:navigation-fragment:$navigation_version"
@@ -103,6 +111,8 @@ dependencies {
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
     implementation "com.squareup.okhttp3:logging-interceptor:$okhttp_version"
     implementation "com.squareup.moshi:moshi-kotlin:$moshi_version"
+    // Для создания moshi-адаптеров при помощи кодогенерации, а не
+    // при помощи рефлексии (по дефолту). Так дешевле
     kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshi_version")
 
     // Retrofit
@@ -134,4 +144,6 @@ dependencies {
     androidTestImplementation 'androidx.test:rules:1.2.0'
     androidTestImplementation 'com.jraska.livedata:testing-ktx:1.1.1'
     androidTestImplementation "android.arch.core:core-testing:1.1.1"
+
+    androidTestImplementation("com.squareup.okhttp3:mockwebserver:$okhttp_version")
 }

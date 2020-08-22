@@ -13,7 +13,7 @@ import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
 interface ArticlesDao : BaseDao<Article> {
 
     @Transaction
-    fun upsert(list: List<Article>) {
+    suspend fun upsert(list: List<Article>) {
         insert(list).mapIndexed { index, recordResult ->
             if (recordResult == -1L) list[index] else null
         }.filterNotNull().also { if (it.isNotEmpty()) update(it) }
@@ -41,7 +41,7 @@ interface ArticlesDao : BaseDao<Article> {
     fun findArticleItems(): LiveData<List<ArticleItem>>
 
     @Delete
-    fun delete(article: Article)
+    override suspend fun delete(obj: Article)
 
     @Query(
         """
@@ -71,5 +71,22 @@ interface ArticlesDao : BaseDao<Article> {
     """
     )
     fun findFullArticle(articleId: String): LiveData<ArticleFull>
+
+    // Нисходящая/убывающая (DESC) сортировка по дате означает, что первой
+    // записью будет та, у которой значение в столбце дата самое свежее
+    // (недавнее), затем идут записи с более старыми датами. Например,
+    // первая - с датой 21.08.20. Вторая - с датой 19.08.20, затем 15.07.20 и т.д.
+    @Query(
+        """
+        SELECT id FROM articles ORDER BY date DESC LIMIT 1
+    """
+    )
+    /** Последняя (по дате публикации) статья, сохраненная в БД на устройстве */
+    suspend fun findLastArticleId(): String?
+
+    @Query("SELECT * FROM articles")
+    // Для тестов
+    suspend fun findArticlesTest(): List<Article>
+
 }
 

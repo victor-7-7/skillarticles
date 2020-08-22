@@ -3,24 +3,43 @@ package ru.skillbranch.skillarticles.data.local
 import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.distinctUntilChanged
+import androidx.lifecycle.map
 import androidx.preference.PreferenceManager
 import ru.skillbranch.skillarticles.App
+import ru.skillbranch.skillarticles.data.JsonConverter.moshi
 import ru.skillbranch.skillarticles.data.delegates.PrefDelegate
 import ru.skillbranch.skillarticles.data.delegates.PrefLiveDelegate
+import ru.skillbranch.skillarticles.data.delegates.PrefObjDelegate
+import ru.skillbranch.skillarticles.data.delegates.PrefObjLiveDelegate
 import ru.skillbranch.skillarticles.data.models.AppSettings
+import ru.skillbranch.skillarticles.data.models.User
 
 object PrefManager {
     internal val preferences: SharedPreferences by lazy {
         PreferenceManager.getDefaultSharedPreferences(App.appContext())
     }
 
-    var isAuthorized by PrefDelegate(false)
+//    var isAuthorized by PrefDelegate(false)
 
     var isDarkMode by PrefDelegate(false)
     var isBigText by PrefDelegate(false)
 
-    val isAuthLive: LiveData<Boolean> by PrefLiveDelegate(
-        "isAuthorized", false, preferences
+    var accessToken by PrefDelegate("")
+    var refreshToken by PrefDelegate("")
+    var profile: User? by PrefObjDelegate(moshi.adapter(User::class.java))
+
+    //===============================================================
+    val isAuthLive: LiveData<Boolean> by lazy {
+        val token: LiveData<String> by PrefLiveDelegate(
+            "accessToken", "", preferences
+        )
+        // lecture 11, time code 02:14:35 &&
+        // https://proandroiddev.com/livedata-transformations-4f120ac046fc
+        token.map { it.isNotEmpty() }
+    }
+    val profileLive: LiveData<User?> by PrefObjLiveDelegate(
+        "profile", moshi.adapter(User::class.java), preferences
     )
 
     val appSettingsLive = MediatorLiveData<AppSettings>().apply {
@@ -38,18 +57,11 @@ object PrefManager {
         addSource(isBigTextLive) {
             value = value!!.copy(isBigText = it)
         }
-    }
-//        .distinctUntilChanged()
+    }.distinctUntilChanged()
 
     fun clearAll() {
         preferences.edit()
             .clear()
             .apply()
     }
-/*
-    var storedString by PrefDelegate("")
-    var storedFloat by PrefDelegate(0f)
-    var storedInt by PrefDelegate(0)
-    var storedLong by PrefDelegate(0L)
-    */
 }

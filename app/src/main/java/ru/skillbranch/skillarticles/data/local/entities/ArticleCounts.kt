@@ -15,11 +15,14 @@ import java.util.*
         onDelete = ForeignKey.CASCADE
     )]
 )
+/** источник правды для непостоянных полей likes/comments - сервер */
 data class ArticleCounts(
     @PrimaryKey
     @ColumnInfo(name = "article_id")
     val articleId: String,
+    // Всеобщее число лайков у статьи
     val likes: Int = 0,
+    // Всеобщее число комментов у статьи
     val comments: Int = 0,
     @ColumnInfo(name = "read_duration")
     val readDuration: Int = 0,

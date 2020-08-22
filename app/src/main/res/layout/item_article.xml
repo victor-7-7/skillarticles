@@ -51,7 +51,7 @@
         app:layout_constraintEnd_toStartOf="@+id/iv_poster"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/barrier_top"
-        tools:text="Инженеры создали 3Д дисплей из 'Звездных войн' 3Д дисплей из 'Звездных войн' 3Д дисплей из 'Звездных войн'" />
+        tools:text="Инженеры создали 3Д дисплей из 'Звездных войн'" />
 
     <ImageView
         android:id="@+id/iv_poster"
@@ -104,7 +104,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/tv_likes_count"
         app:srcCompat="@drawable/ic_favorite_black_24dp"
-        android:tint="@color/color_gray" />
+        app:tint="@color/color_gray" />
 
     <TextView
         android:id="@+id/tv_likes_count"
@@ -129,7 +129,7 @@
         app:layout_constraintStart_toEndOf="@id/tv_likes_count"
         app:layout_constraintTop_toTopOf="@+id/tv_comments_count"
         app:srcCompat="@drawable/ic_insert_comment_black_24dp"
-        android:tint="@color/color_gray" />
+        app:tint="@color/color_gray" />
 
     <TextView
         android:id="@+id/tv_comments_count"
@@ -167,6 +167,6 @@
         app:layout_constraintStart_toEndOf="@id/tv_read_duration"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/bookmark_states"
-        android:tint="@color/color_gray" />
+        app:tint="@color/color_gray" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

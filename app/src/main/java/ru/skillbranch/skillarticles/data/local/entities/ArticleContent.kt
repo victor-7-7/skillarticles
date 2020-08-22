@@ -10,8 +10,13 @@ import java.util.*
     tableName = "article_content",
     foreignKeys = [ForeignKey(
         entity = Article::class,
+        // Идентификатор статьи в таблице articles (entity:Article)
         parentColumns = ["id"],
+        // Идентификатор статьи в этой таблице (для связи)
         childColumns = ["article_id"],
+        // Если запись с идентификаторм id = N будет удалена из родительской
+        // таблицы articles, то будет также удалена и запись с идентификатором
+        // article_id = N и в этой таблице (CASCADE)
         onDelete = ForeignKey.CASCADE
     )]
 )
