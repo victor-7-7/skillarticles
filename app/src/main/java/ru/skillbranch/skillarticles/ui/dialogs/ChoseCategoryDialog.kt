@@ -70,7 +70,7 @@ class ChoseCategoryDialog : DialogFragment() {
 //                else selectedCats.remove(args.categories[which].categoryId)
 //            }
         //====================== ВАРИАНТ 2 ===================================
-        val adapter = DialogAdapter(
+        val adapter = CategoryAdapter(
             requireContext(),
             args.categories,
             checkedArr
@@ -96,7 +96,7 @@ class ChoseCategoryDialog : DialogFragment() {
     }
 }
 
-class DialogAdapter(
+class CategoryAdapter(
     private val cxt: Context,
     private val categories: Array<CategoryData>,
     private var checkedArr: BooleanArray,

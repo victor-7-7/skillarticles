@@ -8,6 +8,7 @@ import okhttp3.Route
 import okio.IOException
 import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.data.remote.NetworkManager
+import ru.skillbranch.skillarticles.data.remote.req.RefreshReq
 
 // https://medium.com/knowing-android/headers-interceptors-and-authenticators-with-retrofit-1a00fed0d5eb
 // http://sangsoonam.github.io/2019/03/06/okhttp-how-to-refresh-access-token-efficiently.html#:~:text=OkHttp%20supports%20token-based%20authentication,is%20an%20HTTP%20unauthorized%20error.
@@ -49,7 +50,12 @@ class TokenAuthenticator : Authenticator {
 
         val originReq = response.request
         runBlocking {
-            val auth = network.refresh(PrefManager.refreshToken)
+            val auth = network.refresh(
+                RefreshReq(
+                    PrefManager.refreshToken,
+                    PrefManager.accessToken
+                )
+            )
             PrefManager.accessToken = "Bearer ${auth.accessToken}"
             PrefManager.refreshToken = auth.refreshToken
         }
