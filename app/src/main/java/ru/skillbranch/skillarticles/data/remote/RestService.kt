@@ -35,7 +35,7 @@ interface RestService {
 
     // https://skill-articles.skill-branch.ru/api/v1/articles/{articleId}/messages
     @POST("articles/{article}/messages")
-    fun sendMessage(
+    suspend fun sendMessage(
         @Path("article") articleId: String,
         @Body message: MessageReq,
         @Header("Authorization") token: String
@@ -51,7 +51,11 @@ interface RestService {
     @POST("auth/login")
     suspend fun login(@Body loginReq: LoginReq): AuthRes
 
-    // Метод имеется в приложенном к уроку (lecture 11) коде
+    // https://skill-articles.skill-branch.ru/api/v1/auth/refresh
+    @POST("auth/refresh")
+    suspend fun refresh(@Body refreshToken: String): AuthRes
+
+    // Метод имеется в приложенном к уроку коде (lecture 11)
     @POST("auth/login")
     fun loginCall(@Body loginReq: LoginReq): Call<AuthRes>
 
@@ -74,12 +78,12 @@ interface RestService {
     suspend fun addBookmark(
         @Path("article") articleId: String,
         @Header("Authorization") token: String
-    ): BookmarkRes
+    )
 
     // https://skill-articles.skill-branch.ru/api/v1/articles/{articleId}/removeBookmark
     @POST("articles/{article}/removeBookmark")
     suspend fun removeBookmark(
         @Path("article") articleId: String,
         @Header("Authorization") token: String
-    ): BookmarkRes
+    )
 }

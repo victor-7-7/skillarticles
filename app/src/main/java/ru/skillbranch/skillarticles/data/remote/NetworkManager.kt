@@ -5,6 +5,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import ru.skillbranch.skillarticles.AppConfig
+import ru.skillbranch.skillarticles.data.JsonConverter.moshi
 import ru.skillbranch.skillarticles.data.remote.interceptors.ErrorStatusInterceptor
 import ru.skillbranch.skillarticles.data.remote.interceptors.NetworkStatusInterceptor
 import java.util.concurrent.TimeUnit
@@ -26,6 +27,7 @@ object NetworkManager {
             .addInterceptor(ErrorStatusInterceptor())
             // intercept req/res for logging
             .addInterceptor(logging)
+//            .authenticator(TokenAuthenticator())
             .build()
 
         // retrofit
@@ -33,7 +35,7 @@ object NetworkManager {
             // set http client
             .client(client)
             // set json converter/parser
-            .addConverterFactory(MoshiConverterFactory.create())
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
             .baseUrl(AppConfig.BASE_URL)
             .build()
 

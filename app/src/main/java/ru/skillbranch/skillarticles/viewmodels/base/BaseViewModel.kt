@@ -193,7 +193,9 @@ abstract class BaseViewModel<T : IViewModelState>(
             payloadBlock()
             // после завершения фоновой задачи
         }.invokeOnCompletion {
+            // скрыть прогресс-бар
             hideLoading()
+            // выполнить (если имеется) завершающую работу
             complHandler?.invoke(it)
         }
     }

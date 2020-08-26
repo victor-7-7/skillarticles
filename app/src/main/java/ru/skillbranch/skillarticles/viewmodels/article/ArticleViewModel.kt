@@ -4,6 +4,7 @@ import androidx.lifecycle.*
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import kotlinx.coroutines.launch
+import ru.skillbranch.skillarticles.data.remote.err.ApiError
 import ru.skillbranch.skillarticles.data.remote.res.CommentRes
 import ru.skillbranch.skillarticles.data.repositories.ArticleRepository
 import ru.skillbranch.skillarticles.data.repositories.CommentsDataFactory
@@ -95,8 +96,8 @@ class ArticleViewModel(
 
     // personal article info
     override fun handleLike() {
-        val isLiked = currentState.isLike
-        val msg = if (!isLiked) Notify.TextMessage("Mark is liked")
+        val msg = if (!currentState.isLike)
+            Notify.TextMessage("Mark is liked")
         else Notify.ActionMessage(
             "Don`t like it anymore", // snackbar message
             "No, still like it" // action btn on snackbar
@@ -105,10 +106,21 @@ class ArticleViewModel(
         } // handler, if action btn will be pressed
 
         launchSafety(null, { notify(msg) }) {
-            repository.toggleLike(articleId)
-            //
-            if (!isLiked) repository.incrementLike(articleId)
-            else repository.decrementLike(articleId)
+            // Фиксируем в локальной БД (в таблице article_personal_infos)
+            // лайк/дизлайк (юзером данного девайса) этой статьи
+            val isLiked = repository.toggleLike(articleId)
+            try {
+                // Фиксируем на сервере (если юзер авторизован и сеть/сервер
+                // доступны), а также в локальной БД (в таблице article_counts)
+                // увеличение/уменьшение на 1 всеобщего числа лайков у статьи
+                if (isLiked) repository.incrementLike(articleId)
+                else repository.decrementLike(articleId)
+            } catch (e: ApiError.BadRequest) {
+                // Если сервер говорит, что действий не требуется, то и ладно
+                return@launchSafety
+                // Остальные ошибки, не перехваченные этим кэтчером (не являющиеся
+                // ApiError.BadRequest) будут обработаны дефолтным хендлером
+            }
         }
     }
 
@@ -121,10 +133,18 @@ class ArticleViewModel(
         }) {
             // Сохраняем клик юзера по закладке в локальной БД
             val bookmarked = repository.toggleBookmark(articleId)
-            // Если юзер установил закладку, то пробуем сообщить серверу об этом
-            if (bookmarked) repository.addBookmark(articleId)
-            // Юзер снял закладку - пробуем сообщить серверу об этом
-            else repository.removeBookmark(articleId)
+            try {
+                // Фиксируем на сервере (если юзер авторизован и сеть/сервер
+                // доступны), что данный конкретный юзер добавил в закладки
+                // или убрал из закладок конкретную статью
+                if (bookmarked) repository.addBookmark(articleId)
+                else repository.removeBookmark(articleId)
+            } catch (e: ApiError.BadRequest) {
+                // Если сервер говорит, что действий не требуется, то и ладно
+                return@launchSafety
+                // Остальные ошибки, не перехваченные этим кэтчером (не являющиеся
+                // ApiError.BadRequest) будут обработаны дефолтным хендлером
+            }
         }
     }
 

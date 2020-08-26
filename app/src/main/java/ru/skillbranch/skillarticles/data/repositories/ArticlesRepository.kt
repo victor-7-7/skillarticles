@@ -22,7 +22,7 @@ interface IArticlesRepository {
     suspend fun loadArticlesFromNetwork(last: String? = null, size: Int = 10): Int
     suspend fun insertArticlesToDb(articles: List<ArticleRes>)
     suspend fun toggleBookmark(articleId: String): Boolean
-    suspend fun toggleLike(articleId: String)
+//    suspend fun toggleLike(articleId: String)
     fun findTags(): LiveData<List<String>>
     fun findCategoriesData(): LiveData<List<CategoryData>>
     fun rawQueryArticles(filter: ArticleFilter): DataSource.Factory<Int, ArticleItem>
@@ -41,6 +41,8 @@ object ArticlesRepository : IArticlesRepository {
     private var tagsDao = db.tagsDao()
     private var articlePersonalInfosDao = db.articlePersonalInfosDao()
 
+    /** Метод загружает из сети N (== size или менее) статей, сохраняет их
+     * в локальной БД и возвращает число загруженных статей */
     override suspend fun loadArticlesFromNetwork(last: String?, size: Int): Int {
         val items = network.articles(last, size)
         if (items.isNotEmpty()) insertArticlesToDb(items)
@@ -67,14 +69,14 @@ object ArticlesRepository : IArticlesRepository {
         tagsDao.insertRefs(refs.map { ArticleTagXRef(it.first, it.second) })
     }
 
-    override suspend fun toggleBookmark(articleId: String): Boolean {
-        return articlePersonalInfosDao.toggleBookmarkOrInsert(articleId)
-    }
+    override suspend fun toggleBookmark(articleId: String): Boolean =
+        articlePersonalInfosDao.toggleBookmarkOrInsert(articleId)
 
-    override suspend fun toggleLike(articleId: String) {
-        articlePersonalInfosDao.toggleLikeOrInsert(articleId)
-    }
-
+    /*
+        override suspend fun toggleLike(articleId: String) {
+            articlePersonalInfosDao.toggleLikeOrInsert(articleId)
+        }
+    */
     override fun findTags(): LiveData<List<String>> = tagsDao.findTags()
 
     override fun findCategoriesData(): LiveData<List<CategoryData>> =

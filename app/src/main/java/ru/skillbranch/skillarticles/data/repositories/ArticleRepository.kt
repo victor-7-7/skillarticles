@@ -14,6 +14,8 @@ import ru.skillbranch.skillarticles.data.local.entities.ArticleFull
 import ru.skillbranch.skillarticles.data.models.AppSettings
 import ru.skillbranch.skillarticles.data.remote.NetworkManager
 import ru.skillbranch.skillarticles.data.remote.RestService
+import ru.skillbranch.skillarticles.data.remote.err.ApiError
+import ru.skillbranch.skillarticles.data.remote.err.NoNetworkError
 import ru.skillbranch.skillarticles.data.remote.req.MessageReq
 import ru.skillbranch.skillarticles.data.remote.res.CommentRes
 import ru.skillbranch.skillarticles.extensions.data.toArticleContent
@@ -38,6 +40,7 @@ interface IArticleRepository {
     suspend fun incrementLike(articleId: String)
     suspend fun fetchArticleContent(articleId: String)
     fun findArticleCommentCount(articleId: String): LiveData<Int>
+    suspend fun refreshCommentsCount(articleId: String)
 }
 
 object ArticleRepository : IArticleRepository {
@@ -70,38 +73,6 @@ object ArticleRepository : IArticleRepository {
 
     override fun isAuth(): LiveData<Boolean> = rootRepository.isAuth()
 
-    /** Метод возвращает значение isLike сущности ArticlePersonalInfo */
-    override suspend fun toggleLike(articleId: String): Boolean =
-        articlePersonalInfosDao.toggleLikeOrInsert(articleId)
-
-
-    override suspend fun toggleBookmark(articleId: String): Boolean =
-        articlePersonalInfosDao.toggleBookmarkOrInsert(articleId)
-
-    /** Метод пробует сообщить серверу о необходимости записать в серверную БД,
-     * что юзер с токеном (token) добавил статью (articleId) в закладки */
-    suspend fun addBookmark(articleId: String) {
-        val token = PrefManager.accessToken
-        // Если юзер не авторизован, то выходим
-        if (token.isEmpty()) return
-        try {
-            val res = network.addBookmark(articleId, token)
-        } catch (e: Throwable) {
-        }
-    }
-
-    /** Метод пробует сообщить серверу о необходимости записать в серверную БД,
-     * что юзер с токеном (token) убрал статью (articleId) из закладок */
-    suspend fun removeBookmark(articleId: String) {
-        val token = PrefManager.accessToken
-        // Если юзер не авторизован, то выходим
-        if (token.isEmpty()) return
-        try {
-            val res = network.removeBookmark(articleId, token)
-        } catch (e: Throwable) {
-        }
-    }
-
     override fun loadAllComments(
         articleId: String,
         totalCount: Int,
@@ -114,12 +85,53 @@ object ArticleRepository : IArticleRepository {
             errHandler = errHandler
         )
 
+    /** Метод возвращает значение isLike сущности ArticlePersonalInfo */
+    override suspend fun toggleLike(articleId: String): Boolean =
+        articlePersonalInfosDao.toggleLikeOrInsert(articleId)
+
+    /** Метод возвращает значение isBookmark сущности ArticlePersonalInfo */
+    override suspend fun toggleBookmark(articleId: String): Boolean =
+        articlePersonalInfosDao.toggleBookmarkOrInsert(articleId)
+
+    /** Метод пробует сообщить серверу о необходимости записать в серверную БД,
+     * что авторизованный юзер, имеющий токен, добавил статью (articleId) в закладки */
+    suspend fun addBookmark(articleId: String) {
+        val token = PrefManager.accessToken
+        // Если юзер не авторизован, то выходим
+        if (token.isEmpty()) return
+        try {
+            network.addBookmark(articleId, token)
+        } catch (e: Throwable) {
+            // Если нет сети, то выходим
+            if (e is NoNetworkError) return
+            // Прочие ошибки сервера бросим вверх для обработки на уровне ViewModel
+            throw e
+        }
+    }
+
+    /** Метод пробует сообщить серверу о необходимости записать в серверную БД,
+     * что авторизованный юзер, имеющий токен, убрал статью (articleId) из закладок */
+    suspend fun removeBookmark(articleId: String) {
+        val token = PrefManager.accessToken
+        // Если юзер не авторизован, то выходим
+        if (token.isEmpty()) return
+        try {
+            network.removeBookmark(articleId, token)
+        } catch (e: Throwable) {
+            // Если нет сети, то выходим
+            if (e is NoNetworkError) return
+            // Прочие ошибки сервера бросим вверх для обработки на уровне ViewModel
+            throw e
+        }
+    }
+
     // look at video (lecture 11, time code 02:20:33)
     override suspend fun decrementLike(articleId: String) {
         val token = PrefManager.accessToken
         // Если юзер не авторизован
         if (token.isEmpty()) {
-            // Фиксируем его действие локально и все
+            // Фиксируем в локальной БД уменьшение на 1 всеобщего
+            //числа лайков у данной статьи и выходим
             articleCountsDao.decrementLike(articleId)
             return
         }
@@ -127,9 +139,13 @@ object ArticleRepository : IArticleRepository {
             val resp = network.decrementLike(articleId, token)
             articleCountsDao.updateLike(articleId, resp.likeCount)
         } catch (e: Throwable) {
-            // Если сеть/сервер недоступны обновляем только локально в БД
-            articleCountsDao.decrementLike(articleId)
-            // Бросим ошибку вверх, чтобы обработать ее на уровне ViewModel
+            // Если ошибка ApiError.BadRequest, значит декрементировать
+            // не надо, в том числе и локально. В случае остальных ошибок
+            // надо записать декремент в локальную БД
+            if (e !is ApiError.BadRequest) articleCountsDao.decrementLike(articleId)
+            // Если ошибка в отсутствии сети, то выходим
+            if (e is NoNetworkError) return
+            // Прочие ошибки сервера бросим вверх для обработки на уровне ViewModel
             throw e
         }
     }
@@ -138,7 +154,8 @@ object ArticleRepository : IArticleRepository {
         val token = PrefManager.accessToken
         // Если юзер не авторизован
         if (token.isEmpty()) {
-            // Фиксируем его действие локально и все
+            // Фиксируем в локальной БД увеличение на 1 всеобщего
+            // числа лайков у данной статьи и выходим
             articleCountsDao.incrementLike(articleId)
             return
         }
@@ -146,9 +163,13 @@ object ArticleRepository : IArticleRepository {
             val resp = network.incrementLike(articleId, token)
             articleCountsDao.updateLike(articleId, resp.likeCount)
         } catch (e: Throwable) {
-            // Если сеть/сервер недоступны обновляем только локально в БД
-            articleCountsDao.incrementLike(articleId)
-            // Бросим ошибку вверх, чтобы обработать ее на уровне ViewModel
+            // Если ошибка ApiError.BadRequest, значит инкрементировать
+            // не надо, в том числе и локально. В случае остальных ошибок
+            // надо записать инкремент в локальную БД
+            if (e !is ApiError.BadRequest) articleCountsDao.incrementLike(articleId)
+            // Если ошибка в отсутствии сети, то выходим
+            if (e is NoNetworkError) return
+            // Прочие ошибки сервера бросим вверх для обработки на уровне ViewModel
             throw e
         }
     }
@@ -156,21 +177,25 @@ object ArticleRepository : IArticleRepository {
     override suspend fun sendMessage(
         articleId: String, message: String, answerToMessageId: String?
     ) {
+        // Отправляем сообщение на сервер
         val (_, messageCount) = network.sendMessage(
             articleId,
             MessageReq(message, answerToMessageId),
             PrefManager.accessToken
         )
-//        articleCountsDao.incrementCommentsCount(articleId) // <- before lecture 11
+        // Обновляем в локальной БД изменившееся всеобщее число
+        // комментов данной статьи, полученное с сервера
         articleCountsDao.updateCommentsCount(articleId, messageCount)
+
+//        articleCountsDao.incrementCommentsCount(articleId) // <- before lecture 11
     }
 
-    suspend fun refreshCommentsCount(articleId: String) {
+    override suspend fun refreshCommentsCount(articleId: String) {
         // Загружаем метрики статьи из сети
-        val counts = network.loadArticleCounts(articleId)
+        val metrics = network.loadArticleCounts(articleId)
         // Сохраняем свежие метрики локально.
         // Реализация отличается от таковой в видео (lecture 11, 01:44:49)
-        articleCountsDao.update(counts.toArticleCounts())
+        articleCountsDao.update(metrics.toArticleCounts())
     }
 
     /*

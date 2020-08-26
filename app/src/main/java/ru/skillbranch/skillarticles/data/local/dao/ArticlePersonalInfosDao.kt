@@ -21,7 +21,6 @@ interface ArticlePersonalInfosDao : BaseDao<ArticlePersonalInfo> {
         SELECT * FROM article_personal_infos
     """
     )
-    // Для тестов
     fun findPersonalInfos(): LiveData<List<ArticlePersonalInfo>>
 
     @Query("SELECT * FROM article_personal_infos WHERE article_id = :articleId")
@@ -33,7 +32,6 @@ interface ArticlePersonalInfosDao : BaseDao<ArticlePersonalInfo> {
         SELECT * FROM article_personal_infos WHERE article_id = :articleId
     """
     )
-    // Для тестов
     fun findPersonalInfos(articleId: String): LiveData<ArticlePersonalInfo>
 
     @Query(
@@ -53,9 +51,9 @@ interface ArticlePersonalInfosDao : BaseDao<ArticlePersonalInfo> {
     suspend fun toggleLikeOrInsert(articleId: String): Boolean {
         // Делаем попытку обновить запись в article_personal_infos.
         // Если метод toggleLike вернул 0, значит в таблице еще
-        // нет записи с article_id == :articleId, а значит эту
-        // статью юзер никогда не лайкал, поэтому создаем сущность
-        // ArticlePersonalInfo (isLike = true) и вставляем ее в таблицу
+        // нет записи с article_id == :articleId, а значит эту статью
+        // юзер никогда не лайкал / не закладывал. Поэтому создаем сущность
+        // ArticlePersonalInfo [isLike = true] и вставляем ее в таблицу
         if (toggleLike(articleId) == 0) insert(
             ArticlePersonalInfo(articleId = articleId, isLike = true)
         )
