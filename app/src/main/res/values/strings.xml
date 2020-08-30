@@ -10,6 +10,11 @@
     <string name="title_authorization">Authorization</string>
     <string name="title_privacy_policy">Privacy policy</string>
 
+    <string name="take_from_camera">Take from camera</string>
+    <string name="take_from_gallery">Take from gallery</string>
+    <string name="edit_current_avatar">Edit current avatar</string>
+    <string name="remove_avatar">Remove avatar</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="lorem_ipsum">orem ipsum dolor sit amet, consectetur adipiscing elit. Fusce blandit enim elit, id fringilla magna blandit vitae. Pellentesque eu purus sed enim dapibus tempus. Cras tincidunt dolor sapien, sed tempor lorem pulvinar ac. Maecenas pretium fringilla nibh posuere tincidunt. Donec facilisis elementum velit eget vulputate. Nullam efficitur bibendum dapibus. Sed vitae aliquam turpis. Vivamus porttitor porta elit et dignissim. Nunc viverra, sem eget vehicula elementum, ex nisi sollicitudin enim, id gravida ligula quam at libero. Sed id diam at ante maximus congue ac vel tellus. Donec scelerisque tincidunt nunc, pulvinar tristique diam condimentum posuere. Curabitur vehicula in sapien eget maximus. Nam ut suscipit elit. Phasellus sit amet congue odio.

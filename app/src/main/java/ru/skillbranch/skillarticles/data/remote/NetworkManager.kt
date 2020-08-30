@@ -8,6 +8,7 @@ import ru.skillbranch.skillarticles.AppConfig
 import ru.skillbranch.skillarticles.data.JsonConverter.moshi
 import ru.skillbranch.skillarticles.data.remote.interceptors.ErrorStatusInterceptor
 import ru.skillbranch.skillarticles.data.remote.interceptors.NetworkStatusInterceptor
+import ru.skillbranch.skillarticles.data.remote.interceptors.TokenAuthenticator
 import java.util.concurrent.TimeUnit
 
 object NetworkManager {
@@ -27,7 +28,8 @@ object NetworkManager {
             .addInterceptor(ErrorStatusInterceptor())
             // intercept req/res for logging
             .addInterceptor(logging)
-//            .authenticator(TokenAuthenticator())
+            // refresh token if response status code 401
+            .authenticator(TokenAuthenticator())
             .build()
 
         // retrofit

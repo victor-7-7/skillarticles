@@ -24,6 +24,9 @@ abstract class BaseViewModel<T : IViewModelState>(
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     val navigation = MutableLiveData<Event<NavigationCommand>>()
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    val permissions = MutableLiveData<Event<List<String>>>()
+
     private val loading = MutableLiveData<Loading>(Loading.HIDE_LOADING)
 
     /***
@@ -198,6 +201,17 @@ abstract class BaseViewModel<T : IViewModelState>(
             // выполнить (если имеется) завершающую работу
             complHandler?.invoke(it)
         }
+    }
+
+    fun requestPermissions(requestedPermissions: List<String>) {
+        permissions.value = Event(requestedPermissions)
+    }
+
+    fun observePermissions(
+        owner: LifecycleOwner,
+        handle: (permissions: List<String>) -> Unit
+    ) {
+        permissions.observe(owner, EventObserver { handle(it) })
     }
 }
 

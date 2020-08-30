@@ -1,6 +1,5 @@
 package ru.skillbranch.skillarticles.data.remote.req
 
 data class RefreshReq(
-    val refreshToken: String,
-    val accessToken: String
+    val refreshToken: String
 )

@@ -192,8 +192,6 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         wrap_comments.setEndIconOnClickListener { view ->
             view.context.hideKeyboard(view)
             viewModel.handleClearComment()
-//            et_comment.text = null
-//            et_comment.clearFocus()
         }
 
         with(rv_comments) {
@@ -287,8 +285,8 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         var searchQuery: String? = null
 
         /** Подсказка, появляющаяся в редактируемом поле комментария. Если
-         * юзер отвечает на комментарий юзера [name], то подсказка будет вида -
-         * Reply to [name]. Если юзер комментирует статью, то подсказка будет
+         * юзер отвечает на комментарий юзера <name>, то подсказка будет вида -
+         * Reply to <name>. Если юзер комментирует статью, то подсказка будет
          * вида - Comment */
         private var answerTo: String by RenderProp("Comment") {
             wrap_comments.hint = it
@@ -354,11 +352,11 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         }
 
         private var searchResults: List<Pair<Int, Int>>
-                by RenderProp(emptyList<Pair<Int, Int>>())
+                by RenderProp(emptyList())
         private var searchPosition: Int by RenderProp(0)
 
         private var content: List<MarkdownElement>
-                by RenderProp(emptyList<MarkdownElement>()) {
+                by RenderProp(emptyList()) {
                     tv_text_content.isLoading = it.isEmpty()
                     tv_text_content.setContent(it)
                     if (it.isNotEmpty()) setupCopyListener()

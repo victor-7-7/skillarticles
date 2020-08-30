@@ -20,14 +20,16 @@ object PrefManager {
         PreferenceManager.getDefaultSharedPreferences(App.appContext())
     }
 
-//    var isAuthorized by PrefDelegate(false)
-
     var isDarkMode by PrefDelegate(false)
     var isBigText by PrefDelegate(false)
 
     var accessToken by PrefDelegate("")
     var refreshToken by PrefDelegate("")
     var profile: User? by PrefObjDelegate(moshi.adapter(User::class.java))
+
+    fun replaceAvatarUrl(url: String) {
+        profile = profile!!.copy(avatar = url)
+    }
 
     //===============================================================
     val isAuthLive: LiveData<Boolean> by lazy {
@@ -59,9 +61,6 @@ object PrefManager {
         }
     }.distinctUntilChanged()
 
-    fun clearAll() {
-        preferences.edit()
-            .clear()
-            .apply()
-    }
+
+    fun clearAll() = preferences.edit().clear().apply()
 }

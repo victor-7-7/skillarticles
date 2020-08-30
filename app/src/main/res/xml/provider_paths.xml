@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Пути, которые мы хотим использовать для расшаривания своих
+    файлов во внешние приложения. Путь . означает ту же директорию,
+    в который мы находимся в настоящий момент -->
+    <external-path
+        name="external_files"
+        path="." />
+    <!-- Lecture 12, 01:43:40. Glide saves images into cache -->
+    <cache-path
+        name="cache_files"
+        path="image_manager_disk_cache" />
+</paths>

@@ -209,6 +209,7 @@ class BottombarBuilder {
     }
 
     fun prepare(prepareFn: (BottombarBuilder.() -> Unit)?): BottombarBuilder {
+        invalidate()
         prepareFn?.invoke(this)
         return this
     }
@@ -239,8 +240,9 @@ class BottombarBuilder {
         }
         with(context.nav_view) {
             isVisible = visible
-            //show bottombar if hidden due to scroll behavior
-            ((layoutParams as CoordinatorLayout.LayoutParams).behavior as HideBottomViewOnScrollBehavior)
+            // show bottombar (if hidden due to scroll behavior)
+            ((layoutParams as CoordinatorLayout.LayoutParams)
+                .behavior as HideBottomViewOnScrollBehavior)
                 .slideUp(this)
         }
     }

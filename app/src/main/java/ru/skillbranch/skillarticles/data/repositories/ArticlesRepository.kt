@@ -149,6 +149,7 @@ class ArticleFilter(
             // чтобы запрос выглядел так - WHERE first_name IN ('Sarah', 'Jane', 'Heather')
             // Если элементы - числа, то апострофы не нужны, например
             // WHERE employee_id IN (1, 2, 3, 4)
+            // todo: change implementation??? Lecture 12, 02:09:24
             if (categories.isNotEmpty()) appendWhere(
                 "category_id IN (${categories.joinToString(", ")})"
             )
