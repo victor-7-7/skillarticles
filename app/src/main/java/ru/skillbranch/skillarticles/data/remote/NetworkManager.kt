@@ -18,7 +18,7 @@ object NetworkManager {
             level = HttpLoggingInterceptor.Level.BODY
         }
 
-        // client
+        // HTTP CLIENT
         val client = OkHttpClient().newBuilder()
             // socket timeout (GET)
             .readTimeout(2, TimeUnit.SECONDS)
@@ -28,19 +28,20 @@ object NetworkManager {
             .addInterceptor(ErrorStatusInterceptor())
             // intercept req/res for logging
             .addInterceptor(logging)
-            // refresh token if response status code 401
+            // refresh token if response status code -> 401
             .authenticator(TokenAuthenticator())
             .build()
 
-        // retrofit
+        // RETROFIT
         val retrofit = Retrofit.Builder()
             // set http client
             .client(client)
             // set json converter/parser
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .addConverterFactory(MoshiConverterFactory.create(moshi).asLenient())
             .baseUrl(AppConfig.BASE_URL)
             .build()
 
+        // CREATE API SERVICE INTERFACE
         retrofit.create(RestService::class.java)
     }
 }

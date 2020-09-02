@@ -150,7 +150,7 @@ class ArticleViewModel(
 
     override fun handleShare() {
         val msg = "Share is not implemented"
-        notify(Notify.ErrorMessage(msg, "OK", null))
+        notify(Notify.ErrorMessage(msg, "OK", errHandler = null))
     }
 
     // session state

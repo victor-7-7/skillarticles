@@ -71,7 +71,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
     private val articlesAdapter = ArticlesAdapter { item, isToggleBookmark ->
         if (isToggleBookmark) viewModel.handleToggleBookmark(item.id)
         else {
-            Log.d("M_ArticlesFragment", "click on article: ${item.id}")
+            Log.d("M_S_ArticlesFragment", "click on article: ${item.id}")
             val action = ArticlesFragmentDirections.actionToPageArticle(
                 item.id, item.author, item.authorAvatar ?: "", item.category,
                 item.categoryIcon, item.date, item.poster, item.title

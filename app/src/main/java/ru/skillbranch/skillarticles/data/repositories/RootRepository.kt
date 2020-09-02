@@ -27,6 +27,9 @@ object RootRepository {
     // look at video (lecture 11, time code 01:49:00)
     suspend fun login(login: String, pass: String) {
         val auth = network.login(LoginReq(login, pass))
+        // Если логин или пароль будет неверный, то возврата из
+        // функции network.login не будет. Появится снэкбар с
+        // сообщение "Wrong login or password" и все.
         prefManager.profile = auth.user
         // lecture 11, time code 01:59:22
         prefManager.accessToken = "Bearer ${auth.accessToken}"

@@ -67,7 +67,7 @@ class RootActivity : BaseActivity<RootViewModel>() {
         val snackbar = Snackbar.make(
             container,
             notify.message,
-            Snackbar.LENGTH_LONG
+            notify.duration
         )
         if (bottombar != null) snackbar.anchorView = bottombar
         else snackbar.anchorView = nav_view

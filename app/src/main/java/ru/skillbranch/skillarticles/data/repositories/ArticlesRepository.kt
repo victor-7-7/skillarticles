@@ -217,7 +217,7 @@ class ArticleDataSource(private val strategy: ArticleStrategy) :
             params.requestedLoadSize
         )
         Log.d(
-            "M_ArticlesRepository", "loadInitial: " +
+            "M_S_ArticlesRepository", "loadInitial: " +
                     "start - ${params.requestedStartPosition} " +
                     "size - ${params.requestedLoadSize} " +
                     "resultSize - ${result.size}"
@@ -228,7 +228,7 @@ class ArticleDataSource(private val strategy: ArticleStrategy) :
     override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<ArticleItem>) {
         val result = strategy.getItems(params.startPosition, params.loadSize)
         Log.d(
-            "M_ArticlesRepository", "loadRange: " +
+            "M_S_ArticlesRepository", "loadRange: " +
                     "start - ${params.startPosition} " +
                     "size - ${params.loadSize} " +
                     "resultSize - ${result.size}"

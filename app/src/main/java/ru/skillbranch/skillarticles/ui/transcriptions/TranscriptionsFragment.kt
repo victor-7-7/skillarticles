@@ -1,29 +1,20 @@
 package ru.skillbranch.skillarticles.ui.transcriptions
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
+import kotlinx.android.synthetic.main.fragment_transcriptions.*
 import ru.skillbranch.skillarticles.R
+import ru.skillbranch.skillarticles.ui.base.BaseFragment
 import ru.skillbranch.skillarticles.viewmodels.transcriptions.TranscriptionsViewModel
 
-class TranscriptionsFragment : Fragment() {
+class TranscriptionsFragment : BaseFragment<TranscriptionsViewModel>() {
 
-    private lateinit var viewModel: TranscriptionsViewModel
+    override val viewModel: TranscriptionsViewModel by viewModels()
+    override val layout = R.layout.fragment_transcriptions
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_transcriptions, container, false)
+
+    override fun setupViews() {
+        btn_reset.setOnClickListener {
+            viewModel.resetAllPreferences(root)
+        }
     }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(TranscriptionsViewModel::class.java)
-        // TODO: Use the ViewModel
-    }
-
 }

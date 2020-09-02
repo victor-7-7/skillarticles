@@ -50,23 +50,23 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
             // Если разрешение не было предоставлено (key=perm, value=false),
             // то запоминаем - была ли установлена галочка о том, чтобы не
             // спрашивать разрешение у юзера в будущем. Например, если галочка
-            // для данного отказного разрешения была установлена, то маповская
-            // пара будет такой (key=perm, value=(false, false)). А если галочка
-            // не была установлена, то - (key=perm, value=(false, true))
+            // для данного отказного разрешения БЫЛА установлена, то маповская
+            // пара будет такой (key=perm, value=(false, FALSE)). А если галочка
+            // НЕ БЫЛА установлена, то - (key=perm, value=(false, TRUE))
             else false to ActivityCompat.shouldShowRequestPermissionRationale(
                 requireActivity(), perm
             )
         }
-        viewModel.handlePermission(permissionsResult)
+        viewModel.handleReturnedPermissions(permissionsResult)
         /*       Log.d("M_ProfileFragment",
                    "Request runtime permissions result: $result")*/
     }
 
     private val galleryResultCallback = registerForActivityResult(
         ActivityResultContracts.GetContent()
-    ) { result ->
-        if (result != null) {
-            val inputStream = requireContext().contentResolver.openInputStream(result)
+    ) { resultUri ->
+        if (resultUri != null) {
+            val inputStream = requireContext().contentResolver.openInputStream(resultUri)
             // Выгружаем фото из галереи на сервер
             viewModel.handleUploadPhoto(inputStream)
         }
@@ -79,6 +79,7 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
     }
 
     // lecture 12, t.c. 01:26:26
+
     private val cameraResultCallback = registerForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { isSaved ->
@@ -117,7 +118,7 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
             when (bundle[AvatarActionsDialog.SELECT_ACTION_KEY] as String) {
 
                 AvatarActionsDialog.CAMERA_KEY ->
-                    viewModel.handleCameraAction(prepareTempUri())
+                    viewModel.handleCameraAction(prepareContentUri())
 
                 AvatarActionsDialog.GALLERY_KEY -> viewModel.handleGalleryAction()
 
@@ -139,13 +140,14 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
                         withContext(Dispatchers.Main) {
                             // Метод берет файл из sourceUri, редактирует его и
                             // сохраняет в файл с uri
-                            viewModel.handleEditAction(sourceUri, prepareTempUri())
+                            viewModel.handleEditAction(sourceUri, prepareContentUri())
                         }
                     }
                 }
             }
         }
     }
+
 
     override fun setupViews() {
         iv_avatar.setOnClickListener {
@@ -181,11 +183,11 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
             }
 */
         }
-        viewModel.observePermissions(viewLifecycleOwner) {
-            // launch callback for request permissions
+        viewModel.observeRequestedPermissions(viewLifecycleOwner) {
+            // launch callback for requested permissions
             permissionsResultCallback.launch(it.toTypedArray())
         }
-        viewModel.observeActivityResults(viewLifecycleOwner) {
+        viewModel.observePendingActions(viewLifecycleOwner) {
             when (it) {
                 is PendingAction.GalleryAction -> galleryResultCallback.launch(it.payload)
                 is PendingAction.SettingsAction -> settingResultCallback.launch(it.payload)
@@ -208,10 +210,12 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
     }
 
     // lecture 12, t.c. 01:28:30
-    private fun prepareTempUri(): Uri {
+    private fun prepareContentUri(): Uri {
         // Штамп - для уникальности имени файла
         val timestamp = SimpleDateFormat("HHmmss", Locale.ROOT).format(Date())
-        val storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val storageDir = requireContext().getExternalFilesDir(
+            Environment.DIRECTORY_PICTURES
+        )
         // Создаем пустой временный файл с файловым дескриптором и уникальным
         // именем, в который (файл) можем записывать и получать его Uri
         val tempFile = File.createTempFile(
@@ -227,7 +231,7 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
             tempFile
         )
         Log.d(
-            "M_ProfileFragment", "prepareTempUri: " +
+            "M_S_ProfileFragment", "prepareTempUri: " +
                     "file uri: ${tempFile.toUri()} content uri: $contentUri"
         )
         // Контентный uri можно передавать во внешние приложения,

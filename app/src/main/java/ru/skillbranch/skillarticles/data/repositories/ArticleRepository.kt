@@ -274,7 +274,7 @@ class CommentsDataSource(
             errHandler(e)
         }
         Log.d(
-            "M_ArticleRepository", "loadInitial: " +
+            "M_S_ArticleRepository", "loadInitial: " +
                     "key: ${params.requestedInitialKey} " +
                     "size: ${params.requestedLoadSize} " +
                     "total: $totalCount"
@@ -298,7 +298,7 @@ class CommentsDataSource(
             errHandler(e)
         }
         Log.d(
-            "M_ArticleRepository", "loadAfter: " +
+            "M_S_ArticleRepository", "loadAfter: " +
                     "key: ${params.key} " +
                     "size: ${params.requestedLoadSize}"
         )
@@ -321,7 +321,7 @@ class CommentsDataSource(
             errHandler(e)
         }
         Log.d(
-            "M_ArticleRepository", "loadBefore: " +
+            "M_S_ArticleRepository", "loadBefore: " +
                     "key: ${params.key} " +
                     "size: ${params.requestedLoadSize}"
         )

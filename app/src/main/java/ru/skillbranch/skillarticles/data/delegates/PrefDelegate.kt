@@ -53,7 +53,7 @@ class PrefObjDelegate<T>(
 
     override fun getValue(thisRef: PrefManager, property: KProperty<*>): T? {
         if (storedValue == null) {
-            thisRef.preferences.getString(property.name, null)
+            storedValue = thisRef.preferences.getString(property.name, null)
                 ?.let { adapter.fromJson(it) }
         }
         return storedValue

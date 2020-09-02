@@ -27,6 +27,14 @@ internal class PrefLiveData<T>(
     private var defValue: T,
     private var prefs: SharedPreferences
 ) : LiveData<T>() {
+    // https://developer.android.com/reference/kotlin/android/content/SharedPreferences.OnSharedPreferenceChangeListener
+    // Called when a shared preference is changed, added, or removed.
+    // This may be called even if a preference is set to its existing value.
+    // Callback will be run on your main thread. First param - SharedPreferences.
+    // Second param - key of the preference that was changed, added, or removed.
+    // Коллбэк не будет запущен, когда preferences очищены через Editor#clear().
+    // Если приложение таргетирует SDK 30 и запущено на девайсе с версией ОС 30
+    // или выше, то коллбэк сработает, но во втором параметре будет null
     private val prefsChangeListener =
         SharedPreferences.OnSharedPreferenceChangeListener { _, shKey ->
             if (shKey == key) {

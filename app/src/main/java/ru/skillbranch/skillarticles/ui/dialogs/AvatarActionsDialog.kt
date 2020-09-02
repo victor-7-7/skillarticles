@@ -38,7 +38,7 @@ class AvatarActionsDialog : BottomSheetDialogFragment() {
         val hasCamera = requireContext().packageManager.hasSystemFeature(FEATURE_CAMERA_ANY)
         item_camera.isVisible = hasCamera
         item_camera.setOnClickListener {
-            // Результат будет передан слушателю (из другого фрагмента)
+            // Результат будет передан слушателю (из другого фрагмента - caller)
             // после закрытия этого фрагмента
             setFragmentResult(
                 AVATAR_ACTIONS_KEY, bundleOf(
@@ -57,6 +57,8 @@ class AvatarActionsDialog : BottomSheetDialogFragment() {
             dismiss()
         }
         val hasAvatar = args.hasAvatar
+        // Если нет изображения (стоит плейсхолдер - vector drawable),
+        // то и редактировать нечего
         item_edit.isVisible = hasAvatar
         item_edit.setOnClickListener {
             setFragmentResult(
@@ -66,6 +68,7 @@ class AvatarActionsDialog : BottomSheetDialogFragment() {
             )
             dismiss()
         }
+        // Если нет изображения, то и удалять нечего
         item_delete.isVisible = hasAvatar
         item_delete.setOnClickListener {
             setFragmentResult(

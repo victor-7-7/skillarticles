@@ -6,6 +6,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.*
 import androidx.navigation.NavOptions
 import androidx.navigation.Navigator
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -49,14 +50,31 @@ abstract class BaseViewModel<T : IViewModelState>(
 
 
     /***
-     * Лямбда-выражение, принимающее в качестве аргумента текущее состояние и
-     * возвращающее модифицированное состояние, которое присваивается
-     * текущему состоянию
+     * Функция принимает лямбду, аргументом которой является текущее состояние
+     * ViewModel. Тело лямбды создает модифицированное состояние. Затем функция
+     * присваивает это модифицированное состояние текущему состоянию (текущее
+     * состояние является типом MediatorLiveData)
      */
     @UiThread
     protected inline fun updateState(update: (currentState: T) -> T) {
         val updatedState: T = update(currentState)
         state.value = updatedState
+    }
+
+    /***
+     * Функция принимает источник (LiveData) и лямбду. В лямбду как аргументы
+     * передаются изменившиеся данные источника и текущее состояние ViewModel.
+     * Тело лямбды создает модифицированное состояние для ViewModel. Если оно
+     * не null, то функция присваивает это модифицированное состояние
+     * текущему состоянию.
+     */
+    protected fun <S> subscribeOnDataSource(
+        source: LiveData<S>,
+        onChanged: (newValue: S, currentState: T) -> T?
+    ) {
+        state.addSource(source) {
+            state.value = onChanged(it, currentState) ?: return@addSource
+        }
     }
 
     /***
@@ -128,21 +146,6 @@ abstract class BaseViewModel<T : IViewModelState>(
         })
     }
 
-    /***
-     * Функция принимает источник данных и лямбду, обрабатывающую изменяющиеся
-     * данные источника. В лямбду передаются изменившиеся данные и текущее
-     * состояние ViewModel в качестве аргументов. Лямбда изменяет состояние
-     * ViewModel и возвращает это состояние, установив его как текущее.
-     */
-    protected fun <S> subscribeOnDataSource(
-        source: LiveData<S>,
-        onChanged: (newValue: S, currentState: T) -> T?
-    ) {
-        state.addSource(source) {
-            state.value = onChanged(it, currentState) ?: return@addSource
-        }
-    }
-
     fun saveState() {
         currentState.save(handleState)
     }
@@ -203,13 +206,18 @@ abstract class BaseViewModel<T : IViewModelState>(
         }
     }
 
+    /** Спрашиваем у системы - есть ли у нашего приложения разрешения на
+     * перечисленные действия. Сработает лямбда-обработчик, заданный
+     * в методе observeRequestedPermissions() */
     fun requestPermissions(requestedPermissions: List<String>) {
         permissions.value = Event(requestedPermissions)
     }
 
-    fun observePermissions(
+    /** Если приложение запросит у системы разрешения (через метод
+     * requestPermissions()), то сработает лямбда-обработчик */
+    fun observeRequestedPermissions(
         owner: LifecycleOwner,
-        handle: (permissions: List<String>) -> Unit
+        handle: (requestedPermissions: List<String>) -> Unit
     ) {
         permissions.observe(owner, EventObserver { handle(it) })
     }
@@ -248,18 +256,24 @@ class EventObserver<E>(
 
 sealed class Notify {
     abstract val message: String
+    abstract val duration: Int
 
-    data class TextMessage(override val message: String) : Notify()
+    data class TextMessage(
+        override val message: String,
+        override val duration: Int = Snackbar.LENGTH_LONG
+    ) : Notify()
 
     data class ActionMessage(
         override val message: String,
         val actionLabel: String,
+        override val duration: Int = Snackbar.LENGTH_LONG,
         val actionHandler: (() -> Unit)?
     ) : Notify()
 
     data class ErrorMessage(
         override val message: String,
         val errLabel: String? = null,
+        override val duration: Int = Snackbar.LENGTH_LONG,
         val errHandler: (() -> Unit)? = null
     ) : Notify()
 }

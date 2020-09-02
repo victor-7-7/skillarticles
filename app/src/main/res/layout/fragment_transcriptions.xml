@@ -5,9 +5,15 @@
     android:layout_height="match_parent"
     tools:context=".ui.transcriptions.TranscriptionsFragment">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Hello" />
+
+    <Button
+        android:id="@+id/btn_reset"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:backgroundTint="@color/color_surface"
+        android:text="Reset Prefs"
+        android:textSize="18sp"
+        android:textColor="@color/color_on_surface" />
 
 </FrameLayout>

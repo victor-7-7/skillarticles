@@ -1,5 +1,6 @@
 package ru.skillbranch.skillarticles.data.remote.interceptors
 
+import android.util.Log
 import okhttp3.Authenticator
 import okhttp3.Request
 import okhttp3.Response
@@ -24,14 +25,30 @@ class TokenAuthenticator : Authenticator {
             RefreshReq(prefs.refreshToken)
         ).execute()
 
+        Log.d(
+            "M_S_TokenAuthenticator", "authenticate: " +
+                    "refresh access token response: $resp || response.body(): ${resp.body()}"
+        )
+
         if (!resp.isSuccessful) return null
         // save new access/refresh token
-        prefs.accessToken = "Bearer ${resp.body()!!.accessToken}"
+        val newAccessToken = resp.body()!!.accessToken
+        prefs.accessToken = "Bearer $newAccessToken"
         prefs.refreshToken = resp.body()!!.refreshToken
+
+        Log.d(
+            "M_S_TokenAuthenticator", "authenticate: " +
+                    "origin request: ${response.request} || request.body: ${response.request.body}"
+        )
 
         // retry request with new access token
         return response.request.newBuilder()
-            .addHeader("Authorization", prefs.accessToken)
+            .header("Authorization", "Bearer $newAccessToken")
             .build()
+/*
+        return response.request.newBuilder()
+            .addHeader("Authorization", prefs.accessToken) // <- old access token
+            .build()
+        */
     }
 }

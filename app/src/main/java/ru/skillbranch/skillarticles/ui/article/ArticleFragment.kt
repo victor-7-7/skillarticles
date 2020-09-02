@@ -57,7 +57,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     private val commentsAdapter by lazy {
         CommentsAdapter {
             Log.d(
-                "M_ArticleFragment", "click on comment: " +
+                "M_S_ArticleFragment", "click on comment: " +
                         "id: ${it.id} slug: ${it.slug}"
             )
             viewModel.handleReplyTo(it.id, it.user.name)

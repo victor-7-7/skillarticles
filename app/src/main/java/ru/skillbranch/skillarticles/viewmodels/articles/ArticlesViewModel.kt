@@ -78,7 +78,7 @@ class ArticlesViewModel(handle: SavedStateHandle) :
             && !currentState.isHashtagSearch
 
     private fun itemAtEndHandle(lastLoadArticle: ArticleItem) {
-        Log.d("M_ArticlesViewModel", "itemAtEndHandle: ")
+        Log.d("M_S_ArticlesViewModel", "itemAtEndHandle: ")
         // Если запрос уже отправлен, то не надо дублировать
         if (isLoadingAfter) return
         // Запрос еще не отправлялся -> поднимаем флаг
@@ -111,7 +111,7 @@ class ArticlesViewModel(handle: SavedStateHandle) :
     }
 
     private fun zeroLoadingHandle() {
-        Log.d("M_ArticlesViewModel", "zeroLoadingHandle: ")
+        Log.d("M_S_ArticlesViewModel", "zeroLoadingHandle: ")
         // Если запрос уже отправлен, то не надо дублировать
         if (isLoadingInitial) return
         // Запрос еще не отправлялся -> поднимаем флаг
@@ -151,7 +151,7 @@ class ArticlesViewModel(handle: SavedStateHandle) :
 
     fun handleToggleBookmark(articleId: String) {
         launchSafety(
-            complHandler = {
+            errHandler = {
                 when (it) {
                     is NoNetworkError -> notify(
                         Notify.TextMessage(
@@ -160,11 +160,11 @@ class ArticlesViewModel(handle: SavedStateHandle) :
                     )
                     else -> notify(
                         Notify.ErrorMessage(
-                            it?.message ?: "Something went wrong"
+                            it.message ?: "Something went wrong"
                         )
                     )
                 }
-            }
+            }, complHandler = null
         ) {
             val isBookmarked = repository.toggleBookmark(articleId)
             // Если юзер добавляет статейный айтем на заметку, то загружаем

@@ -1,6 +1,7 @@
 package ru.skillbranch.skillarticles.data.local
 
 import android.content.SharedPreferences
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.distinctUntilChanged
@@ -14,6 +15,7 @@ import ru.skillbranch.skillarticles.data.delegates.PrefObjDelegate
 import ru.skillbranch.skillarticles.data.delegates.PrefObjLiveDelegate
 import ru.skillbranch.skillarticles.data.models.AppSettings
 import ru.skillbranch.skillarticles.data.models.User
+import ru.skillbranch.skillarticles.ui.RootActivity
 
 object PrefManager {
     internal val preferences: SharedPreferences by lazy {
@@ -32,6 +34,7 @@ object PrefManager {
     }
 
     //===============================================================
+
     val isAuthLive: LiveData<Boolean> by lazy {
         val token: LiveData<String> by PrefLiveDelegate(
             "accessToken", "", preferences
@@ -61,6 +64,18 @@ object PrefManager {
         }
     }.distinctUntilChanged()
 
+    fun resetAllPrefs(root: RootActivity) {
+        isDarkMode = false
+        root.delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_NO
+        isBigText = false
+        accessToken = ""
+        refreshToken = ""
+        profile = null
+        // Do user logout
+        preferences.edit().putString("accessToken", "").apply()
+    }
 
-    fun clearAll() = preferences.edit().clear().apply()
+    // Callback SharedPreferences.OnSharedPreferenceChangeListener
+    // will not be triggered when preferences are cleared
+    fun clearAllPrefs() = preferences.edit().clear().apply()
 }

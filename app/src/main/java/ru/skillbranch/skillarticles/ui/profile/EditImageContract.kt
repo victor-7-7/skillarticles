@@ -39,7 +39,7 @@ class EditImageContract : ActivityResultContract<Pair<Uri, Uri>, Uri?>() {
             )
         }
         Log.d(
-            "M_EditImageContract", "createIntent: activities (apps) " +
+            "M_S_EditImageContract", "createIntent: activities (apps) " +
                     "for edit image: $grantedApps"
         )
         return intent
