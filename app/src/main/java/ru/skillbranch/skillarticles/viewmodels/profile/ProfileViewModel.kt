@@ -87,7 +87,7 @@ class ProfileViewModel(handle: SavedStateHandle) :
     }
 
     private fun executePendingAction() {
-        // Если отложенных действий нет, то выходим
+        // Если отложенное действие во вьюмодел стейте null, то выходим
         val pendingAction = currentState.pendingAction ?: return
         // Запускаем отложенное действие
         startForResult(pendingAction)
@@ -147,6 +147,11 @@ class ProfileViewModel(handle: SavedStateHandle) :
 */
     }
 
+    // Здесь мы подписываемся на прослушивание изменений только
+    // объекта Event<PendingAction>, инкапсулированного в переменной
+    // pendingActionLive (MutableLiveData<Event<PendingAction>>).
+    // Указанная здесь лямбда сработает лишь при вызове метода
+    // startForResult (там задается новое значение для pendingActionLive.value)
     fun observePendingActions(
         owner: LifecycleOwner,
         handlePendingAction: (action: PendingAction) -> Unit
@@ -155,30 +160,35 @@ class ProfileViewModel(handle: SavedStateHandle) :
     }
 
     fun handleCameraAction(destination: Uri) {
-        //
+        // Меняем поле pendingAction в стейте вьюмодел (ProfileState).
+        // При этом никакие обработчики не будут вызваны
         updateState {
             it.copy(pendingAction = PendingAction.CameraAction(destination))
         }
+        // По итогу метода requestPermissions будет запущен permissionsResultCallback
         requestPermissions(storagePermissions)
     }
 
     fun handleGalleryAction() {
+        // Меняем поле pendingAction в стейте вьюмодел (ProfileState).
+        // При этом никакие обработчики не будут вызваны
         updateState {
             it.copy(pendingAction = PendingAction.GalleryAction("image/jpeg"))
         }
+        // По итогу метода requestPermissions будет запущен permissionsResultCallback
         requestPermissions(storagePermissions)
     }
 
     fun handleDeleteAction() {
-        // todo: implement (Lecture 12, 02:05:20)
-        // Вызвать метод репозитория, который удалит аватар на сервере
-//        repository.deleteAvatar()
-
+        launchSafety { repository.removeAvatar() }
     }
 
     fun handleEditAction(source: Uri, destination: Uri) {
         val pendingAction = PendingAction.EditAction(source to destination)
+        // Меняем поле pendingAction в стейте вьюмодел (ProfileState).
+        // При этом никакие обработчики не будут вызваны
         updateState { it.copy(pendingAction = pendingAction) }
+        // По итогу метода requestPermissions будет запущен permissionsResultCallback
         requestPermissions(storagePermissions)
     }
 }

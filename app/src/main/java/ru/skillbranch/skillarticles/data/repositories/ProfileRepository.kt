@@ -19,4 +19,8 @@ object ProfileRepository {
         prefs.replaceAvatarUrl(url)
     }
 
+    suspend fun removeAvatar() {
+        network.remove(prefs.accessToken)
+        prefs.removeAvatar()
+    }
 }

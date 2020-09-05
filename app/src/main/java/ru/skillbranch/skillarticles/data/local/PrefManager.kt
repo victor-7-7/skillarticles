@@ -33,6 +33,10 @@ object PrefManager {
         profile = profile!!.copy(avatar = url)
     }
 
+    fun removeAvatar() {
+        profile = profile!!.copy(avatar = null)
+    }
+
     //===============================================================
 
     val isAuthLive: LiveData<Boolean> by lazy {
@@ -68,11 +72,9 @@ object PrefManager {
         isDarkMode = false
         root.delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_NO
         isBigText = false
+        // Do user logout
         accessToken = ""
         refreshToken = ""
-        profile = null
-        // Do user logout
-        preferences.edit().putString("accessToken", "").apply()
     }
 
     // Callback SharedPreferences.OnSharedPreferenceChangeListener

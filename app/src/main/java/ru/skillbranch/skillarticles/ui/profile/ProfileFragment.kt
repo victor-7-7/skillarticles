@@ -74,11 +74,12 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
 
     private val settingResultCallback = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        // todo: do something with result after closing settings activity
+    ) { result -> // ActivityResult{resultCode=RESULT_CANCELED, data=null}
+        Log.d("M_S_ProfileFragment", "setting callback result: $result")
+        val action = ProfileFragmentDirections
+            .actionNavProfileToDialogAvatarActions(binding.avatar.isNotBlank())
+        viewModel.navigate(NavigationCommand.To(action.actionId, action.arguments))
     }
-
-    // lecture 12, t.c. 01:26:26
 
     private val cameraResultCallback = registerForActivityResult(
         ActivityResultContracts.TakePicture()
@@ -187,6 +188,10 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
             // launch callback for requested permissions
             permissionsResultCallback.launch(it.toTypedArray())
         }
+        // Указанный в теле блока хэндлер будет запущен в результате вызова
+        // функции startForResult(). Последняя в свою очередь вызывается из двух
+        // мест - из методов executePendingAction() и executeOpenSettings().
+        // Оба эти метода вызываются из одной функции - handleReturnedPermissions()
         viewModel.observePendingActions(viewLifecycleOwner) {
             when (it) {
                 is PendingAction.GalleryAction -> galleryResultCallback.launch(it.payload)

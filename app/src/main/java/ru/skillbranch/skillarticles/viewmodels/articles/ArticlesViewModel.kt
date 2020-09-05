@@ -32,7 +32,7 @@ class ArticlesViewModel(handle: SavedStateHandle) :
             .setInitialLoadSizeHint(50)
             .build()
     }
-    private val listData = Transformations.switchMap(state) {
+    private val listData = Transformations.switchMap(mediatorLiveState) {
         val filter = it.toArticleFilter()
         return@switchMap buildPageList(repository.rawQueryArticles(filter))
     }

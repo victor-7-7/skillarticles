@@ -97,4 +97,10 @@ interface RestService {
         @Part file: MultipartBody.Part?,
         @Header("Authorization") token: String
     ): UploadRes // возвращает серверую ссылку (URL) на выгруженный файл
+
+    // https://skill-articles.skill-branch.ru/api/v1/profile/avatar/remove
+    @PUT("profile/avatar/remove")
+    suspend fun remove(
+        @Header("Authorization") token: String
+    )
 }
