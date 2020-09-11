@@ -4,49 +4,74 @@ import ru.skillbranch.skillarticles.ui.base.Binding
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
+/** Делегат для переменной типа Т. Объект RenderProp должен быть
+ * объявлен внутри производного от Binding класса. У делегата может
+ * быть хэндлер, заданный при создании RenderProp, а также могут быть
+ * хэндлеры, добавленный (методом addListener) впоследствии. Все
+ * эти хэндлеры будут срабатывать при изменении переменной Т */
 class RenderProp<T : Any>(
-    var value: T,
+    var variable: T,
     private val needInit: Boolean = true,
     private val onChange: ((T) -> Unit)? = null
 ) : ReadWriteProperty<Binding, T> {
-
+    // Список хэндлеров, срабатывающих при изменении
+    // инкапсулированной переменной
     private val listeners: MutableList<() -> Unit> = mutableListOf()
 
-    fun bind() {
-        if (needInit) onChange?.invoke(value)
+    /** Метод вызывается при восстановлении фрагмента, в котором есть
+     * binding (не равный null) и данный объект RenderProp принадлежит
+     * этому binding. Если у объекта RenderProp свойство needInit не
+     * равно false и лямбда onChange не пустая, то эта лямбда будет
+     * вызвана с передачей ей значения variable */
+    fun initialBind() {
+        if (needInit) onChange?.invoke(variable)
     }
 
-    // method is called when there is using keyword <by>
-    // i.e. private var content: String by RenderProp("loading...") { ... }
+    /** Метод вызывается при создании объекта RenderProp. С его помощью можно
+     * расширить логику СОЗДАНИЯ объекта. Когда объект (справа от by) определяет
+     * метод provideDelegate, он будет вызван ДЛЯ СОЗДАНИЯ экземпляра делегата */
     operator fun provideDelegate(
         thisRef: Binding,
         prop: KProperty<*>
     ): ReadWriteProperty<Binding, T> {
-        val delegate = RenderProp(value, needInit, onChange)
+        // Создаем делегат для переменной типа Т
+        val delegate = RenderProp(variable, needInit, onChange)
+        // Регистрируем его в экземпляре байндинга, которому
+        // принадлежит переменная
         registerDelegate(thisRef, prop.name, delegate)
         return delegate
     }
 
-    override fun getValue(thisRef: Binding, property: KProperty<*>) = value
+    override fun getValue(thisRef: Binding, property: KProperty<*>) = variable
 
     override fun setValue(thisRef: Binding, property: KProperty<*>, value: T) {
-        if (value == this.value) return
-        this.value = value
-        onChange?.invoke(this.value)
+        if (value == variable) return
+        // Меняем значение переменной
+        variable = value
+        // Если есть хэндлер, заданный при создании делегата,
+        // вызываем его
+        onChange?.invoke(variable)
+        // Если есть слушатели, добавленные к делегату впоследствии,
+        // вызываем их
         if (listeners.isNotEmpty()) listeners.forEach { it.invoke() }
     }
 
+    /** Добавляем хэндлер в список хэндлеров для данного
+     * RenderProp делегата. Хэндлер сработает всякий раз,
+     * когда изменится переменная, инкапсулированная делегатом */
     fun addListener(listener: () -> Unit) {
         listeners.add(listener)
     }
 
-    // register new delegate for property in Binding
+    /** Добавляем данный делегат в map-коллекцию делегатов.
+     * Коллекция находится в экземпляре класса (производного
+     * от Binding), владеющего данным делегатом */
     private fun registerDelegate(
         thisRef: Binding,
         name: String,
         delegate: RenderProp<T>
     ) {
-        thisRef.delegates[name] = delegate
+        thisRef.renderPropsMap[name] = delegate
     }
 }
 

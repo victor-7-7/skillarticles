@@ -225,7 +225,7 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
         // именем, в который (файл) можем записывать и получать его Uri
         val tempFile = File.createTempFile(
             "JPEG_$timestamp",
-            "jpg",
+            ".jpg",
             storageDir
         )
         // Return content: Uri (not file: Uri)
@@ -236,7 +236,7 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
             tempFile
         )
         Log.d(
-            "M_S_ProfileFragment", "prepareTempUri: " +
+            "M_S_ProfileFragment", "prepareContentUri: " +
                     "file uri: ${tempFile.toUri()} content uri: $contentUri"
         )
         // Контентный uri можно передавать во внешние приложения,

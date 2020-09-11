@@ -53,21 +53,16 @@ abstract class BaseViewModel<T : IViewModelState>(
     val currentState
         get() = mediatorLiveState.value!!
 
-
-    /***
-     * Функция принимает лямбду, аргументом которой является текущее состояние
-     * вьюмодел стейта Т. Тело лямбды создает модифицированное состояние для
-     * вьюмодел стейта. Затем функция присваивает это модифицированное состояние
-     * тому, которое инкапсулировано в медиаторе (mediatorLiveState.value = newState).
-     * Медиатор проверит все источники данных (добавленных к нему ранее) и вызовет
-     * хэндлеры тех из них, данные которых были затронуты данным апдейтом.
-     * Поскольку медиатор сам производен от LiveData, то сработают также и
-     * хэндлеры наблюдателей, которые подписаны на сам медиатор (если таковые имеются)
+    /**
+     * Функция принимает первым аргументом владельца жизненного цикла
+     * фрагмента (с которым связана вьюмодел), вторым аргументом - лямбду.
+     * Функция создает обзервер с этой лямбдой и добавляет обзервер в список
+     * наблюдателей за стейтом, инкапсулированном в медиаторе mediatorLiveState
+     * (MediatorLiveData<T>). Каждый раз при изменении вьюмодел стейта Т
+     * сработает лямбда, аргумент которой - новое состояние Т вью модели.
      */
-    @UiThread
-    protected inline fun updateState(update: (currentState: T) -> T) {
-        val updatedState: T = update(currentState)
-        mediatorLiveState.value = updatedState
+    fun observeState(owner: LifecycleOwner, onChanged: (newState: T) -> Unit) {
+        mediatorLiveState.observe(owner, Observer { onChanged(it!!) })
     }
 
     /***
@@ -91,6 +86,23 @@ abstract class BaseViewModel<T : IViewModelState>(
             mediatorLiveState.value = onChanged(it, currentState) ?: return@addSource
         }
     }
+
+    /***
+     * Функция принимает лямбду, аргументом которой является текущее состояние
+     * вьюмодел стейта Т. Тело лямбды создает модифицированное состояние для
+     * вьюмодел стейта. Затем функция присваивает это модифицированное состояние
+     * тому, которое инкапсулировано в медиаторе (mediatorLiveState.value = newState).
+     * Медиатор проверит все источники данных (добавленных к нему ранее) и вызовет
+     * хэндлеры тех из них, данные которых были затронуты данным апдейтом.
+     * Поскольку медиатор сам производен от LiveData, то сработают также и
+     * хэндлеры наблюдателей, которые подписаны на сам медиатор (если таковые имеются)
+     */
+    @UiThread
+    protected inline fun updateState(update: (currentState: T) -> T) {
+        val updatedState: T = update(currentState)
+        mediatorLiveState.value = updatedState
+    }
+
 
     /***
      * Функция для создания уведомления пользователя о событии (событие
@@ -128,14 +140,6 @@ abstract class BaseViewModel<T : IViewModelState>(
      */
     fun observeLoading(owner: LifecycleOwner, onChanged: (newState: Loading) -> Unit) {
         loading.observe(owner, Observer { onChanged(it!!) })
-    }
-
-    /**
-     * Более компактная форма записи observe() метода LiveData. Функция принимает
-     * последним аргументом лямбда-выражение, обрабатывающее изменившееся состояние
-     */
-    fun observeState(owner: LifecycleOwner, onChanged: (newState: T) -> Unit) {
-        mediatorLiveState.observe(owner, Observer { onChanged(it!!) })
     }
 
     /***

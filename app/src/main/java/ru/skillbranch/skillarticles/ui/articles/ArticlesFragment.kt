@@ -233,7 +233,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
             selectedCategories = data.selectedCategories
         }
 
-        override val afterInflated: (() -> Unit)? = {
+        override val afterFragmentInflatedHandler: (() -> Unit)? = {
             dependsOn<Boolean, List<String>>(::isHashtagSearch, ::tags) { ihs, tags ->
                 val cursor = MatrixCursor(arrayOf(BaseColumns._ID, "tag"))
                 if (ihs && tags.isNotEmpty())

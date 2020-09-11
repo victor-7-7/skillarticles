@@ -65,3 +65,19 @@ val Context.isNetworkAvailable: Boolean
         }
     }
 
+
+const val chSamsara = "\u058D"
+const val chShekel = "\u20AA"
+const val chIdentical = "\u2261"
+const val chSquare = "\u2588"
+const val chCircle = "\u25CF"
+const val chAin = "\u1D25"
+const val chBrick = "\u25AC"
+
+fun getMeasureSpecMode(spec: Int) =
+    when (View.MeasureSpec.getMode(spec)) {
+        View.MeasureSpec.UNSPECIFIED -> "UNSPECIFIED"
+        View.MeasureSpec.AT_MOST -> "AT_MOST"
+        View.MeasureSpec.EXACTLY -> "EXACTLY"
+        else -> throw IllegalArgumentException("Invalid measure spec value")
+    }

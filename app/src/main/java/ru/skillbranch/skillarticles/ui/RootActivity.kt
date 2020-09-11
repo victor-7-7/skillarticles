@@ -9,7 +9,7 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.layout_bottombar.*
 import ru.skillbranch.skillarticles.R
-import ru.skillbranch.skillarticles.extensions.selectDestination
+import ru.skillbranch.skillarticles.extensions.selectMenuItem
 import ru.skillbranch.skillarticles.ui.base.BaseActivity
 import ru.skillbranch.skillarticles.viewmodels.RootViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
@@ -59,8 +59,10 @@ class RootActivity : BaseActivity<RootViewModel>() {
                 )
             }
             // set bottom navigation item selected
-            nav_view.selectDestination(dest)
+            nav_view.selectMenuItem(dest)
         }
+
+
     }
 
     override fun renderNotification(notify: Notify) {

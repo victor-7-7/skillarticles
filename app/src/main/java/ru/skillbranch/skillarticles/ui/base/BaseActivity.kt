@@ -198,6 +198,8 @@ class BottombarBuilder {
     private val views = mutableListOf<Int>()
     private val viewsIds = mutableListOf<Int>()
 
+    /** Метод добавляет ресурсный идентификатор лейаута
+     * в интовую лист-переменную боттомбар билдера */
     fun addView(layoutId: Int): BottombarBuilder {
         views.add(layoutId)
         return this
@@ -214,7 +216,7 @@ class BottombarBuilder {
         return this
     }
 
-    fun invalidate(): BottombarBuilder {
+    private fun invalidate(): BottombarBuilder {
         visible = true
         views.clear()
         return this

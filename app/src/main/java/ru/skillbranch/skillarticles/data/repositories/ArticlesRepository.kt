@@ -72,11 +72,11 @@ object ArticlesRepository : IArticlesRepository {
     override suspend fun toggleBookmark(articleId: String): Boolean =
         articlePersonalInfosDao.toggleBookmarkOrInsert(articleId)
 
-    /*
-        override suspend fun toggleLike(articleId: String) {
-            articlePersonalInfosDao.toggleLikeOrInsert(articleId)
-        }
-    */
+/*
+    override suspend fun toggleLike(articleId: String) {
+        articlePersonalInfosDao.toggleLikeOrInsert(articleId)
+    }
+*/
     override fun findTags(): LiveData<List<String>> = tagsDao.findTags()
 
     override fun findCategoriesData(): LiveData<List<CategoryData>> =

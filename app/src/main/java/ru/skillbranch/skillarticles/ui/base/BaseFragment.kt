@@ -25,34 +25,44 @@ abstract class BaseFragment<T : BaseViewModel<out IViewModelState>> : Fragment()
     val toolbar: MaterialToolbar
         get() = root.toolbar
 
-    //set listeners, tuning views
+    /** Set listeners, tune views */
     abstract fun setupViews()
 
+    // This will be called between onCreate() and onViewCreated()
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? = inflater.inflate(layout, container, false)
 
-
+    // Called immediately after onCreateView() has returned, but before
+    // any saved state has been restored in to the view. The fragment's
+    // view hierarchy is not however attached to its parent at this point
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         //restore state
         viewModel.restoreState()
         binding?.restoreUi(savedInstanceState)
 
-        //owner it is view
+        /** Добавляем наблюдателя за стейтом вью модели данного фрагмента.
+         * Если у фрагмента свойство binding не null, то при каждом
+         * изменении стейта будет срабатывать метод bind объекта binding */
         viewModel.observeState(viewLifecycleOwner) {
             binding?.bind(it)
         }
         //bind default values if viewmodel not loaded data
-        if (binding?.isInflated == false) binding?.onFinishInflate()
+        binding?.onFinishFragmentInflate()
 
         viewModel.observeNotification(viewLifecycleOwner) { root.renderNotification(it) }
         viewModel.observeNavigation(viewLifecycleOwner) { root.viewModel.navigate(it) }
         viewModel.observeLoading(viewLifecycleOwner) { renderLoading(it) }
     }
 
+    // This is called after onViewCreated() and before onStart(). Called
+    // when all saved state has been restored into the view hierarchy
+    // of the fragment. This can be used to do initialization based on
+    // saved state that you are letting the view hierarchy track itself,
+    // such as whether check box widgets are currently checked and etc.
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
         //prepare toolbar
@@ -65,6 +75,9 @@ abstract class BaseFragment<T : BaseViewModel<out IViewModelState>> : Fragment()
             .build(root)
 
         setupViews()
+        /** Если у восстановленного фрагмента свойство binding
+         * не null, то делаем реинициализацию каждого RenderProp
+         * объекта, принадлежащего binding */
         binding?.rebind()
     }
 

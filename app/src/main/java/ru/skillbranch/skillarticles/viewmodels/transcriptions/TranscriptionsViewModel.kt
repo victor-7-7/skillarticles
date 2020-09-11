@@ -18,7 +18,7 @@ class TranscriptionsViewModel(handle: SavedStateHandle) :
         if (isPrefsDefault) return
 
         launchSafety {
-            // Убираем аватар юзер с сервера и из настроек
+            // Убираем аватар юзера с сервера и из настроек
             if (PrefManager.profile?.avatar != null)
                 ProfileRepository.removeAvatar()
             // Делаем ресет остальных настроек на девайсе

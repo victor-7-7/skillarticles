@@ -324,7 +324,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             }
         }
         private var isDarkMode: Boolean by RenderProp(
-            value = false,
+            variable = false,
             needInit = false
         ) { dark ->
             submenu.switch_mode.isChecked = dark
@@ -391,7 +391,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             }
         }
 
-        override val afterInflated: (() -> Unit)? = {
+        override val afterFragmentInflatedHandler: (() -> Unit)? = {
             dependsOn<Boolean, Boolean, List<Pair<Int, Int>>, Int>(
                 ::isLoadingContent,
                 ::isSearch,

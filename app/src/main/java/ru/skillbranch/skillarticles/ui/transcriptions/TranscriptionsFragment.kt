@@ -11,7 +11,6 @@ class TranscriptionsFragment : BaseFragment<TranscriptionsViewModel>() {
     override val viewModel: TranscriptionsViewModel by viewModels()
     override val layout = R.layout.fragment_transcriptions
 
-
     override fun setupViews() {
         btn_reset.setOnClickListener {
             viewModel.resetAllPreferences(root)

@@ -22,7 +22,6 @@ class AuthViewModel(handle: SavedStateHandle) : BaseViewModel<AuthState>(handle,
             repository.login(login, pass)
             navigate(NavigationCommand.FinishLogin(dest))
         }
-
     }
 }
 

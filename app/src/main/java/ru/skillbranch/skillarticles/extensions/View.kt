@@ -44,7 +44,7 @@ fun View.setPaddingOptionally(
     requestLayout()
 }
 
-fun View.getIdName() = if (id == View.NO_ID) "NO_ID"
+fun View.getIdName(): String = if (id == View.NO_ID) "NO_ID"
 else try {
     // Если view-объект создается программно и ему в рантайм присваивается
     // id методом setId(View.generateViewId()), то у view будет id, но
@@ -66,11 +66,15 @@ fun ViewGroup.restoreChildViewStates(childViewStates: SparseArray<Parcelable>) {
     children.forEach { child -> child.restoreHierarchyState(childViewStates) }
 }
 
-fun BottomNavigationView.selectDestination(destination: NavDestination) {
+fun BottomNavigationView.selectMenuItem(destination: NavDestination) {
     val item = menu.findItem(destination.id)
+    // Если меню айтем соответствует (по id) дестинейшен-id - чекаем его
     if (item != null)
         item.isChecked = true
     else {
+        // Дестинейшен-id не соответствует никаким айтемам в боттомбаре.
+        // Значит это был дестинейшн-id -> R.id.nav_auth и выполнена навигация
+        // к R.id.nav_profile
         menu.findItem(R.id.nav_profile).isChecked = true
     }
 }
