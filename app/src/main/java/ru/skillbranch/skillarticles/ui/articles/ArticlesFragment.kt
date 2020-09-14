@@ -86,8 +86,8 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
             context,
             android.R.layout.simple_list_item_1,
             null, // cursor
-            arrayOf("tag"), // cursor columns for bind on view
-            intArrayOf(android.R.id.text1), // text view id for bind data from cursor
+            arrayOf("tag"), // from: cursor columns for bind on view
+            intArrayOf(android.R.id.text1), // to: text view id for bind data from cursor
             CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER
         )
         suggestionsAdapter.setFilterQueryProvider { constraint ->
@@ -240,6 +240,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
                     for ((counter, tag) in tags.withIndex()) {
                         cursor.addRow(arrayOf(counter, tag))
                     }
+                suggestionsAdapter.changeCursor(cursor)
             }
         }
 

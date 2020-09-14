@@ -11,7 +11,7 @@ interface CategoriesDao : BaseDao<Category> {
 
     @Query(
         """
-        SELECT category.title AS title, category.icon, category.category_id AS category_id, 
+        SELECT category.category_id AS category_id, category.icon, category.title AS title,  
         COUNT(article.category_id) AS articles_count
         FROM article_categories AS category 
         INNER JOIN articles AS article ON category.category_id = article.category_id

@@ -149,9 +149,14 @@ class ArticleFilter(
             // чтобы запрос выглядел так - WHERE first_name IN ('Sarah', 'Jane', 'Heather')
             // Если элементы - числа, то апострофы не нужны, например
             // WHERE employee_id IN (1, 2, 3, 4)
-            // todo: change implementation??? Lecture 12, 02:09:24
+            // Look at video - Lecture 12, 02:09:24
+            // До лекции 12 категории брались из датахолдера, там идентификаторы
+            // категорий были числоподобными строками ("1" или "5" и т.п) и поэтому
+            // условие "category_id IN (${categories.joinToString(", ")})" работало.
+            // Начиная с лекции 12 категории берутся из сети и идентификаторы уже
+            // не числоподобны ("5f27d6cb83218a001d05964f"). Поэтому меняем условие
             if (categories.isNotEmpty()) appendWhere(
-                "category_id IN (${categories.joinToString(", ")})"
+                "category_id IN ('${categories.joinToString("', '")}')"
             )
             orderBy("date")
         }

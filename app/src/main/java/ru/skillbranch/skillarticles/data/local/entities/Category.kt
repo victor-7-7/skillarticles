@@ -30,22 +30,16 @@ data class CategoryData(
         parcel.readString()!!,
         parcel.readInt()
     )
-
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(categoryId)
         parcel.writeString(icon)
         parcel.writeString(title)
         parcel.writeInt(articlesCount)
     }
-
     override fun describeContents() = 0
 
     companion object CREATOR : Parcelable.Creator<CategoryData> {
-        override fun createFromParcel(parcel: Parcel): CategoryData {
-            return CategoryData(parcel)
-        }
-        override fun newArray(size: Int): Array<CategoryData?> {
-            return arrayOfNulls(size)
-        }
+        override fun createFromParcel(parcel: Parcel) = CategoryData(parcel)
+        override fun newArray(size: Int): Array<CategoryData?> = arrayOfNulls(size)
     }
 }
