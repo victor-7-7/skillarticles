@@ -84,16 +84,19 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
         super.onCreate(savedInstanceState)
         suggestionsAdapter = SimpleCursorAdapter(
             context,
-            android.R.layout.simple_list_item_1,
+            R.layout.item_suggestion,
             null, // cursor
-            arrayOf("tag"), // from: cursor columns for bind on view
-            intArrayOf(android.R.id.text1), // to: text view id for bind data from cursor
+            // FROM: names of cursor columns for bind on view
+            arrayOf("tag"),
+            // TO: text view id for bind data from cursor
+            intArrayOf(android.R.id.text1),
             CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER
         )
         suggestionsAdapter.setFilterQueryProvider { constraint ->
             populateAdapter(constraint)
         }
         setHasOptionsMenu(true)
+        val t = android.R.layout.simple_list_item_1
     }
 
     private fun populateAdapter(constraint: CharSequence?): Cursor {
@@ -234,6 +237,10 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
         }
 
         override val afterFragmentInflatedHandler: (() -> Unit)? = {
+            Log.d(
+                "M_S_ArticlesBinding", "trigger " +
+                        "afterFragmentInflatedHandler: invoke dependsOn method"
+            )
             dependsOn<Boolean, List<String>>(::isHashtagSearch, ::tags) { ihs, tags ->
                 val cursor = MatrixCursor(arrayOf(BaseColumns._ID, "tag"))
                 if (ihs && tags.isNotEmpty())
@@ -241,6 +248,12 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
                         cursor.addRow(arrayOf(counter, tag))
                     }
                 suggestionsAdapter.changeCursor(cursor)
+                Log.d(
+                    "M_S_ArticlesBinding", "trigger dependsOn handler: " +
+                            "for isHashtagSearch/tags: isHashtagSearch = $isHashtagSearch " +
+                            "tags is not empty = ${tags.isNotEmpty()} new cursor " +
+                            "size - ${cursor.count}"
+                )
             }
         }
 

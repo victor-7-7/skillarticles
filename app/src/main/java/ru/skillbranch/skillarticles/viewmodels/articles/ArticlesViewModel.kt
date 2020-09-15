@@ -216,7 +216,8 @@ private fun ArticlesState.toArticleFilter() =
 data class ArticlesState(
     val isSearch: Boolean = false,
     val searchQuery: String? = null,
-    val isLoading: Boolean = true, // статьи в процессе загрузки из сети?
+    /** статьи в процессе загрузки из сети? */
+    val isLoading: Boolean = true,
     val onlyBookmarkedArticles: Boolean = false,
     val selectedCategories: List<String> = emptyList(), // e.g. ["1","5","7"]
     val isHashtagSearch: Boolean = false
