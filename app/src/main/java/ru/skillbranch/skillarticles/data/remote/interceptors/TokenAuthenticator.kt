@@ -21,6 +21,8 @@ class TokenAuthenticator : Authenticator {
     override fun authenticate(route: Route?, response: Response): Request? {
         if (response.code != 401) return null
 
+        // На сервере https://skill-articles.skill-branch.ru/api/v1 токен
+        // авторизации протухает через 1 минуту (lecture 12 t.c. 01:52:05)
         val resp = network.refreshAccessToken(
             RefreshReq(prefs.refreshToken)
         ).execute()

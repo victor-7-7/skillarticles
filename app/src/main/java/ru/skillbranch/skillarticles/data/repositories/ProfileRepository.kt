@@ -5,6 +5,7 @@ import okhttp3.MultipartBody
 import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.data.models.User
 import ru.skillbranch.skillarticles.data.remote.NetworkManager
+import ru.skillbranch.skillarticles.data.remote.req.EditProfileReq
 
 object ProfileRepository {
     private val prefs = PrefManager
@@ -22,5 +23,10 @@ object ProfileRepository {
     suspend fun removeAvatar() {
         network.remove(prefs.accessToken)
         prefs.removeAvatar()
+    }
+
+    suspend fun editProfile(name: String, about: String) {
+        network.edit(EditProfileReq(name, about), prefs.accessToken)
+        prefs.editProfile(name, about)
     }
 }

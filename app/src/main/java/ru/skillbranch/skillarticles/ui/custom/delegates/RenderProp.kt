@@ -1,4 +1,4 @@
-package ru.skillbranch.skillarticles.ui.delegates
+package ru.skillbranch.skillarticles.ui.custom.delegates
 
 import ru.skillbranch.skillarticles.ui.base.Binding
 import kotlin.properties.ReadWriteProperty
@@ -7,7 +7,7 @@ import kotlin.reflect.KProperty
 /** Делегат для переменной типа Т. Объект RenderProp должен быть
  * объявлен внутри производного от Binding класса. У делегата может
  * быть хэндлер, заданный при создании RenderProp, а также могут быть
- * хэндлеры, добавленный (методом addListener) впоследствии. Все
+ * хэндлеры, добавленные (методом addListener) впоследствии. Все
  * эти хэндлеры будут срабатывать при изменении переменной Т */
 class RenderProp<T : Any>(
     var variable: T,

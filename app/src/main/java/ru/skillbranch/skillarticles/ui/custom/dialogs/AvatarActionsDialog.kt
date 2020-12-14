@@ -1,4 +1,4 @@
-package ru.skillbranch.skillarticles.ui.dialogs
+package ru.skillbranch.skillarticles.ui.custom.dialogs
 
 import android.content.pm.PackageManager.FEATURE_CAMERA_ANY
 import android.os.Bundle
@@ -48,6 +48,7 @@ class AvatarActionsDialog : BottomSheetDialogFragment() {
             // Закрываем этот фрагмент
             dismiss()
         }
+
         item_gallery.setOnClickListener {
             setFragmentResult(
                 AVATAR_ACTIONS_KEY, bundleOf(
@@ -56,6 +57,7 @@ class AvatarActionsDialog : BottomSheetDialogFragment() {
             )
             dismiss()
         }
+
         val hasAvatar = args.hasAvatar
         // Если нет изображения (стоит плейсхолдер - vector drawable),
         // то и редактировать нечего
@@ -68,6 +70,7 @@ class AvatarActionsDialog : BottomSheetDialogFragment() {
             )
             dismiss()
         }
+
         // Если нет изображения, то и удалять нечего
         item_delete.isVisible = hasAvatar
         item_delete.setOnClickListener {

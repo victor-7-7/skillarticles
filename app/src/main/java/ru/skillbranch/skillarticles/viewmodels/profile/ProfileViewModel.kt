@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
 import android.provider.Settings
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -45,12 +46,13 @@ class ProfileViewModel(handle: SavedStateHandle) :
         }
     }
 
-    private fun startForResult(action: PendingAction) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun startForResult(action: PendingAction) {
         pendingActionLive.value = Event(action)
     }
 
     // lecture 12, t.c. 01:12:00
-    fun handleReturnedPermissions(
+    fun handlePermission(
         permissionsResult: Map<String, Pair<Boolean, Boolean>>
     ) {
         // Если в очередном элементе мапы разрешение предоставлено, то в
@@ -71,10 +73,11 @@ class ProfileViewModel(handle: SavedStateHandle) :
             // Если все разрешения предоставлены (чтение/запись файла), то
             // выполняем действие
             isAllGranted -> executePendingAction()
-            // if request permission not may be shown ("don't ask again" checked)
+            // if request permission can not be shown ("don't ask again" checked)
             // show app settings for manual permission
             !isAllMayBeShown -> executeOpenSettings()
-            // else retry request permission
+            // Юзер не дал разрешение(й), но не запретил их запрашивать снова
+            // retry request permission
             else -> {
                 val msg = Notify.ErrorMessage(
                     "Need permissions for storage",
@@ -86,19 +89,24 @@ class ProfileViewModel(handle: SavedStateHandle) :
         }
     }
 
-    private fun executePendingAction() {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun executePendingAction() {
         // Если отложенное действие во вьюмодел стейте null, то выходим
         val pendingAction = currentState.pendingAction ?: return
         // Запускаем отложенное действие
         startForResult(pendingAction)
     }
 
-    private fun executeOpenSettings() {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun executeOpenSettings() {
+        // Готовим хэндлер
         val errHandler = {
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
             intent.data = Uri.parse("package:ru.skillbranch.skillarticles")
+            // Интент откроет системную страницу настроек данного приложения
             startForResult(PendingAction.SettingsAction(intent))
         }
+        // Предлагаем юзеру открыть настройки, чтобы задать разрешения
         notify(
             Notify.ErrorMessage(
                 "Need permissions for storage",
@@ -128,23 +136,24 @@ class ProfileViewModel(handle: SavedStateHandle) :
         }
     }
 
-    // Для тестов
+    // ТЕСТОВЫЙ МЕТОД
     fun handleTestAction(source: Uri, destination: Uri) {
 /*
         // lecture 12, time code 01:09:38
         // Если бы нам надо было выбрать из галереи изображения
         // с расширением jpeg
         val pendingAction = PendingAction.GalleryAction("image/jpeg")
-*/ /*
+*//*
         // lecture 12, time code 01:33:27
         // Выбираем файл из хранилища по указанному uri
          val pendingAction = PendingAction.CameraAction(uri)
-*/ /*
+*//*
         // lecture 12, time code 01:37:50
         val pendingAction = PendingAction.EditAction(source to destination)
+
         updateState { it.copy(pendingAction = pendingAction) }
         requestPermissions(storagePermissions)
-*/
+        */
     }
 
     // Здесь мы подписываемся на прослушивание изменений только
@@ -165,7 +174,6 @@ class ProfileViewModel(handle: SavedStateHandle) :
         updateState {
             it.copy(pendingAction = PendingAction.CameraAction(destination))
         }
-        // По итогу метода requestPermissions будет запущен permissionsResultCallback
         requestPermissions(storagePermissions)
     }
 
@@ -175,7 +183,6 @@ class ProfileViewModel(handle: SavedStateHandle) :
         updateState {
             it.copy(pendingAction = PendingAction.GalleryAction("image/jpeg"))
         }
-        // По итогу метода requestPermissions будет запущен permissionsResultCallback
         requestPermissions(storagePermissions)
     }
 
@@ -188,8 +195,11 @@ class ProfileViewModel(handle: SavedStateHandle) :
         // Меняем поле pendingAction в стейте вьюмодел (ProfileState).
         // При этом никакие обработчики не будут вызваны
         updateState { it.copy(pendingAction = pendingAction) }
-        // По итогу метода requestPermissions будет запущен permissionsResultCallback
         requestPermissions(storagePermissions)
+    }
+
+    fun handleEditProfile(name: String, about: String) {
+        launchSafety { repository.editProfile(name, about) }
     }
 }
 

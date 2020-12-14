@@ -25,7 +25,7 @@ import ru.skillbranch.skillarticles.ui.base.BaseFragment
 import ru.skillbranch.skillarticles.ui.base.Binding
 import ru.skillbranch.skillarticles.ui.base.MenuItemHolder
 import ru.skillbranch.skillarticles.ui.base.ToolbarBuilder
-import ru.skillbranch.skillarticles.ui.delegates.RenderProp
+import ru.skillbranch.skillarticles.ui.custom.delegates.RenderProp
 import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesState
 import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
@@ -40,7 +40,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
     private val args: ArticlesFragmentArgs by navArgs()
     private lateinit var suggestionsAdapter: SimpleCursorAdapter
 
-    override val prepareToolbar: (ToolbarBuilder.() -> Unit)? = {
+    override val prepareToolbar: ToolbarBuilder.() -> Unit = {
         addMenuItem(
             MenuItemHolder(
                 "Search",
@@ -96,7 +96,6 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
             populateAdapter(constraint)
         }
         setHasOptionsMenu(true)
-        val t = android.R.layout.simple_list_item_1
     }
 
     private fun populateAdapter(constraint: CharSequence?): Cursor {
@@ -236,7 +235,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
             selectedCategories = data.selectedCategories
         }
 
-        override val afterFragmentInflatedHandler: (() -> Unit)? = {
+        override val afterFragmentInflatedHandler: () -> Unit = {
             Log.d(
                 "M_S_ArticlesBinding", "trigger " +
                         "afterFragmentInflatedHandler: invoke dependsOn method"

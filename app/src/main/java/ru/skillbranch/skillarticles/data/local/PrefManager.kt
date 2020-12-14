@@ -34,8 +34,13 @@ object PrefManager {
     }
 
     fun removeAvatar() {
-        profile = profile!!.copy(avatar = null)
+        profile = profile!!.copy(avatar = "")
     }
+
+    fun editProfile(name: String, about: String) {
+        profile = profile!!.copy(name = name, about = about)
+    }
+
 
     //===============================================================
 

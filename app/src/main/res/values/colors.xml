@@ -16,4 +16,7 @@
     <color name="color_divider">#1F000000</color>
     <color name="color_divider2">#FC4C4C</color>
 
+    <color name="color_transparent">#00000000</color>
+    <color name="color_edit">#AAAAAA</color>
+
 </resources>

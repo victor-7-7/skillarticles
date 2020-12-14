@@ -3,6 +3,7 @@ package ru.skillbranch.skillarticles.data.remote
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.http.*
+import ru.skillbranch.skillarticles.data.remote.req.EditProfileReq
 import ru.skillbranch.skillarticles.data.remote.req.LoginReq
 import ru.skillbranch.skillarticles.data.remote.req.MessageReq
 import ru.skillbranch.skillarticles.data.remote.req.RefreshReq
@@ -14,7 +15,7 @@ interface RestService {
     // параметр last будет null. Если limit < 0, например (-12), значит сервер
     // должен отдать 12 статейных айтемов, расположенных в базе сервера после
     // айтема с идентификатором из параметра last
-    // https://skill-articles.skill-branch.ru/api/v1/articles?last=articleId&limit=10
+    // https://skill-articles.skill-branch.ru/api/v1/articles?last={articleId}&limit=10
     @GET("articles")
     suspend fun articles(
         @Query("last") last: String? = null,
@@ -103,4 +104,12 @@ interface RestService {
     suspend fun remove(
         @Header("Authorization") token: String
     )
+
+    // https://skill-articles.skill-branch.ru/api/v1/profile
+    @PUT("profile")
+    suspend fun edit(
+        @Body editProfileReq: EditProfileReq,
+        @Header("Authorization") token: String
+    ) // : EditProfileRes ????
+
 }

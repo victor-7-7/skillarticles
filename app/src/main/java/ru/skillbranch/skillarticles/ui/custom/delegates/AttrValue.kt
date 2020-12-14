@@ -1,4 +1,4 @@
-package ru.skillbranch.skillarticles.ui.delegates
+package ru.skillbranch.skillarticles.ui.custom.delegates
 
 import android.content.Context
 import android.content.res.Resources

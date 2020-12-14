@@ -35,8 +35,8 @@ import ru.skillbranch.skillarticles.extensions.*
 import ru.skillbranch.skillarticles.ui.base.*
 import ru.skillbranch.skillarticles.ui.custom.ArticleSubmenu
 import ru.skillbranch.skillarticles.ui.custom.Bottombar
+import ru.skillbranch.skillarticles.ui.custom.delegates.RenderProp
 import ru.skillbranch.skillarticles.ui.custom.markdown.MarkdownBuilder
-import ru.skillbranch.skillarticles.ui.delegates.RenderProp
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
@@ -66,7 +66,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             et_comment.context.showKeyboard(et_comment)
         }
     }
-    override val prepareToolbar: (ToolbarBuilder.() -> Unit)? = {
+    override val prepareToolbar: (ToolbarBuilder.() -> Unit) = {
         this.setSubtitle(args.category)
             .setLogo(args.categoryIcon)
             .addMenuItem(
@@ -78,7 +78,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
                 )
             )
     }
-    override val prepareBottombar: (BottombarBuilder.() -> Unit)? = {
+    override val prepareBottombar: (BottombarBuilder.() -> Unit) = {
         this.addView(R.layout.layout_submenu)
             .addView(R.layout.layout_bottombar)
             .setVisibility(false)
@@ -391,7 +391,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             }
         }
 
-        override val afterFragmentInflatedHandler: (() -> Unit)? = {
+        override val afterFragmentInflatedHandler: () -> Unit = {
             dependsOn<Boolean, Boolean, List<Pair<Int, Int>>, Int>(
                 ::isLoadingContent,
                 ::isSearch,

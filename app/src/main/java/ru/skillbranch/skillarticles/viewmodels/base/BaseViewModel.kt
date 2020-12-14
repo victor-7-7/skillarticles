@@ -28,10 +28,10 @@ abstract class BaseViewModel<T : IViewModelState>(
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     val permissions = MutableLiveData<Event<List<String>>>()
 
-    private val loading = MutableLiveData<Loading>(Loading.HIDE_LOADING)
+    private val loading = MutableLiveData(Loading.HIDE_LOADING)
 
     /***
-     * Объект MediatorLiveData<T>, инкапсулирующий вьюмодел стейт Т.
+     * Объект MediatorLiveData&lt;T&gt;, инкапсулирующий вьюмодел стейт Т.
      * Инициализируется вторым аргументом конструктора класса BaseViewModel
      * (mediatorLiveState.value = initState). Используется для отслеживания
      * изменений в источниках данных, которые будут добавлены к нему методом
@@ -58,7 +58,7 @@ abstract class BaseViewModel<T : IViewModelState>(
      * фрагмента (с которым связана вьюмодел), вторым аргументом - лямбду.
      * Функция создает обзервер с этой лямбдой и добавляет обзервер в список
      * наблюдателей за стейтом, инкапсулированном в медиаторе mediatorLiveState
-     * (MediatorLiveData<T>). Каждый раз при изменении вьюмодел стейта Т
+     * (MediatorLiveData&lt;T&gt;). Каждый раз при изменении вьюмодел стейта Т
      * сработает лямбда, аргумент которой - новое состояние Т вью модели.
      */
     fun observeState(owner: LifecycleOwner, onChanged: (newState: T) -> Unit) {
@@ -67,7 +67,7 @@ abstract class BaseViewModel<T : IViewModelState>(
 
     /***
      * Функция принимает новый источник LiveData и лямбду. Функция добавляет
-     * этот источник к медиатору MediatorLiveData<T> (инкапсулирующему
+     * этот источник к медиатору MediatorLiveData&lt;T&gt; (инкапсулирующему
      * вьюмодел стейт Т), который теперь начинает слушать изменения в этом
      * источнике. При возникновении изменений в источнике будет вызвана
      * лямбда с двумя аргументами - изменившиеся данные источника и текущее
@@ -98,7 +98,8 @@ abstract class BaseViewModel<T : IViewModelState>(
      * хэндлеры наблюдателей, которые подписаны на сам медиатор (если таковые имеются)
      */
     @UiThread
-    protected inline fun updateState(update: (currentState: T) -> T) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    inline fun updateState(update: (currentState: T) -> T) {
         val updatedState: T = update(currentState)
         mediatorLiveState.value = updatedState
     }
@@ -121,15 +122,15 @@ abstract class BaseViewModel<T : IViewModelState>(
 
     /**
      * Отображение индикатора загрузки. По умолчанию - не блокирующая загрузка
-     * */
-    protected fun setLoading(loadingType: Loading = Loading.SHOW_LOADING) {
+     */
+    private fun setLoading(loadingType: Loading = Loading.SHOW_LOADING) {
         loading.value = loadingType
     }
 
     /**
      * Скрытие индикатора загрузки
-     * */
-    protected fun hideLoading() {
+     */
+    private fun hideLoading() {
         loading.value = Loading.HIDE_LOADING
     }
 
@@ -225,15 +226,23 @@ abstract class BaseViewModel<T : IViewModelState>(
         }
     }
 
-    /** Спрашиваем у системы - есть ли у нашего приложения разрешения на
-     * перечисленные действия. Сработает лямбда-обработчик, заданный
-     * в методе observeRequestedPermissions() */
+    /**
+     * Спрашиваем у системы - есть ли у нашего приложения разрешения на
+     * перечисленные действия. Метод обновит LiveData. В результате
+     * сработает лямбда (заданная в методе observeRequestedPermissions),
+     * которая и сделает запрос к системе
+     */
     fun requestPermissions(requestedPermissions: List<String>) {
+        // Для ProfileViewModel параметр requestedPermissions
+        // во всех вызовах метода один и тот же, однако при каждом
+        // вызове создается новый объект Event
         permissions.value = Event(requestedPermissions)
     }
 
-    /** Если приложение запросит у системы разрешения (через метод
-     * requestPermissions()), то сработает лямбда-обработчик */
+    /**
+     * Если приложение запросит у системы разрешения (через метод
+     * requestPermissions()), то сработает лямбда-обработчик handle
+     */
     fun observeRequestedPermissions(
         owner: LifecycleOwner,
         handle: (requestedPermissions: List<String>) -> Unit
@@ -297,7 +306,6 @@ sealed class Notify {
 }
 
 sealed class NavigationCommand {
-
     data class To(
         val destination: Int,
         val args: Bundle? = null,
