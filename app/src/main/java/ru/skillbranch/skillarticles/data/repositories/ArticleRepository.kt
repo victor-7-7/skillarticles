@@ -327,5 +327,5 @@ class CommentsDataSource(
         )
     }
 
-    override fun getKey(item: CommentRes): String = item.id
+    override fun getKey(item: CommentRes): String = item.slug
 }

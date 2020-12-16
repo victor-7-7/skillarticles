@@ -68,7 +68,7 @@ private const val IMAGE_GROUP = "(^!\\[[^\\[\\]]*?\\]\\(.*?\\)$)" // group 12
     /**
      * parse raw string to markdown text
      */
-    fun parseToMarkdownText(string: String): MarkdownText {
+    private fun parseToMarkdownText(string: String): MarkdownText {
         val elements = mutableListOf<Element>()
         elements.addAll(findElements(string))
         return MarkdownText(elements)

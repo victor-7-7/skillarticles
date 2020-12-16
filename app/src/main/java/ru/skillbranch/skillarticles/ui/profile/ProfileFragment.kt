@@ -456,6 +456,8 @@ class ProfileFragment() : BaseFragment<ProfileViewModel>() {
     fun prepareTempUri(): Uri {
         // Штамп - для уникальности имени файла
         val timestamp = SimpleDateFormat("HHmmss", Locale.ROOT).format(Date())
+        // https://developer.android.com/training/data-storage/use-cases
+        // todo: For SDK 29, 30 (android 10, 11) it won't be working
         val storageDir = requireContext().getExternalFilesDir(
             Environment.DIRECTORY_PICTURES
         )

@@ -1,6 +1,8 @@
 package ru.skillbranch.skillarticles.extensions
 
 import android.text.Spannable
+import androidx.core.util.PatternsCompat.EMAIL_ADDRESS
+import java.util.regex.Pattern
 
 const val MAX_CHARS = 16
 
@@ -43,3 +45,13 @@ fun String.removeExtraSpaces(): String =
 
 inline fun <reified T> Spannable.getSpans(): Array<T> =
     getSpans(0, lastIndex, T::class.java)
+
+fun String.isValidEmail(): Boolean =
+    this.isNotEmpty() && EMAIL_ADDRESS.matcher(this).matches()
+
+fun String.isValidPassword(): Boolean {
+    // пароль не короче 8 символов, без спецзнаков - только буквы и цифры
+    val passwordPattern = Pattern.compile("[a-zA-Z0-9]{8,24}")
+    return passwordPattern.matcher(this).matches()
+}
+

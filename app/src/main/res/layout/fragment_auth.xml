@@ -50,7 +50,8 @@
         app:layout_constraintBottom_toTopOf="@id/btn_login"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/wrap_login">
+        app:layout_constraintTop_toBottomOf="@id/wrap_login"
+        app:layout_constraintVertical_chainStyle="packed">
 
         <EditText
             android:id="@+id/et_password"
@@ -68,10 +69,25 @@
         android:layout_marginTop="18dp"
         android:backgroundTint="@color/color_accent"
         android:text="Login"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/tv_register"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/wrap_password" />
+        app:layout_constraintTop_toBottomOf="@id/wrap_password"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/tv_register"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:textSize="20sp"
+        android:textColor="@color/color_gray"
+        android:text="Registration"
+        app:layout_constraintTop_toBottomOf="@id/btn_login"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
 
     <TextView
         android:id="@+id/tv_privacy"
@@ -82,7 +98,7 @@
         android:bufferType="spannable"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_login"
+        app:layout_constraintTop_toBottomOf="@id/tv_register"
         app:layout_constraintBottom_toTopOf="@id/tv_access_code"
         app:layout_constraintVertical_chainStyle="packed" />
 
@@ -97,6 +113,7 @@
         app:layout_constraintTop_toBottomOf="@id/tv_privacy"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

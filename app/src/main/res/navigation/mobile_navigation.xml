@@ -118,6 +118,9 @@
             android:label="@string/title_authorization"
             tools:layout="@layout/fragment_auth">
             <action
+                android:id="@+id/action_authFragment_to_registrationFragment"
+                app:destination="@id/nav_registration" />
+            <action
                 android:id="@+id/action_authFragment_to_privacyPolicyFragment"
                 app:destination="@id/page_privacy_policy" />
             <argument
@@ -125,6 +128,18 @@
                 app:argType="integer"
                 android:defaultValue="-1" />
         </fragment>
+
+        <fragment
+            android:id="@+id/nav_registration"
+            android:name="ru.skillbranch.skillarticles.ui.auth.RegistrationFragment"
+            android:label="@string/title_registration"
+            tools:layout="@layout/fragment_registration">
+            <argument
+                android:name="private_destination"
+                app:argType="integer"
+                android:defaultValue="-1" />
+        </fragment>
+
         <fragment
             android:id="@+id/page_privacy_policy"
             android:name="ru.skillbranch.skillarticles.ui.auth.PrivacyPolicyFragment"

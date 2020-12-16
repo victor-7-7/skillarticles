@@ -5,6 +5,7 @@ import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.data.models.AppSettings
 import ru.skillbranch.skillarticles.data.remote.NetworkManager
 import ru.skillbranch.skillarticles.data.remote.req.LoginReq
+import ru.skillbranch.skillarticles.data.remote.req.RegistrationReq
 
 object RootRepository {
     private val prefManager = PrefManager
@@ -34,5 +35,13 @@ object RootRepository {
         // lecture 11, time code 01:59:22
         prefManager.accessToken = "Bearer ${auth.accessToken}"
         prefManager.refreshToken = auth.refreshToken // Bearer is absent (02:13:57)
+    }
+
+    suspend fun register(name: String, email: String, pass: String) {
+        val registerReq = RegistrationReq(name, email, pass)
+        val auth = network.register(registerReq)
+        prefManager.profile = auth.user
+        prefManager.accessToken = "Bearer ${auth.accessToken}"
+        prefManager.refreshToken = auth.refreshToken
     }
 }

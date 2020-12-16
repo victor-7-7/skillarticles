@@ -8,6 +8,7 @@
     <string name="title_transcriptions">Transcriptions</string>
     <string name="title_profile">Profile</string>
     <string name="title_authorization">Authorization</string>
+    <string name="title_registration">Registration</string>
     <string name="title_privacy_policy">Privacy policy</string>
 
     <string name="take_from_camera">Take from camera</string>

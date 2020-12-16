@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -189,8 +190,8 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
         if (item == null) {
             //TODO show shimmer
             iv_avatar.setImageDrawable(
-                resources.getDrawable(
-                    R.drawable.ic_account_circle_black_24dp
+                ResourcesCompat.getDrawable(
+                    resources, R.drawable.ic_account_circle_black_24dp, null
                 )
             )
             tv_author.text = "Name loading..."
