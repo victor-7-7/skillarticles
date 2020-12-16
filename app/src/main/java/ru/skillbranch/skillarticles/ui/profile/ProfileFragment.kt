@@ -380,8 +380,8 @@ class ProfileFragment() : BaseFragment<ProfileViewModel>() {
             editMode = if (editMode) {
                 // Профиль находился в режиме редактирования, поэтому
                 // сохраняем результат, если он содержателен
-                if (et_name.text.toString().isNotEmpty()
-                    && et_about.text.toString().isNotEmpty()
+                if (et_name.text.toString().isNotBlank()
+                    && et_about.text.toString().isNotBlank()
                 )
                     viewModel.handleEditProfile(
                         et_name.text.toString(), et_about.text.toString()
