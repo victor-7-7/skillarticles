@@ -1,5 +1,6 @@
 package ru.skillbranch.skillarticles.viewmodels.auth
 
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.SavedStateHandle
 import ru.skillbranch.skillarticles.data.repositories.RootRepository
 import ru.skillbranch.skillarticles.extensions.isValidEmail
@@ -55,6 +56,7 @@ class AuthViewModel(handle: SavedStateHandle) : BaseViewModel<AuthState>(handle,
         }
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     private fun handleAlert(alert: String) {
         notify(Notify.ErrorMessage(alert))
     }
