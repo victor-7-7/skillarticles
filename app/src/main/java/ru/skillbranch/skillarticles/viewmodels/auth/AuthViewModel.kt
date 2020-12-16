@@ -2,6 +2,8 @@ package ru.skillbranch.skillarticles.viewmodels.auth
 
 import androidx.lifecycle.SavedStateHandle
 import ru.skillbranch.skillarticles.data.repositories.RootRepository
+import ru.skillbranch.skillarticles.extensions.isValidEmail
+import ru.skillbranch.skillarticles.extensions.isValidPassword
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
@@ -26,14 +28,35 @@ class AuthViewModel(handle: SavedStateHandle) : BaseViewModel<AuthState>(handle,
     }
 
     override fun handleRegister(name: String, email: String, pass: String, dest: Int?) {
+
+        if (name.isBlank() || name.length < 4) {
+            handleAlert(
+                "Имя пользователя должно состоять из трех " +
+                        "или более непробельных символов"
+            )
+            return
+        }
+        if (!email.isValidEmail()) {
+            handleAlert(
+                "Email адрес задан неверно"
+            )
+            return
+        }
+        if (!pass.isValidPassword()) {
+            handleAlert(
+                "Пароль должен состоять из 8 или более букв и цифр"
+            )
+            return
+        }
+
         launchSafety {
             repository.register(name, email, pass)
             navigate(NavigationCommand.FinishLogin(dest))
         }
     }
 
-    fun handleAlert(alert: String) {
-        notify(Notify.TextMessage(alert))
+    private fun handleAlert(alert: String) {
+        notify(Notify.ErrorMessage(alert))
     }
 }
 
