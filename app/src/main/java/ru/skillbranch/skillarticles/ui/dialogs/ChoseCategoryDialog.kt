@@ -1,4 +1,4 @@
-package ru.skillbranch.skillarticles.ui.custom.dialogs
+package ru.skillbranch.skillarticles.ui.dialogs
 
 import android.app.AlertDialog
 import android.app.Dialog

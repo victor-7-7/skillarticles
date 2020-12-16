@@ -89,7 +89,7 @@
 
     <dialog
         android:id="@+id/dialog_choose_category"
-        android:name="ru.skillbranch.skillarticles.ui.custom.dialogs.ChoseCategoryDialog"
+        android:name="ru.skillbranch.skillarticles.ui.dialogs.ChoseCategoryDialog"
         android:label="Choose category">
         <argument
             android:name="selected_categories"
@@ -101,7 +101,7 @@
 
     <dialog
         android:id="@+id/dialog_avatar_actions"
-        android:name="ru.skillbranch.skillarticles.ui.custom.dialogs.AvatarActionsDialog">
+        android:name="ru.skillbranch.skillarticles.ui.dialogs.AvatarActionsDialog">
         <argument
             android:name="has_avatar"
             app:argType="boolean" />

@@ -1,4 +1,4 @@
-package ru.skillbranch.skillarticles.ui.custom.dialogs
+package ru.skillbranch.skillarticles.ui.dialogs
 
 import android.content.pm.PackageManager.FEATURE_CAMERA_ANY
 import android.os.Bundle
