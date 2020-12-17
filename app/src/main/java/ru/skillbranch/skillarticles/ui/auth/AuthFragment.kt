@@ -29,10 +29,10 @@ class AuthFragment : BaseFragment<AuthViewModel>() {
         }
 
         tv_register.setOnClickListener {
-            /*val action = AuthFragmentDirections
+            val action = AuthFragmentDirections
                 .actionAuthFragmentToRegistrationFragment(args.privateDestination)
             // navigate to registration's page
-            viewModel.navigate(NavigationCommand.To(action.actionId, action.arguments))*/
+            viewModel.navigate(NavigationCommand.To(action.actionId, action.arguments))
         }
 
         tv_privacy.setOnClickListener {
