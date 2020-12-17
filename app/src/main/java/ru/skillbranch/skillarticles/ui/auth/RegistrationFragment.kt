@@ -1,5 +1,6 @@
 package ru.skillbranch.skillarticles.ui.auth
 
+import android.view.WindowManager
 import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
@@ -33,6 +34,8 @@ class RegistrationFragment() : BaseFragment<AuthViewModel>() {
     private val args: RegistrationFragmentArgs by navArgs()
 
     override fun setupViews() {
+        // Чтобы поле формы, имеющее фокус, не перекрывалось софт-клавиатурой
+        root.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
 
         btn_register.setOnClickListener {
             val name = et_name.text.toString() + ' ' + et_surname.text.toString()
@@ -45,5 +48,11 @@ class RegistrationFragment() : BaseFragment<AuthViewModel>() {
                 else args.privateDestination
             )
         }
+    }
+
+    override fun onDestroyView() {
+        // Возвращаем SoftInputMode настройку рутовского окна к дефолту
+        root.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+        super.onDestroyView()
     }
 }

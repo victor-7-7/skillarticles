@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
+import android.view.WindowManager
 import android.widget.TextView
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -294,6 +295,9 @@ class ProfileFragment() : BaseFragment<ProfileViewModel>() {
     }
 
     override fun setupViews() {
+        // Чтобы поле формы, имеющее фокус, не перекрывалось софт-клавиатурой
+        root.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
+
         iv_avatar.setOnClickListener {
             // lecture 12, t.c. 02:04:41
             val action = ProfileFragmentDirections
@@ -564,6 +568,12 @@ class ProfileFragment() : BaseFragment<ProfileViewModel>() {
 
     private fun callbackSettings(activityResult: ActivityResult?) {
         // todo: do something
+    }
+
+    override fun onDestroyView() {
+        // Возвращаем SoftInputMode настройку рутовского окна к дефолту
+        root.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+        super.onDestroyView()
     }
 
 
