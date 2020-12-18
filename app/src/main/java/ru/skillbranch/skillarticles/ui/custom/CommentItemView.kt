@@ -19,10 +19,15 @@ import ru.skillbranch.skillarticles.extensions.*
 import kotlin.math.min
 
 class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
+    /** Вертикальный паддинг (сверху / снизу) для вьюгруппы */
     private val defaultVSpace = context.dpToIntPx(8)
+
+    /** Горизонтальный паддинг (слева / справа) для вьюгруппы */
     private val defaultHSpace = context.dpToIntPx(16)
     private val avatarSize = context.dpToIntPx(40)
     private val lineSize = context.dpToPx(2)
+
+    /** Размер иконки-стрелочки (справа от tv_answer_to) */
     private val iconSize = context.dpToIntPx(12)
 
     private val tv_date: TextView
@@ -46,6 +51,7 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
         tv_date = TextView(context).apply {
             setTextColor(grayColor)
             textSize = 12f
+            textAlignment = View.TEXT_ALIGNMENT_VIEW_END
         }
         addView(tv_date)
 
@@ -91,18 +97,22 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
         tv_date.minWidth = avatarSize
 
         //============== ВАРИАНТ 1 ===================
+        /*
         // Дата в полную ширину, имя автора, если не вмещается, переносится
         // на вторую строку
         measureChild(tv_date, widthMeasureSpec, heightMeasureSpec)
-        tv_author.width =
-            width - paddingLeft - paddingRight - avatarSize - defaultHSpace - tv_date.measuredWidth
+        tv_author.width = width - paddingLeft - paddingRight - avatarSize -
+                    defaultHSpace - tv_date.measuredWidth
         measureChild(tv_author, widthMeasureSpec, heightMeasureSpec)
+        */
 
         //============== ВАРИАНТ 2 ===================
-//        // Имя автора в полную ширину, дата, если не вмещается, обрезана
-//        measureChild(tv_author, widthMeasureSpec, heightMeasureSpec)
-//        tv_date.width = width - paddingLeft - paddingRight - avatarSize - defaultHSpace - tv_author.measuredWidth
-//        measureChild(tv_date, widthMeasureSpec, heightMeasureSpec)
+        // Имя автора в полную ширину, дата, если не вмещается, переносится
+        // на вторую строку
+        measureChild(tv_author, widthMeasureSpec, heightMeasureSpec)
+        tv_date.width = width - paddingLeft - paddingRight - avatarSize -
+                defaultHSpace - tv_author.measuredWidth
+        measureChild(tv_date, widthMeasureSpec, heightMeasureSpec)
 
         //============================================
         usedHeight += avatarSize + defaultVSpace
@@ -125,8 +135,10 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
                 lb + tv_answer_to.measuredWidth,
                 usedHeight + tv_answer_to.measuredHeight
             )
-
+            // Зазор между верхней (нижней) границей вьюхи tv_answer_to
+            // и верхней (нижней) границей иконки iv_answer_icon
             val diff = (tv_answer_to.measuredHeight - iconSize) / 2
+
             iv_answer_icon.layout(
                 tv_answer_to.right + defaultHSpace / 2,
                 usedHeight + diff,
@@ -136,9 +148,12 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
 
             usedHeight += tv_answer_to.measuredHeight
         }
-
-        val diffH = (avatarSize - tv_author.measuredHeight) / 2
-        val diffD = (avatarSize - tv_date.measuredHeight) / 2
+        // Зазор между верхней (нижней) границей вьюхи iv_avatar
+        // и верхней (нижней) границей вьюхи tv_author
+        val diffVAuthor = (avatarSize - tv_author.measuredHeight) / 2
+        // Зазор между верхней (нижней) границей вьюхи iv_avatar
+        // и верхней (нижней) границей вьюхи tv_date
+        val diffVDate = (avatarSize - tv_date.measuredHeight) / 2
 
         iv_avatar.layout(
             left,
@@ -149,16 +164,20 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
 
         tv_author.layout(
             iv_avatar.right + defaultHSpace / 2,
-            usedHeight + diffH,
+            usedHeight + diffVAuthor,
             iv_avatar.right + defaultHSpace / 2 + tv_author.measuredWidth,
-            usedHeight + tv_author.measuredHeight + diffH
+            usedHeight + tv_author.measuredHeight + diffVAuthor
         )
 
         tv_date.layout(
             tv_author.right + defaultHSpace / 2,
-            usedHeight + diffD,
-            tv_author.right + defaultHSpace / 2 + tv_date.measuredWidth,
-            usedHeight + tv_date.measuredHeight + diffD
+            usedHeight + diffVDate,
+            // Вариант, когда дата прижата к имени
+//            tv_author.right + defaultHSpace / 2 + tv_date.measuredWidth,
+            // Вариант, когда дата прижата к правому краю, поскольку
+            // при инициализации задано textAlignment = View.TEXT_ALIGNMENT_VIEW_END
+            r - defaultHSpace,
+            usedHeight + tv_date.measuredHeight + diffVDate
         )
 
         usedHeight += avatarSize + defaultVSpace
