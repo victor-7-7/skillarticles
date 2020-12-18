@@ -30,14 +30,17 @@ object PrefManager {
     var profile: User? by PrefObjDelegate(moshi.adapter(User::class.java))
 
     fun replaceAvatarUrl(url: String) {
+        // Вызывается со страницы профиля, значит profile != null
         profile = profile!!.copy(avatar = url)
     }
 
     fun removeAvatar() {
+        // Вызывается со страницы профиля, значит profile != null
         profile = profile!!.copy(avatar = "")
     }
 
     fun editProfile(name: String, about: String) {
+        // Вызывается со страницы профиля, значит profile != null
         profile = profile!!.copy(name = name, about = about)
     }
 
@@ -80,6 +83,7 @@ object PrefManager {
         // Do user logout
         accessToken = ""
         refreshToken = ""
+        profile = User("", "", "")
     }
 
     // Callback SharedPreferences.OnSharedPreferenceChangeListener
