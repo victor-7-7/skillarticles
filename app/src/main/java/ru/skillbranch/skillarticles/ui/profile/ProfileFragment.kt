@@ -11,26 +11,24 @@ import android.view.WindowManager
 import android.widget.TextView
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.ActivityResultRegistry
 import androidx.activity.result.contract.ActivityResultContracts.*
 import androidx.annotation.VisibleForTesting
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.net.toUri
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.savedstate.SavedStateRegistryOwner
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_profile.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.skillbranch.skillarticles.R
-import ru.skillbranch.skillarticles.ui.RootActivity
+import ru.skillbranch.skillarticles.extensions.dpToIntPx
 import ru.skillbranch.skillarticles.ui.base.BaseFragment
 import ru.skillbranch.skillarticles.ui.base.Binding
 import ru.skillbranch.skillarticles.ui.delegates.RenderProp
@@ -44,9 +42,11 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
-class ProfileFragment() : BaseFragment<ProfileViewModel>() {
-    //------------------------------------------------------------
-    /** Only for testing */
+@AndroidEntryPoint
+class ProfileFragment : BaseFragment<ProfileViewModel>() {
+    /*//------------------------------------------------------------
+    */
+    /** Only for testing *//*
     private var _mockFactory:
             ((SavedStateRegistryOwner) -> ViewModelProvider.Factory)? = null
 
@@ -60,15 +60,14 @@ class ProfileFragment() : BaseFragment<ProfileViewModel>() {
         _mockFactory = mockFactory
         if (testRegistry != null) resultRegistry = testRegistry
     }
-    //------------------------------------------------------------
-
+    //------------------------------------------------------------*/
     companion object {
         const val EDIT_MODE = "EDIT_MODE"
     }
 
     private var editMode = false
 
-    private lateinit var resultRegistry: ActivityResultRegistry
+//    private lateinit var resultRegistry: ActivityResultRegistry
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     lateinit var permissionsLauncher: ActivityResultLauncher<Array<out String>>
@@ -85,11 +84,11 @@ class ProfileFragment() : BaseFragment<ProfileViewModel>() {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     lateinit var settingsLauncher: ActivityResultLauncher<Intent>
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    /*@VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     override val viewModel: ProfileViewModel by viewModels {
         _mockFactory?.invoke(this) ?: defaultViewModelProviderFactory
-    }
-
+    }*/
+    override val viewModel: ProfileViewModel by activityViewModels()
     override val layout = R.layout.fragment_profile
     override val binding: ProfileBinding by lazy { ProfileBinding() }
 
@@ -152,87 +151,12 @@ class ProfileFragment() : BaseFragment<ProfileViewModel>() {
        iv_avatar фрагмента новую картинку с сервера
     */
 
-    // 1'st variant of the implementation
-    private val permissionsResultCallback = registerForActivityResult(
-        RequestMultiplePermissions()
-    ) { result ->
-        // look at video (lecture 12, time code 00:58:11)
-        val permissionsResult = result.mapValues { (perm, isGranted) ->
-            // Если в очередной маповской паре (key=perm, value=isGranted)
-            // разрешение предоставлено, то меняем в ней значение с единичного
-            // на парное (key=perm, value=true)=>(key=perm, value=(true, true))
-            if (isGranted) true to true
-            // Если разрешение не было предоставлено (key=perm, value=false),
-            // то запоминаем - была ли установлена галочка о том, чтобы не
-            // спрашивать разрешение у юзера в будущем. Например, если галочка
-            // для данного отказного разрешения БЫЛА установлена, то маповская
-            // пара будет такой (key=perm, value=(false, FALSE)). А если галочка
-            // НЕ БЫЛА установлена, то - (key=perm, value=(false, TRUE))
-            else false to ActivityCompat.shouldShowRequestPermissionRationale(
-                requireActivity(), perm
-            )
-        }
-        viewModel.handlePermission(permissionsResult)
-        /*       Log.d("M_ProfileFragment",
-                   "Request runtime permissions result: $result")*/
-    }
-
-    // 1'st variant
-    private val galleryResultCallback = registerForActivityResult(
-        GetContent()
-    ) { resultUri ->
-        if (resultUri != null) {
-            val inputStream = requireContext().contentResolver.openInputStream(resultUri)
-            // Выгружаем фото из галереи на сервер
-            viewModel.handleUploadPhoto(inputStream)
-        }
-    }
-
-    // 1'st variant
-    private val settingResultCallback = registerForActivityResult(
-        StartActivityForResult()
-    ) { result -> // ActivityResult{resultCode=RESULT_CANCELED, data=null}
-        Log.d("M_S_ProfileFragment", "setting callback result: $result")
-        // todo: do something
-    }
-
-    // 1'st variant
-    private val cameraResultCallback = registerForActivityResult(
-        TakePicture()
-    ) { isSaved ->
-        val (payload) = binding.pendingAction as PendingAction.CameraAction
-        // Если получили фото от камеры (оно было сохранено по указанному Uri)
-        if (isSaved) {
-            val inputStream = requireContext().contentResolver.openInputStream(payload)
-            // выгружаем это фото на сервер
-            viewModel.handleUploadPhoto(inputStream)
-        }
-        // Фото не было сохранено в надлежащее место, поэтому удаляем Uri
-        else removeTempUri(payload)
-    }
-
-    // 1'st variant, lecture 12, t.c. 01:42:10
-    private val editPhotoResultCallback = registerForActivityResult(
-        EditImageContract()
-    ) { uri ->
-        // Если получили отредактированное изображение (по указанному Uri)
-        if (uri != null) {
-            val inputStream = requireContext().contentResolver.openInputStream(uri)
-            // выгружаем это изображение на сервер
-            viewModel.handleUploadPhoto(inputStream)
-        }
-        // Иначе удаляем Uri
-        else {
-            val (payload) = binding.pendingAction as PendingAction.EditAction
-            removeTempUri(payload.second)
-        }
-    }
-
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (!::resultRegistry.isInitialized)
-            resultRegistry = requireActivity().activityResultRegistry
+        /*if (!::resultRegistry.isInitialized)
+            resultRegistry = requireActivity().activityResultRegistry*/
+
+        val resultRegistry = requireActivity().activityResultRegistry
 
         permissionsLauncher = registerForActivityResult(
             RequestMultiplePermissions(), resultRegistry, ::callbackPermissions
@@ -303,38 +227,9 @@ class ProfileFragment() : BaseFragment<ProfileViewModel>() {
             val action = ProfileFragmentDirections
                 .actionNavProfileToDialogAvatarActions(binding.avatar.isNotBlank())
             viewModel.navigate(NavigationCommand.To(action.actionId, action.arguments))
-
-            /*// ТЕСТОВЫЙ БЛОК
-            // lecture 12, t.c. 01:35:35. Don't call on UI thread
-            lifecycleScope.launch(Dispatchers.IO) {
-                // Возьмем необработанный файл из кэша глайда
-                val sourceFile = Glide.with(requireActivity()).asFile()
-                    .load(binding.avatar).submit().get()
-                // Получим его content Uri
-                val sourceUri = FileProvider.getUriForFile(
-                    requireContext(),
-                    // Полномочия идентичны указанным в провайдере манифеста
-                    "${requireContext().packageName}.provider",
-                    sourceFile
-                )
-                Log.d("M_ProfileFragment", "setupViews: " +
-                        "edit image - glide cache uri: ${sourceFile.toUri()} " +
-                        "content source uri: $sourceUri")
-                // Подготовим ссылку, по которой будем сохранять обработанный файл
-                val uri = prepareTempUri()
-
-                withContext(Dispatchers.Main) {
-                    // Метод берет файл из sourceUri, редактирует его и
-                    // сохраняет в файл с uri
-                    viewModel.handleTestAction(sourceUri, uri)
-                }
-            }*/
         }
 
         viewModel.observeRequestedPermissions(viewLifecycleOwner) {
-            // launch callback for requested permissions
-            // permissionsResultCallback.launch(it.toTypedArray()) // 1'st variant
-
             // Запрашиваем у системы - каково состояние перечисленных в
             // параметре it разрешений для нашего приложения
             permissionsLauncher.launch(it.toTypedArray())
@@ -359,14 +254,6 @@ class ProfileFragment() : BaseFragment<ProfileViewModel>() {
         // на взаимодействие со внешним приложением
         viewModel.observePendingActions(viewLifecycleOwner) {
             when (it) {
-                // 1'st variant
-                /*
-                is PendingAction.GalleryAction -> galleryResultCallback.launch(it.payload)
-                is PendingAction.SettingsAction -> settingResultCallback.launch(it.payload)
-                is PendingAction.CameraAction -> cameraResultCallback.launch(it.payload)
-                is PendingAction.EditAction -> editPhotoResultCallback.launch(it.payload)
-                */
-
                 // Открываем приложение - галерея
                 is PendingAction.GalleryAction -> galleryLauncher.launch(it.payload)
                 // Открываем системную страницу настроек приложения
@@ -435,7 +322,6 @@ class ProfileFragment() : BaseFragment<ProfileViewModel>() {
     }
 
     private fun updateAvatar(avatarUrl: String) {
-/*
         val avatarSize = root.dpToIntPx(168)
         if (avatarUrl.isBlank())
             Glide.with(root).load(R.drawable.ic_avatar)
@@ -445,7 +331,7 @@ class ProfileFragment() : BaseFragment<ProfileViewModel>() {
             Glide.with(root).load(avatarUrl).placeholder(R.drawable.ic_avatar)
                 .apply(RequestOptions.circleCropTransform()).override(avatarSize)
                 .into(iv_avatar)
-*/
+/*
         // FOR TESTING
         if (avatarUrl.isBlank())
             Glide.with(this).load(R.drawable.ic_avatar).into(iv_avatar)
@@ -453,6 +339,7 @@ class ProfileFragment() : BaseFragment<ProfileViewModel>() {
             Glide.with(this).load(avatarUrl)
                 .placeholder(R.drawable.ic_avatar)
                 .apply(RequestOptions.circleCropTransform()).into(iv_avatar)
+*/
     }
 
     // lecture 12, t.c. 01:28:30

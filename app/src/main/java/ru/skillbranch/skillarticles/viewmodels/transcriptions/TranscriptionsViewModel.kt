@@ -1,16 +1,23 @@
 package ru.skillbranch.skillarticles.viewmodels.transcriptions
 
+import androidx.hilt.Assisted
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.SavedStateHandle
 import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.ui.RootActivity
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 
-class TranscriptionsViewModel(handle: SavedStateHandle) :
-    BaseViewModel<TranscriptionsState>(handle, TranscriptionsState()) {
+
+class TranscriptionsViewModel @ViewModelInject constructor(
+    @Assisted handle: SavedStateHandle,
+    private val prefs: PrefManager
+) : BaseViewModel<TranscriptionsState>(handle, TranscriptionsState()) {
 
     fun resetAllPreferences(root: RootActivity) {
-        val isPrefsDefault = with(PrefManager) {
+        // todo: implement
+
+        val isPrefsDefault = with(prefs) {
             !isDarkMode && !isBigText && accessToken.isEmpty()
                     && refreshToken.isEmpty()
         }
@@ -18,7 +25,7 @@ class TranscriptionsViewModel(handle: SavedStateHandle) :
 
         launchSafety {
             // Делаем ресет настроек приложения на девайсе
-            PrefManager.resetAllPrefs(root)
+            prefs.resetAllPrefs(root)
         }
     }
 }

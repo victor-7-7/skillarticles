@@ -1,13 +1,13 @@
 package ru.skillbranch.skillarticles.data.remote.interceptors
 
 import com.squareup.moshi.JsonEncodingException
+import com.squareup.moshi.Moshi
 import okhttp3.Interceptor
 import okhttp3.Response
-import ru.skillbranch.skillarticles.data.JsonConverter.moshi
 import ru.skillbranch.skillarticles.data.remote.err.ApiError
 import ru.skillbranch.skillarticles.data.remote.err.ErrorBody
 
-class ErrorStatusInterceptor : Interceptor {
+class ErrorStatusInterceptor(private val moshi: Moshi) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val res = chain.proceed(chain.request())
         if (res.isSuccessful) return res

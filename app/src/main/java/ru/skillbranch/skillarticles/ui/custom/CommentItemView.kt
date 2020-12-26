@@ -55,7 +55,9 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
         }
         addView(tv_date)
 
-        iv_avatar = ImageView(context)
+        iv_avatar = ImageView(context).apply {
+            scaleType = ImageView.ScaleType.CENTER_CROP
+        }
         addView(iv_avatar)
 
         tv_author = TextView(context).apply {
@@ -220,11 +222,19 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
             val level = min(item.slug.split("/").size.dec(), 5)
             setPaddingOptionally(left = level * defaultHSpace)
 
-            Glide.with(context)
-                .load(item.user.avatar)
-                .apply(RequestOptions.circleCropTransform())
-                .override(avatarSize)
-                .into(iv_avatar)
+            if (item.user.avatar.isBlank()) {
+                iv_avatar.setImageDrawable(
+                    ResourcesCompat.getDrawable(
+                        resources, R.drawable.ic_avatar, null
+                    )
+                )
+            } else {
+                Glide.with(context)
+                    .load(item.user.avatar)
+                    .apply(RequestOptions.circleCropTransform())
+                    .override(avatarSize)
+                    .into(iv_avatar)
+            }
 
             tv_author.text = item.user.name
             tv_date.text = item.date.humanizeDiff()

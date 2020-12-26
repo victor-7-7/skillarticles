@@ -1,29 +1,23 @@
 package ru.skillbranch.skillarticles.data.repositories
 
-import androidx.lifecycle.LiveData
 import ru.skillbranch.skillarticles.data.local.PrefManager
-import ru.skillbranch.skillarticles.data.models.AppSettings
-import ru.skillbranch.skillarticles.data.remote.NetworkManager
+import ru.skillbranch.skillarticles.data.remote.RestService
 import ru.skillbranch.skillarticles.data.remote.req.LoginReq
 import ru.skillbranch.skillarticles.data.remote.req.RegistrationReq
+import javax.inject.Inject
 
-object RootRepository {
-    private val prefManager = PrefManager
-    private val network = NetworkManager.api
+class RootRepository @Inject constructor(
+    private val prefs: PrefManager,
+    private val network: RestService
+) {
+    fun isAuth() = prefs.isAuthLive
 
-    fun isAuth() = prefManager.isAuthLive
-
-    /*
-        fun setAuth(auth: Boolean) {
-            prefManager.isAuthorized = auth
-        }
-    */
-    fun appSettings(): LiveData<AppSettings> = prefManager.appSettingsLive
+    /*fun appSettings(): LiveData<AppSettings> = prefs.appSettingsLive
 
     fun updateSettings(settings: AppSettings) {
-        prefManager.isDarkMode = settings.isDarkMode
-        prefManager.isBigText = settings.isBigText
-    }
+        prefs.isDarkMode = settings.isDarkMode
+        prefs.isBigText = settings.isBigText
+    }*/
 
     // look at video (lecture 11, time code 01:49:00)
     suspend fun login(login: String, pass: String) {
@@ -31,17 +25,17 @@ object RootRepository {
         // Если логин или пароль будет неверный, то возврата из
         // функции network.login не будет. Появится снэкбар с
         // сообщение "Wrong login or password" и все.
-        prefManager.profile = auth.user
+        prefs.profile = auth.user
         // lecture 11, time code 01:59:22
-        prefManager.accessToken = "Bearer ${auth.accessToken}"
-        prefManager.refreshToken = auth.refreshToken // Bearer is absent (02:13:57)
+        prefs.accessToken = "Bearer ${auth.accessToken}"
+        prefs.refreshToken = auth.refreshToken // Bearer is absent (02:13:57)
     }
 
     suspend fun register(name: String, email: String, pass: String) {
         val registerReq = RegistrationReq(name, email, pass)
         val auth = network.register(registerReq)
-        prefManager.profile = auth.user
-        prefManager.accessToken = "Bearer ${auth.accessToken}"
-        prefManager.refreshToken = auth.refreshToken
+        prefs.profile = auth.user
+        prefs.accessToken = "Bearer ${auth.accessToken}"
+        prefs.refreshToken = auth.refreshToken
     }
 }

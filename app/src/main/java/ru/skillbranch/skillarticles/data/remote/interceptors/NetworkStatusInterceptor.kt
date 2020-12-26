@@ -5,10 +5,10 @@ import okhttp3.Response
 import ru.skillbranch.skillarticles.data.remote.NetworkMonitor
 import ru.skillbranch.skillarticles.data.remote.err.NoNetworkError
 
-class NetworkStatusInterceptor : Interceptor {
+class NetworkStatusInterceptor(private val monitor: NetworkMonitor) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         // Если сети нет, то кидаем исключение
-        if (!NetworkMonitor.isConnected) throw NoNetworkError()
+        if (!monitor.isConnected) throw NoNetworkError()
         // Если мы в сети, то отдаем цепочку дальше
         return chain.proceed(chain.request())
     }

@@ -1,20 +1,19 @@
 package ru.skillbranch.skillarticles.ui.auth
 
 import android.view.WindowManager
-import androidx.annotation.VisibleForTesting
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
-import androidx.savedstate.SavedStateRegistryOwner
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_registration.*
 import ru.skillbranch.skillarticles.R
-import ru.skillbranch.skillarticles.ui.RootActivity
 import ru.skillbranch.skillarticles.ui.base.BaseFragment
 import ru.skillbranch.skillarticles.viewmodels.auth.AuthViewModel
 
-class RegistrationFragment() : BaseFragment<AuthViewModel>() {
-    //------------------------------------------------------------
-    /** Only for testing */
+@AndroidEntryPoint
+class RegistrationFragment : BaseFragment<AuthViewModel>() {
+    /*//------------------------------------------------------------
+    */
+    /** Only for testing *//*
     private var _mockFactory:
             ((SavedStateRegistryOwner) -> ViewModelProvider.Factory)? = null
 
@@ -26,10 +25,9 @@ class RegistrationFragment() : BaseFragment<AuthViewModel>() {
         _mockRoot = mockRoot
         _mockFactory = mockFactory
     }
-    //------------------------------------------------------------
+    //------------------------------------------------------------*/
 
-
-    override val viewModel: AuthViewModel by viewModels()
+    override val viewModel: AuthViewModel by activityViewModels()
     override val layout = R.layout.fragment_registration
     private val args: RegistrationFragmentArgs by navArgs()
 

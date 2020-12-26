@@ -8,7 +8,6 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.AutoCompleteTextView
-import android.widget.CursorAdapter
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.cursoradapter.widget.SimpleCursorAdapter
@@ -16,10 +15,12 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.fragment_articles.*
 import kotlinx.android.synthetic.main.search_view_layout.view.*
 import ru.skillbranch.skillarticles.R
+import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
 import ru.skillbranch.skillarticles.data.local.entities.CategoryData
 import ru.skillbranch.skillarticles.ui.base.BaseFragment
 import ru.skillbranch.skillarticles.ui.base.Binding
@@ -31,14 +32,24 @@ import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.Loading
 import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
+import javax.inject.Inject
 
-class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
-
+@AndroidEntryPoint
+class ArticlesFragment : BaseFragment<ArticlesViewModel>(), IArticlesView {
+    // Фрагмент верхнего уровня (его вьюмодель должна жить пока жива
+    // RootActivity), поэтому инициализируем модель через activityViewModels.
+    // А если инициализировать через viewModels(), то, например, перестанет
+    // работать фильтрация по категориям статей
     override val viewModel: ArticlesViewModel by activityViewModels()
     override val layout = R.layout.fragment_articles
     override val binding: ArticlesBinding by lazy { ArticlesBinding() }
     private val args: ArticlesFragmentArgs by navArgs()
-    private lateinit var suggestionsAdapter: SimpleCursorAdapter
+
+    @Inject
+    lateinit var articlesAdapter: ArticlesAdapter
+
+    @Inject
+    lateinit var suggestionsAdapter: SimpleCursorAdapter
 
     override val prepareToolbar: ToolbarBuilder.() -> Unit = {
         addMenuItem(
@@ -68,30 +79,8 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
         )
     }
 
-    private val articlesAdapter = ArticlesAdapter { item, isToggleBookmark ->
-        if (isToggleBookmark) viewModel.handleToggleBookmark(item.id)
-        else {
-            Log.d("M_S_ArticlesFragment", "click on article: ${item.id}")
-            val action = ArticlesFragmentDirections.actionToPageArticle(
-                item.id, item.author, item.authorAvatar ?: "", item.category,
-                item.categoryIcon, item.date, item.poster, item.title
-            )
-            viewModel.navigate(NavigationCommand.To(action.actionId, action.arguments))
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        suggestionsAdapter = SimpleCursorAdapter(
-            context,
-            R.layout.item_suggestion,
-            null, // cursor
-            // FROM: names of cursor columns for bind on view
-            arrayOf("tag"),
-            // TO: text view id for bind data from cursor
-            intArrayOf(android.R.id.text1),
-            CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER
-        )
         suggestionsAdapter.setFilterQueryProvider { constraint ->
             populateAdapter(constraint)
         }
@@ -207,6 +196,18 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
                 progressBar.isVisible = false
                 if (refresh.isRefreshing) refresh.isRefreshing = false
             }
+        }
+    }
+
+    override fun clickArticle(item: ArticleItem, isToggleBookmark: Boolean) {
+        if (isToggleBookmark) viewModel.handleToggleBookmark(item.id)
+        else {
+            Log.d("M_S_ArticlesFragment", "click on article: ${item.id}")
+            val action = ArticlesFragmentDirections.actionToPageArticle(
+                item.id, item.author, item.authorAvatar ?: "", item.category,
+                item.categoryIcon, item.date, item.poster, item.title
+            )
+            viewModel.navigate(NavigationCommand.To(action.actionId, action.arguments))
         }
     }
 

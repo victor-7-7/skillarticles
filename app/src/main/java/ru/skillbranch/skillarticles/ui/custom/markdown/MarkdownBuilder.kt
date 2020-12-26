@@ -7,6 +7,7 @@ import android.text.SpannedString
 import android.text.style.StrikethroughSpan
 import android.text.style.StyleSpan
 import android.text.style.URLSpan
+import androidx.core.content.ContextCompat
 import androidx.core.text.buildSpannedString
 import androidx.core.text.inSpans
 import ru.skillbranch.skillarticles.R
@@ -16,21 +17,21 @@ import ru.skillbranch.skillarticles.extensions.attrValue
 import ru.skillbranch.skillarticles.extensions.dpToPx
 import ru.skillbranch.skillarticles.ui.custom.spans.*
 
-class MarkdownBuilder(context: Context) {
-    private val colorSecondary = context.attrValue(R.attr.colorSecondary)
-    private val colorPrimary = context.attrValue(R.attr.colorPrimary)
-    private val colorDivider = context.getColor(R.color.color_divider)
-    private val colorOnSurface = context.attrValue(R.attr.colorOnSurface)
-    private val colorSurface = context.attrValue(R.attr.colorSurface)
-    private val opacityColorSurface = context.getColor(R.color.opacity_color_surface)
-    private val gap: Float = context.dpToPx(8)
-    private val bulletRadius = context.dpToPx(4)
-    private val strikeWidth = context.dpToPx(4)
-    private val headerMarginTop = context.dpToPx(12)
-    private val headerMarginBottom = context.dpToPx(8)
-    private val ruleWidth = context.dpToPx(2)
-    private val cornerRadius = context.dpToPx(8)
-    private val linkIcon = context.getDrawable(R.drawable.ic_link_black_24dp)!!
+class MarkdownBuilder(ctx: Context) {
+    private val colorSecondary = ctx.attrValue(R.attr.colorSecondary)
+    private val colorPrimary = ctx.attrValue(R.attr.colorPrimary)
+    private val colorDivider = ctx.getColor(R.color.color_divider)
+    private val colorOnSurface = ctx.attrValue(R.attr.colorOnSurface)
+    private val colorSurface = ctx.attrValue(R.attr.colorSurface)
+    private val opacityColorSurface = ctx.getColor(R.color.opacity_color_surface)
+    private val gap: Float = ctx.dpToPx(8)
+    private val bulletRadius = ctx.dpToPx(4)
+    private val strikeWidth = ctx.dpToPx(4)
+    private val headerMarginTop = ctx.dpToPx(12)
+    private val headerMarginBottom = ctx.dpToPx(8)
+    private val ruleWidth = ctx.dpToPx(2)
+    private val cornerRadius = ctx.dpToPx(8)
+    private val linkIcon = ContextCompat.getDrawable(ctx, R.drawable.ic_link_black_24dp)!!
         .apply {
             setTint(colorSecondary)
         }
@@ -132,6 +133,7 @@ class MarkdownBuilder(context: Context) {
                         }
                     }
                 }
+                else -> throw Throwable("Unreachable stub: WTF?")
             }
         }
     }

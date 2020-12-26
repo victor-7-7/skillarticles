@@ -23,12 +23,14 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions.circleCropTransform
 import com.google.android.material.appbar.AppBarLayout
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.fragment_article.*
 import kotlinx.android.synthetic.main.layout_bottombar.view.*
 import kotlinx.android.synthetic.main.layout_submenu.view.*
 import kotlinx.android.synthetic.main.search_view_layout.*
 import ru.skillbranch.skillarticles.R
+import ru.skillbranch.skillarticles.data.remote.res.CommentRes
 import ru.skillbranch.skillarticles.data.repositories.Element
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
 import ru.skillbranch.skillarticles.extensions.*
@@ -41,31 +43,22 @@ import ru.skillbranch.skillarticles.viewmodels.article.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.Loading
-import ru.skillbranch.skillarticles.viewmodels.base.ViewModelFactory
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     private val args: ArticleFragmentArgs by navArgs()
 
-    override val viewModel: ArticleViewModel by viewModels {
-        ViewModelFactory(owner = this, params = args.articleId)
-    }
+    override val viewModel: ArticleViewModel by viewModels()
     override val layout = R.layout.fragment_article
 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     override val binding: ArticleBinding by lazy { ArticleBinding() }
 
-    private val commentsAdapter by lazy {
-        CommentsAdapter {
-            Log.d(
-                "M_S_ArticleFragment", "click on comment: " +
-                        "id: ${it.id} slug: ${it.slug}"
-            )
-            viewModel.handleReplyTo(it.id, it.user.name)
-            et_comment.requestFocus()
-            scroll.smoothScrollTo(0, wrap_comments.top)
-            et_comment.context.showKeyboard(et_comment)
-        }
-    }
+    // Логика комментария реализована в методе clickOnComment()
+    @Inject
+    lateinit var commentsAdapter: CommentsAdapter
+
     override val prepareToolbar: (ToolbarBuilder.() -> Unit) = {
         this.setSubtitle(args.category)
             .setLogo(args.categoryIcon)
@@ -148,6 +141,17 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     override fun hideSearchBar() {
         bottombar.setSearchState(false)
         scroll.setMarginOptionally(bottom = 0)
+    }
+
+    override fun clickOnComment(comment: CommentRes) {
+        Log.d(
+            "M_S_ArticleFragment", "click on comment: " +
+                    "id: ${comment.id} slug: ${comment.slug}"
+        )
+        viewModel.handleReplyTo(comment.id, comment.user.name)
+        et_comment.requestFocus()
+        scroll.smoothScrollTo(0, wrap_comments.top)
+        et_comment.context.showKeyboard(et_comment)
     }
 
     override fun setupViews() {

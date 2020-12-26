@@ -1,21 +1,24 @@
 package ru.skillbranch.skillarticles.data.remote.interceptors
 
 import android.util.Log
+import dagger.Lazy
 import okhttp3.Authenticator
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.Route
 import ru.skillbranch.skillarticles.data.local.PrefManager
-import ru.skillbranch.skillarticles.data.remote.NetworkManager
+import ru.skillbranch.skillarticles.data.remote.RestService
 import ru.skillbranch.skillarticles.data.remote.req.RefreshReq
 
 
 // https://medium.com/@sandeeptengale/problem-solved-2-access-token-refresh-with-okhttp-authenticator-5ccb798ede70
 // https://www.lordcodes.com/articles/authorization-of-web-requests-for-okhttp-and-retrofit
 
-class TokenAuthenticator : Authenticator {
-    private val prefs = PrefManager
-    private val network by lazy { NetworkManager.api }
+class TokenAuthenticator(
+    private val prefs: PrefManager,
+    // Класс Lazy из даггера, а не котлина
+    private val lazyApi: Lazy<RestService>
+) : Authenticator {
 
     // Look at video (lecture 12 time code 00:45:54)
     override fun authenticate(route: Route?, response: Response): Request? {
@@ -23,7 +26,7 @@ class TokenAuthenticator : Authenticator {
 
         // На сервере https://skill-articles.skill-branch.ru/api/v1 токен
         // авторизации протухает через 1 минуту (lecture 12 t.c. 01:52:05)
-        val resp = network.refreshAccessToken(
+        val resp = lazyApi.get().refreshAccessToken(
             RefreshReq(prefs.refreshToken)
         ).execute()
 

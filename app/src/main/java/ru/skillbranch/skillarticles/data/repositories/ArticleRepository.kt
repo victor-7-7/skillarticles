@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.paging.ItemKeyedDataSource
-import ru.skillbranch.skillarticles.data.local.DbManager.db
 import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.data.local.dao.ArticleContentsDao
 import ru.skillbranch.skillarticles.data.local.dao.ArticleCountsDao
@@ -12,7 +11,6 @@ import ru.skillbranch.skillarticles.data.local.dao.ArticlePersonalInfosDao
 import ru.skillbranch.skillarticles.data.local.dao.ArticlesDao
 import ru.skillbranch.skillarticles.data.local.entities.ArticleFull
 import ru.skillbranch.skillarticles.data.models.AppSettings
-import ru.skillbranch.skillarticles.data.remote.NetworkManager
 import ru.skillbranch.skillarticles.data.remote.RestService
 import ru.skillbranch.skillarticles.data.remote.err.ApiError
 import ru.skillbranch.skillarticles.data.remote.err.NoNetworkError
@@ -20,8 +18,9 @@ import ru.skillbranch.skillarticles.data.remote.req.MessageReq
 import ru.skillbranch.skillarticles.data.remote.res.CommentRes
 import ru.skillbranch.skillarticles.extensions.data.toArticleContent
 import ru.skillbranch.skillarticles.extensions.data.toArticleCounts
+import javax.inject.Inject
 
-interface IArticleRepository {
+interface IArticleRepository : IRepository {
     fun findArticle(articleId: String): LiveData<ArticleFull>
     fun getAppSettings(): LiveData<AppSettings>
     fun updateSettings(appSettings: AppSettings)
@@ -43,13 +42,14 @@ interface IArticleRepository {
     suspend fun refreshCommentsCount(articleId: String)
 }
 
-object ArticleRepository : IArticleRepository {
-    private val network = NetworkManager.api
-    private val rootRepository = RootRepository
-    private var articlesDao = db.articlesDao()
-    private var articlePersonalInfosDao = db.articlePersonalInfosDao()
-    private var articleCountsDao = db.articleCountsDao()
-    private var articleContentsDao = db.articleContentsDao()
+class ArticleRepository @Inject constructor(
+    private val prefs: PrefManager,
+    private val network: RestService,
+    private val articlesDao: ArticlesDao,
+    private val articleContentsDao: ArticleContentsDao,
+    private val articleCountsDao: ArticleCountsDao,
+    private val articlePersonalInfosDao: ArticlePersonalInfosDao
+) : IArticleRepository {
 
     override fun findArticle(articleId: String): LiveData<ArticleFull> =
         articlesDao.findFullArticle(articleId)
@@ -64,14 +64,14 @@ object ArticleRepository : IArticleRepository {
     override fun findArticleCommentCount(articleId: String): LiveData<Int> =
         articleCountsDao.getCommentsCount(articleId)
 
-    //from preferences
-    override fun getAppSettings(): LiveData<AppSettings> = rootRepository.appSettings()
+    override fun getAppSettings(): LiveData<AppSettings> = prefs.appSettingsLive
 
     override fun updateSettings(appSettings: AppSettings) {
-        rootRepository.updateSettings(appSettings)
+        prefs.isDarkMode = appSettings.isDarkMode
+        prefs.isBigText = appSettings.isBigText
     }
 
-    override fun isAuth(): LiveData<Boolean> = rootRepository.isAuth()
+    override fun isAuth(): LiveData<Boolean> = prefs.isAuthLive
 
     override fun loadAllComments(
         articleId: String,
@@ -96,7 +96,7 @@ object ArticleRepository : IArticleRepository {
     /** Метод пробует сообщить серверу о необходимости записать в серверную БД,
      * что авторизованный юзер, имеющий токен, добавил статью (articleId) в закладки */
     suspend fun addBookmark(articleId: String) {
-        val token = PrefManager.accessToken
+        val token = prefs.accessToken
         // Если юзер не авторизован, то выходим
         if (token.isEmpty()) return
         try {
@@ -112,7 +112,7 @@ object ArticleRepository : IArticleRepository {
     /** Метод пробует сообщить серверу о необходимости записать в серверную БД,
      * что авторизованный юзер, имеющий токен, убрал статью (articleId) из закладок */
     suspend fun removeBookmark(articleId: String) {
-        val token = PrefManager.accessToken
+        val token = prefs.accessToken
         // Если юзер не авторизован, то выходим
         if (token.isEmpty()) return
         try {
@@ -127,7 +127,7 @@ object ArticleRepository : IArticleRepository {
 
     // look at video (lecture 11, time code 02:20:33)
     override suspend fun decrementLike(articleId: String) {
-        val token = PrefManager.accessToken
+        val token = prefs.accessToken
         // Если юзер не авторизован
         if (token.isEmpty()) {
             // Фиксируем в локальной БД уменьшение на 1 всеобщего
@@ -151,7 +151,7 @@ object ArticleRepository : IArticleRepository {
     }
 
     override suspend fun incrementLike(articleId: String) {
-        val token = PrefManager.accessToken
+        val token = prefs.accessToken
         // Если юзер не авторизован
         if (token.isEmpty()) {
             // Фиксируем в локальной БД увеличение на 1 всеобщего
@@ -181,7 +181,7 @@ object ArticleRepository : IArticleRepository {
         val (_, messageCount) = network.sendMessage(
             articleId,
             MessageReq(message, answerToMessageId),
-            PrefManager.accessToken
+            prefs.accessToken
         )
         // Обновляем в локальной БД изменившееся всеобщее число
         // комментов данной статьи, полученное с сервера
@@ -218,18 +218,6 @@ object ArticleRepository : IArticleRepository {
             } //.apply { sleep(3000) }
         }
     */
-    // Для тестов
-    fun setupTestDao(
-        articlesDao: ArticlesDao,
-        articleCountsDao: ArticleCountsDao,
-        articleContentDao: ArticleContentsDao,
-        articlePersonalDao: ArticlePersonalInfosDao
-    ) {
-        this.articlesDao = articlesDao
-        this.articleCountsDao = articleCountsDao
-        this.articleContentsDao = articleContentDao
-        this.articlePersonalInfosDao = articlePersonalDao
-    }
 }
 
 //============================================================================

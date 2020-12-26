@@ -5,24 +5,25 @@ import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.paging.PositionalDataSource
 import androidx.sqlite.db.SimpleSQLiteQuery
-import ru.skillbranch.skillarticles.data.local.DbManager.db
 import ru.skillbranch.skillarticles.data.local.dao.*
 import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
 import ru.skillbranch.skillarticles.data.local.entities.ArticleTagXRef
 import ru.skillbranch.skillarticles.data.local.entities.CategoryData
 import ru.skillbranch.skillarticles.data.local.entities.Tag
-import ru.skillbranch.skillarticles.data.remote.NetworkManager
+import ru.skillbranch.skillarticles.data.remote.RestService
 import ru.skillbranch.skillarticles.data.remote.res.ArticleRes
 import ru.skillbranch.skillarticles.extensions.data.toArticle
 import ru.skillbranch.skillarticles.extensions.data.toArticleContent
 import ru.skillbranch.skillarticles.extensions.data.toArticleCounts
 import ru.skillbranch.skillarticles.extensions.data.toCategory
+import javax.inject.Inject
 
-interface IArticlesRepository {
+interface IArticlesRepository : IRepository {
     suspend fun loadArticlesFromNetwork(last: String? = null, size: Int = 10): Int
     suspend fun insertArticlesToDb(articles: List<ArticleRes>)
     suspend fun toggleBookmark(articleId: String): Boolean
-//    suspend fun toggleLike(articleId: String)
+
+    //    suspend fun toggleLike(articleId: String)
     fun findTags(): LiveData<List<String>>
     fun findCategoriesData(): LiveData<List<CategoryData>>
     fun rawQueryArticles(filter: ArticleFilter): DataSource.Factory<Int, ArticleItem>
@@ -32,14 +33,15 @@ interface IArticlesRepository {
     suspend fun removeArticleContent(articleId: String)
 }
 
-object ArticlesRepository : IArticlesRepository {
-    private val network = NetworkManager.api
-    private var articlesDao = db.articlesDao()
-    private var articleContentsDao = db.articleContentsDao()
-    private var articleCountsDao = db.articleCountsDao()
-    private var categoriesDao = db.categoriesDao()
-    private var tagsDao = db.tagsDao()
-    private var articlePersonalInfosDao = db.articlePersonalInfosDao()
+class ArticlesRepository @Inject constructor(
+    private val network: RestService,
+    private val articlesDao: ArticlesDao,
+    private val articleContentsDao: ArticleContentsDao,
+    private val articleCountsDao: ArticleCountsDao,
+    private val categoriesDao: CategoriesDao,
+    private val tagsDao: TagsDao,
+    private val articlePersonalInfosDao: ArticlePersonalInfosDao
+) : IArticlesRepository {
 
     /** Метод загружает из сети N (== size или менее) статей, сохраняет их
      * в локальной БД и возвращает число загруженных статей */
@@ -101,24 +103,6 @@ object ArticlesRepository : IArticlesRepository {
 
     override suspend fun removeArticleContent(articleId: String) =
         articleContentsDao.deleteById(articleId)
-
-
-    // Для тестов
-    fun setupTestDao(
-        articlesDao: ArticlesDao,
-        articleCountsDao: ArticleCountsDao,
-        categoriesDao: CategoriesDao,
-        tagsDao: TagsDao,
-        articlePersonalDao: ArticlePersonalInfosDao,
-        articlesContentDao: ArticleContentsDao
-    ) {
-        this.articlesDao = articlesDao
-        this.articleCountsDao = articleCountsDao
-        this.categoriesDao = categoriesDao
-        this.tagsDao = tagsDao
-        this.articlePersonalInfosDao = articlePersonalDao
-        this.articleContentsDao = articlesContentDao
-    }
 }
 
 //============================================================================
@@ -243,7 +227,7 @@ class ArticleDataSource(private val strategy: ArticleStrategy) :
 }
 
 
-sealed class ArticleStrategy() {
+sealed class ArticleStrategy {
     abstract fun getItems(start: Int, size: Int): List<ArticleItem>
 
     class AllArticles(
@@ -276,5 +260,3 @@ sealed class ArticleStrategy() {
             itemProvider(start, size, query)
     }
 }
-
-

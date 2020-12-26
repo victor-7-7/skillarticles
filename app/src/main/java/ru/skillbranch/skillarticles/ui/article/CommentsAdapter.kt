@@ -8,13 +8,15 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.extensions.LayoutContainer
 import ru.skillbranch.skillarticles.data.remote.res.CommentRes
 import ru.skillbranch.skillarticles.ui.custom.CommentItemView
+import javax.inject.Inject
 
-class CommentsAdapter(private val listener: (CommentRes) -> Unit) :
-    PagedListAdapter<CommentRes, CommentVH>(CommentsDiffCallback()) {
+class CommentsAdapter @Inject constructor(
+    private val listener: IArticleView
+) : PagedListAdapter<CommentRes, CommentVH>(CommentsDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentVH {
         val containerView = CommentItemView(parent.context)
-        return CommentVH(containerView, listener)
+        return CommentVH(containerView, listener::clickOnComment)
     }
 
     override fun onBindViewHolder(holder: CommentVH, position: Int) {

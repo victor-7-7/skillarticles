@@ -43,7 +43,7 @@ class SearchBgHelper(
             setStroke(borderWidth, secondaryColor)
         }
     }
-    val drawableLeft: Drawable by lazy {
+    private val drawableLeft: Drawable by lazy {
         GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadii = floatArrayOf(
@@ -56,7 +56,7 @@ class SearchBgHelper(
             setStroke(borderWidth, secondaryColor)
         }
     }
-    val drawableRight: Drawable by lazy {
+    private val drawableRight: Drawable by lazy {
         GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadii = floatArrayOf(
@@ -69,7 +69,7 @@ class SearchBgHelper(
             setStroke(borderWidth, secondaryColor)
         }
     }
-    val drawableMiddle: Drawable by lazy {
+    private val drawableMiddle: Drawable by lazy {
         GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             color = ColorStateList.valueOf(alphaColor)

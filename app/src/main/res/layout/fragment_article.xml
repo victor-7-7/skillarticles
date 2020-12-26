@@ -141,7 +141,8 @@
                     android:layout_height="wrap_content"
                     android:imeOptions="actionSend"
                     android:inputType="text"
-                    tools:text="comment text" />
+                    tools:text="comment text"
+                    android:importantForAutofill="no" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- nestedScrollingEnabled="false" см. лекц 9? 01:18:40 -->

@@ -7,6 +7,8 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.provider.Settings
 import androidx.annotation.VisibleForTesting
+import androidx.hilt.Assisted
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -20,10 +22,12 @@ import ru.skillbranch.skillarticles.data.repositories.ProfileRepository
 import ru.skillbranch.skillarticles.viewmodels.base.*
 import java.io.InputStream
 
-class ProfileViewModel(handle: SavedStateHandle) :
-    BaseViewModel<ProfileState>(handle, ProfileState()) {
 
-    private val repository = ProfileRepository
+class ProfileViewModel @ViewModelInject constructor(
+    @Assisted handle: SavedStateHandle,
+    private val repository: ProfileRepository
+) : BaseViewModel<ProfileState>(handle, ProfileState()) {
+
     private val storagePermissions = listOf(
         Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.WRITE_EXTERNAL_STORAGE

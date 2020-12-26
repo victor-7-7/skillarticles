@@ -1,5 +1,7 @@
 package ru.skillbranch.skillarticles.viewmodels.auth
 
+import androidx.hilt.Assisted
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.SavedStateHandle
 import ru.skillbranch.skillarticles.data.repositories.RootRepository
 import ru.skillbranch.skillarticles.extensions.isValidEmail
@@ -9,10 +11,10 @@ import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
 
-class AuthViewModel(handle: SavedStateHandle) : BaseViewModel<AuthState>(handle, AuthState()),
-    IAuthViewModel {
-
-    private val repository = RootRepository
+class AuthViewModel @ViewModelInject constructor(
+    @Assisted handle: SavedStateHandle,
+    private val repository: RootRepository
+) : BaseViewModel<AuthState>(handle, AuthState()), IAuthViewModel {
 
     init {
         subscribeOnDataSource(repository.isAuth()) { isAuth, state ->

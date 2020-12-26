@@ -1,5 +1,7 @@
 package ru.skillbranch.skillarticles.viewmodels.article
 
+import androidx.hilt.Assisted
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
@@ -19,12 +21,20 @@ import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
 import java.util.concurrent.Executors
 
-class ArticleViewModel(
-    handle: SavedStateHandle,
-    private val articleId: String
+class ArticleViewModel @ViewModelInject constructor(
+    @Assisted handle: SavedStateHandle,
+    private val repository: ArticleRepository
 ) : BaseViewModel<ArticleState>(handle, ArticleState()), IArticleViewModel {
-
-    private val repository = ArticleRepository
+    /**
+     * Недостаток хилта (Hilt) - он не позволяет передать в конструктор
+     * ViewModel параметр articleId: String и т.п. Мы можем передать
+     * только SavedStateHandle через @Assisted и репозиторий,
+     * который можно заинжектить при помощи даггера. Все остальное
+     * приходится извлекать из handle, а это фееричный антипаттерн
+     * (lecture 14, t.c. 03:01:55)
+     * */
+    // bundle key default args (safe args from navigation)
+    private val articleId: String = handle["article_id"]!!
     private var clearContent: String? = null
 
     private val listConfig by lazy {
@@ -34,7 +44,6 @@ class ArticleViewModel(
             .build()
     }
 
-    //
     private val commentsListData = Transformations.switchMap(
         repository.findArticleCommentCount(articleId)
     ) {

@@ -171,7 +171,7 @@ class MarkdownContentView @JvmOverloads constructor(
         dispatchFreezeSelfOnly(container)
     }
 
-    override fun onSaveInstanceState(): Parcelable? {
+    override fun onSaveInstanceState(): Parcelable {
         val state = SavedState(super.onSaveInstanceState())
         state.ssLayoutManager = layoutManager
         return state
