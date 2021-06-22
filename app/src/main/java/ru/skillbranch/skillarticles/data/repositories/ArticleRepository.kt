@@ -227,8 +227,8 @@ class CommentsDataFactory(
     private val articleId: String,
     private val totalCount: Int,
     private val errHandler: (Throwable) -> Unit
-) : DataSource.Factory<String?, CommentRes>() {
-    override fun create() =
+) : DataSource.Factory<String, CommentRes>() {
+    override fun create(): DataSource<String, CommentRes> =
         CommentsDataSource(itemProvider, articleId, totalCount, errHandler)
 }
 
@@ -315,5 +315,5 @@ class CommentsDataSource(
         )
     }
 
-    override fun getKey(item: CommentRes): String = item.slug
+    override fun getKey(item: CommentRes): String = item.id  // item.slug ??
 }

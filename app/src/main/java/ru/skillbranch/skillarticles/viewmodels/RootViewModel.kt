@@ -1,16 +1,17 @@
 package ru.skillbranch.skillarticles.viewmodels
 
-import androidx.hilt.Assisted
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.SavedStateHandle
+import dagger.hilt.android.lifecycle.HiltViewModel
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.data.repositories.RootRepository
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
+import javax.inject.Inject
 
-class RootViewModel @ViewModelInject constructor(
-    @Assisted handle: SavedStateHandle,
+@HiltViewModel
+class RootViewModel @Inject constructor(
+    handle: SavedStateHandle,
     rootRepo: RootRepository
 ) : BaseViewModel<RootState>(handle, RootState()) {
     private val repository = rootRepo

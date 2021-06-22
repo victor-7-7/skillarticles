@@ -1,10 +1,9 @@
 package ru.skillbranch.skillarticles.viewmodels.article
 
-import androidx.hilt.Assisted
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import ru.skillbranch.skillarticles.data.remote.err.ApiError
 import ru.skillbranch.skillarticles.data.remote.res.CommentRes
@@ -20,9 +19,11 @@ import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
 import java.util.concurrent.Executors
+import javax.inject.Inject
 
-class ArticleViewModel @ViewModelInject constructor(
-    @Assisted handle: SavedStateHandle,
+@HiltViewModel
+class ArticleViewModel @Inject constructor(
+    handle: SavedStateHandle,
     private val repository: ArticleRepository
 ) : BaseViewModel<ArticleState>(handle, ArticleState()), IArticleViewModel {
     /**
@@ -40,7 +41,7 @@ class ArticleViewModel @ViewModelInject constructor(
     private val listConfig by lazy {
         PagedList.Config.Builder()
             .setEnablePlaceholders(true) // мы знаем общее число комментов к статье
-            .setPageSize(5)
+            .setPageSize(7)
             .build()
     }
 
@@ -237,7 +238,9 @@ class ArticleViewModel @ViewModelInject constructor(
             notify(Notify.TextMessage("Comment must not be empty"))
             return
         }
-        updateState { it.copy(commentText = comment) }
+        updateState {
+            it.copy(commentText = comment)
+        }
         if (!currentState.isAuth) {
             navigate(NavigationCommand.StartLogin())
         } else launchSafety(null, {
@@ -267,7 +270,7 @@ class ArticleViewModel @ViewModelInject constructor(
     private fun buildPageList(
         dataFactory: CommentsDataFactory
     ): LiveData<PagedList<CommentRes>> {
-        return LivePagedListBuilder<String, CommentRes>(
+        return LivePagedListBuilder(
             dataFactory,
             listConfig
         ).setFetchExecutor(Executors.newSingleThreadExecutor()).build()
@@ -278,7 +281,12 @@ class ArticleViewModel @ViewModelInject constructor(
     }
 
     fun handleClearComment() {
-        updateState { it.copy(answerTo = null, answerToMessageId = null) }
+        updateState {
+            it.copy(
+                answerTo = null,
+                answerToMessageId = null
+            )
+        }
     }
 
     fun handleReplyTo(messageId: String, name: String) {
@@ -318,8 +326,8 @@ data class ArticleState(
     val content: List<MarkdownElement> = emptyList(), // контент
     val commentsCount: Int = 0, // число комментариев к статье
     /** Подсказка, появляющаяся в редактируемом поле комментария. Если
-     * юзер отвечает на комментарий юзера [name], то подсказка будет вида -
-     * Reply to [name]. Если юзер комментирует саму статью, то подсказка
+     * юзер отвечает на комментарий юзера John, то подсказка будет вида -
+     * Reply to John. Если юзер комментирует саму статью, то подсказка
      * будет вида - Comment */
     val answerTo: String? = null,
     /** Текстовый ключ (slug) коммента, в ответ на который в данный момент

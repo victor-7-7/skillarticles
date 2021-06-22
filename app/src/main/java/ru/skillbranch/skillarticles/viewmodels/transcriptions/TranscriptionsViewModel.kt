@@ -1,16 +1,17 @@
 package ru.skillbranch.skillarticles.viewmodels.transcriptions
 
-import androidx.hilt.Assisted
-import androidx.hilt.lifecycle.ViewModelInject
+
 import androidx.lifecycle.SavedStateHandle
+import dagger.hilt.android.lifecycle.HiltViewModel
 import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.ui.RootActivity
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
+import javax.inject.Inject
 
-
-class TranscriptionsViewModel @ViewModelInject constructor(
-    @Assisted handle: SavedStateHandle,
+@HiltViewModel
+class TranscriptionsViewModel @Inject constructor(
+    handle: SavedStateHandle,
     private val prefs: PrefManager
 ) : BaseViewModel<TranscriptionsState>(handle, TranscriptionsState()) {
 

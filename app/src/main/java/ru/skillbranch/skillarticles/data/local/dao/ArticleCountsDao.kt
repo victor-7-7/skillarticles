@@ -6,7 +6,6 @@ import androidx.room.Query
 import androidx.room.Transaction
 import ru.skillbranch.skillarticles.data.local.entities.ArticleCounts
 
-
 @Dao
 interface ArticleCountsDao : BaseDao<ArticleCounts> {
 

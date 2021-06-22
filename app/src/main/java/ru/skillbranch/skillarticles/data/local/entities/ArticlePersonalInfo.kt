@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 import java.util.*
 
 @Entity(tableName = "article_personal_infos")
-/** источник правды для непостоянных полей isLike/isBookmark - локальная БД */
+/** источник правды для непостоянных полей isLike/isBookmark -> локальная БД */
 data class ArticlePersonalInfo(
     @PrimaryKey
     @ColumnInfo(name = "article_id")

@@ -7,11 +7,10 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.provider.Settings
 import androidx.annotation.VisibleForTesting
-import androidx.hilt.Assisted
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -21,10 +20,11 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import ru.skillbranch.skillarticles.data.repositories.ProfileRepository
 import ru.skillbranch.skillarticles.viewmodels.base.*
 import java.io.InputStream
+import javax.inject.Inject
 
-
-class ProfileViewModel @ViewModelInject constructor(
-    @Assisted handle: SavedStateHandle,
+@HiltViewModel
+class ProfileViewModel @Inject constructor(
+    handle: SavedStateHandle,
     private val repository: ProfileRepository
 ) : BaseViewModel<ProfileState>(handle, ProfileState()) {
 

@@ -29,8 +29,8 @@ interface RestService {
     @GET("articles/{article}/messages")
     fun loadComments(
         @Path("article") articleId: String,
-        @Query("last") last: String? = null,
-        @Query("limit") limit: Int = 5
+        @Query("last") last: Any? = null,
+        @Query("limit") limit: Int = 9
     ): Call<List<CommentRes>>
 
     // https://skill-articles.skill-branch.ru/api/v1/articles/{articleId}/messages

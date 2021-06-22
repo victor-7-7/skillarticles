@@ -4,14 +4,15 @@ buildscript {
     apply from: 'versions.gradle'
 
     repositories {
-        jcenter()
         google()
+        mavenCentral()
+        jcenter() // для scabbard
         maven { url 'https://plugins.gradle.org/m2/' }
     }
 
     dependencies {
-        classpath "com.android.tools.build:gradle:$gradle_version"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.android.tools.build:gradle:${gradle_plugin_vers}"
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$navigation_version"
         classpath "gradle.plugin.dev.arunkumar:scabbard-gradle-plugin:0.4.0"
         classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_vers"
@@ -22,8 +23,9 @@ buildscript {
 
 allprojects {
     repositories {
-        jcenter()
         google()
+        mavenCentral()
+        jcenter() // для scabbard
         maven { url 'https://jitpack.io' }
     }
 }

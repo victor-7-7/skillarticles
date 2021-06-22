@@ -25,6 +25,10 @@ class RootActivity : BaseActivity<RootViewModel>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // https://developer.android.com/topic/libraries/view-binding?
+//        bindRoot = ActivityRootBinding.inflate(layoutInflater)
+//        bindBottom = LayoutBottombarBinding.inflate(layoutInflater)
+
         // top level destination
         val appbarConfiguration = AppBarConfiguration(
             setOf(
@@ -73,6 +77,7 @@ class RootActivity : BaseActivity<RootViewModel>() {
         )
         if (bottombar != null) snackbar.anchorView = bottombar
         else snackbar.anchorView = nav_view
+
 
         when (notify) {
             is Notify.TextMessage -> {

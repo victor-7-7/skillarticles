@@ -1,9 +1,10 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions' // Gradle plugin is deprecated
+//apply plugin: 'kotlin-parcelize'
+apply plugin: 'kotlin-android-extensions' // this gradle plugin is deprecated
 apply plugin: 'androidx.navigation.safeargs.kotlin'
-apply plugin: 'kotlin-kapt'
 apply plugin: 'scabbard.gradle'
+apply plugin: 'kotlin-kapt'
 apply plugin: 'dagger.hilt.android.plugin'
 
 apply from: '../versions.gradle'
@@ -40,7 +41,8 @@ android {
         // look at video (lecture 11, time code 01:56:16)
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
+                arguments += ["room.schemaLocation": "$projectDir/schemas".toString(),
+                              "room.incremental"   : "true"]
             }
         }
     }
@@ -51,6 +53,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    buildFeatures {
+        viewBinding true
+        dataBinding true
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -58,6 +64,7 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
+    // Блок касается плагина kotlin-android-extensions
     androidExtensions {
         experimental = true
     }
@@ -79,7 +86,10 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     // Core
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    // jdk? https://medium.com/@mbonnin/the-different-kotlin-stdlibs-explained-83d7c6bf293
+    // Warning: Plugin version (1.5.10) is not the same as library version (1.5.0)
+    // https://github.com/CymChad/BaseRecyclerViewAdapterHelper/issues/3346
+//    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation "androidx.appcompat:appcompat:$app_compat_vers"
     implementation "androidx.core:core-ktx:$core_ktx_vers"
     implementation "androidx.constraintlayout:constraintlayout:$constraint_vers"
@@ -158,7 +168,16 @@ dependencies {
     // Hilt (lecture 14, t.c. 02:42:52)
     implementation "com.google.dagger:hilt-android:$hilt_vers"
     kapt "com.google.dagger:hilt-android-compiler:$hilt_vers"
-    implementation "androidx.hilt:hilt-lifecycle-viewmodel:$hilt_vm_vers"
+    // Для новых версий хилта эти зависимости не требуются
+    // https://stackoverflow.com/questions/67256565/defaultactivityviewmodelfactory-not-found
+    // https://stackoverflow.com/questions/67046457/cannot-find-symbol-return-daggerapplication-hiltcomponents-singletonc-builder
+    // https://github.com/google/dagger/issues/2541
+    // The DefaultActivityViewModelFactory was removed in Dagger 2.34.
+    // It was previously used with the androidx.hilt library for @ViewModelInject
+    // which was deprecated in androidx.hilt 1.0.0-alpha03 and removed
+    // in androidx.hilt 1.0.0-beta01. View model injection is now supported
+    // natively in Hilt via @HiltViewModel.
+//    implementation "androidx.hilt:hilt-lifecycle-viewmodel:$hilt_vm_vers"
     kapt "androidx.hilt:hilt-compiler:$hilt_vm_vers"
 
     // Начав использовать андроидный даггер, нижеследующие 2 библиотеки не нужны

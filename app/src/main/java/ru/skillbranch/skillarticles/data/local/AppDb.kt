@@ -19,7 +19,7 @@ import ru.skillbranch.skillarticles.data.local.entities.*
 abstract class AppDb : RoomDatabase() {
     companion object {
         const val DATABASE_NAME = BuildConfig.APPLICATION_ID + ".db"
-        const val DATABASE_VERSION = 1
+        const val DATABASE_VERSION = 2
     }
 
     abstract fun articlesDao(): ArticlesDao

@@ -15,7 +15,7 @@ import java.util.*
         onDelete = ForeignKey.CASCADE
     )]
 )
-/** источник правды для непостоянных полей likes/comments - сервер */
+/** источник правды для непостоянных полей likes/comments -> сервер */
 data class ArticleCounts(
     @PrimaryKey
     @ColumnInfo(name = "article_id")

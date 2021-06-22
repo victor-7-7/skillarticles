@@ -1,12 +1,11 @@
 package ru.skillbranch.skillarticles.viewmodels.articles
 
 import android.util.Log
-import androidx.hilt.Assisted
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
 import ru.skillbranch.skillarticles.data.local.entities.CategoryData
@@ -17,9 +16,11 @@ import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
 import java.util.concurrent.Executors
+import javax.inject.Inject
 
-class ArticlesViewModel @ViewModelInject constructor(
-    @Assisted handle: SavedStateHandle,
+@HiltViewModel
+class ArticlesViewModel @Inject constructor(
+    handle: SavedStateHandle,
     private val repository: ArticlesRepository
 ) : BaseViewModel<ArticlesState>(handle, ArticlesState()) {
 

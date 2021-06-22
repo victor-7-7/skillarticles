@@ -25,7 +25,7 @@ data class Tag(
         )]
 )
 data class ArticleTagXRef(
-    @ColumnInfo(name = "a_id")
+    @ColumnInfo(name = "a_id", index = true)
     val articleId: String,
     @ColumnInfo(name = "t_id")
     val tagId: String
