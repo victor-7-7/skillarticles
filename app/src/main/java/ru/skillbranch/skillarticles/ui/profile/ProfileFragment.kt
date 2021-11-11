@@ -70,7 +70,7 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
 //    private lateinit var resultRegistry: ActivityResultRegistry
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    lateinit var permissionsLauncher: ActivityResultLauncher<Array<out String>>
+    lateinit var permissionsLauncher: ActivityResultLauncher<Array<String>>
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     lateinit var cameraLauncher: ActivityResultLauncher<Uri>
@@ -93,10 +93,10 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
     override val binding: ProfileBinding by lazy { ProfileBinding() }
 
     /*
-       Логика работы класса следующая. При открытии фрагмента его UI получает
-       данные профиля юзера через связывание (binding). Если юзер кликает по
-       аватару, то внизу экрана открывается шторка AvatarActionsDialog с
-       меню на выбор: взять картинку с камеры (если на девайсе она есть),
+       Логика работы класса ProfileFragment следующая. При открытии фрагмента его
+       UI получает данные профиля юзера через связывание (binding). Если юзер
+       кликает по аватару, то внизу экрана открывается шторка AvatarActionsDialog
+       с меню на выбор: взять картинку с камеры (если на девайсе она есть),
        взять с галереи, редактировать текущий аватар (если он есть), удалить
        аватар (если он есть). Когда юзер выбирает пункт меню, шторка закрывается
        и срабатывает слушатель, заданный в методе setFragmentResultListener.
@@ -384,7 +384,7 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
     }
 
 
-    private fun callbackPermissions(result: MutableMap<String, Boolean>) {
+    private fun callbackPermissions(result: Map<String, Boolean>) {
         val permissionsResult = result.mapValues { (perm, isGranted) ->
             // Если в очередной маповской паре (key=perm, value=isGranted)
             // разрешение предоставлено, то меняем в ней значение с единичного

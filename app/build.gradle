@@ -10,7 +10,7 @@ apply plugin: 'dagger.hilt.android.plugin'
 apply from: '../versions.gradle'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
 
     defaultConfig {
         applicationId "ru.skillbranch.skillarticles"
@@ -78,8 +78,8 @@ android {
 scabbard {
     enabled = true
     failOnError = true
-    outputFormat "svg" // default png
-    // fullBindingGraphValidation = true // default false
+//    outputFormat "svg" // default png
+    fullBindingGraphValidation = true // default false
 }
 
 dependencies {
@@ -191,15 +191,15 @@ dependencies {
      implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     // Test
-    testImplementation 'junit:junit:4.13.1'
-    androidTestImplementation "org.mockito:mockito-core:3.3.3"
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation "org.mockito:mockito-core:3.4.6"
     androidTestImplementation 'com.linkedin.dexmaker:dexmaker-mockito:2.25.1'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.3.0'
-    androidTestImplementation 'androidx.test:core:1.3.0'
-    androidTestImplementation 'androidx.test:runner:1.3.0'
-    androidTestImplementation 'androidx.test:rules:1.3.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.4.0'
+    androidTestImplementation 'androidx.test:core:1.4.0'
+    androidTestImplementation 'androidx.test:runner:1.4.0'
+    androidTestImplementation 'androidx.test:rules:1.4.0'
     androidTestImplementation 'com.jraska.livedata:testing-ktx:1.1.2'
     androidTestImplementation "android.arch.core:core-testing:1.1.1"
 

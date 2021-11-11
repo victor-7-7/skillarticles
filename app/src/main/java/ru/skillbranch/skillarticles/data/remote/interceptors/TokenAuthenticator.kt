@@ -20,6 +20,9 @@ class TokenAuthenticator(
     private val lazyApi: Lazy<RestService>
 ) : Authenticator {
 
+    // OkHttp provides Interceptors which can alter web requests before they are sent out
+    // and Authenticators that allow us to re-sign and retry requests that have failed due to authorization.
+
     // Look at video (lecture 12 time code 00:45:54)
     override fun authenticate(route: Route?, response: Response): Request? {
         if (response.code != 401) return null

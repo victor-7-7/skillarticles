@@ -11,7 +11,7 @@ import androidx.activity.result.contract.ActivityResultContract
 
 class EditImageContract : ActivityResultContract<Pair<Uri, Uri>, Uri?>() {
 
-    override fun createIntent(context: Context, input: Pair<Uri, Uri>?): Intent {
+    override fun createIntent(context: Context, input: Pair<Uri, Uri>): Intent {
         // Говорим системе, что желаем редактировать
         // [action=>Intent.ACTION_EDIT] данные типа "image/jpeg".
         // Система предложит юзеру выбрать редактор изображений и

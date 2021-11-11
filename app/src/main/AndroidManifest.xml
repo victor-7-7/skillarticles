@@ -20,14 +20,17 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup">
+
         <activity
             android:name=".ui.RootActivity"
-            android:windowSoftInputMode="adjustNothing">
+            android:windowSoftInputMode="adjustNothing"
+            android:exported = "true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity> <!-- lecture 12, t.c. 01:30:40, 01:48:09 -->
+
         <provider
             android:name=".data.providers.ImageFileProvider"
             android:authorities="${applicationId}.provider"
