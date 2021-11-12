@@ -39,17 +39,26 @@ fun Date.add(value: Int, units: TimeUnits = TimeUnits.SECOND): Date {
 }
 
 fun Date.humanizeDiff(date: Date = Date()): String {
+    // this.time - момент, когда был сделан комментарий (сохранен в базе на сервере)
+    // date.time - момент, когда адаптер построил коммент-вьюху CommentItemView
+    // В идеальном мире diff < 0 ВСЕГДА (коммент может появится в списке на каком-то
+    // девайсе только ПОСЛЕ того, как он был сделан каким-то юзером). В реальном
+    // мире существует рассинхронизация в показаниях времени между девайсами/сервером.
+    // Поэтому иногда появляется такой артефакт - если написать и отправить коммент и
+    // сразу же поглядеть на него в обновленной ленте комментов, то вместо фразы
+    // "несколько секунд назад" мы увидим фразу "через несколько секунд", что является
+    // ошибкой. Причина - рассинхрон часов и как результат diff > 0
     val diff = this.time - date.time
     val m = diff / MINUTE
     val h = diff / HOUR
     val d = diff / DAY
 
     return when (diff) {
-        in -SECOND..SECOND -> "только что"
-        in -45 * SECOND until -SECOND -> "несколько секунд назад"
-        in 1 + SECOND..45 * SECOND -> "через несколько секунд"
-        in -75 * SECOND until -45 * SECOND -> "минуту назад"
-        in 1 + 45 * SECOND..75 * SECOND -> "через минуту"
+        in -SECOND..SECOND -> "только что" // [-1000, 1000]
+        in -45 * SECOND until -SECOND -> "несколько секунд назад" // [-45000, -1000[
+        in 1 + SECOND..45 * SECOND -> "через несколько секунд" // [1001, 45000]
+        in -75 * SECOND until -45 * SECOND -> "минуту назад" // [-75000, -45000[
+        in 1 + 45 * SECOND..75 * SECOND -> "через минуту" // [45001, 75000]
         in -45 * MINUTE until -75 * SECOND -> "${-m} ${flexTime(m.toInt())} назад"
         in 1 + 75 * SECOND..45 * MINUTE -> "через $m ${flexTime(m.toInt())}"
         in -75 * MINUTE until -45 * MINUTE -> "час назад"
