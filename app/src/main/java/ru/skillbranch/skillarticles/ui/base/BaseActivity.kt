@@ -21,6 +21,7 @@ import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
 import kotlinx.android.synthetic.main.activity_root.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
+import ru.skillbranch.skillarticles.ui.RootActivity
 import ru.skillbranch.skillarticles.viewmodels.base.*
 
 abstract class BaseActivity<T : BaseViewModel<out IViewModelState>> : AppCompatActivity() {
@@ -141,16 +142,15 @@ class ToolbarBuilder {
         return this
     }
 
-    fun build(context: FragmentActivity) {
+    fun build(root: RootActivity) {
         //show appbar if hidden due to scroll behavior
-        context.appbar.setExpanded(true, true)
-        // Тулбар принадлежит родительской активити, а не данному фрагменту
-        with(context.toolbar) {
+        root.appbar.setExpanded(true, true)
+        with(root.toolbar) {
             subtitle = this@ToolbarBuilder.subtitle
             if (this@ToolbarBuilder.logo != null) {
-                val logoSize = context.dpToIntPx(40)
-                val logoMargin = context.dpToIntPx(16)
-                val logoPlaceholder = getDrawable(context, R.drawable.logo_placeholder)
+                val logoSize = root.dpToIntPx(40)
+                val logoMargin = root.dpToIntPx(16)
+                val logoPlaceholder = getDrawable(root, R.drawable.logo_placeholder)
 
                 logo = logoPlaceholder
 
@@ -164,7 +164,7 @@ class ToolbarBuilder {
                         logo.layoutParams = it
                     }
 
-                    Glide.with(context)
+                    Glide.with(root)
                         .load(this@ToolbarBuilder.logo)
                         .apply(circleCropTransform())
                         .override(logoSize)
@@ -222,25 +222,25 @@ class BottombarBuilder {
         return this
     }
 
-    fun build(context: FragmentActivity) {
+    fun build(root: RootActivity) {
         //remove old views
         if (viewsIds.isNotEmpty()) {
             viewsIds.forEach {
-                val view = context.container.findViewById<View>(it)
-                context.container.removeView(view)
+                val view = root.container.findViewById<View>(it)
+                root.container.removeView(view)
             }
             viewsIds.clear()
         }
         //add new bottom bar views
         if (views.isNotEmpty()) {
-            val inflater = LayoutInflater.from(context)
+            val inflater = LayoutInflater.from(root)
             views.forEach {
-                val view = inflater.inflate(it, context.container, false)
-                context.container.addView(view)
+                val view = inflater.inflate(it, root.container, false)
+                root.container.addView(view)
                 viewsIds.add(view.id)
             }
         }
-        with(context.nav_view) {
+        with(root.nav_view) {
             isVisible = visible
             // show bottombar (if hidden due to scroll behavior)
             ((layoutParams as CoordinatorLayout.LayoutParams)

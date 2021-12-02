@@ -19,5 +19,5 @@ data class CommentRes(
     val slug: String,
     /** Имя юзера, в ответ на коммент которого написан данный коммент. Если
      * null, то значит данный коммент 0 уровня */
-    val answerTo: String? = null
+    val answerTo: String? = null,
 )

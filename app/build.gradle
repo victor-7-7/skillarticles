@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 //apply plugin: 'kotlin-parcelize'
 apply plugin: 'kotlin-android-extensions' // this gradle plugin is deprecated
+// https://developer.android.com/guide/navigation/navigation-getting-started#kts
 apply plugin: 'androidx.navigation.safeargs.kotlin'
 apply plugin: 'scabbard.gradle'
 apply plugin: 'kotlin-kapt'
@@ -15,7 +16,7 @@ android {
     defaultConfig {
         applicationId "ru.skillbranch.skillarticles"
         minSdkVersion 23
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
 

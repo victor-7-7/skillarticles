@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/refresh"
+    android:id="@+id/swipe_refresh"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <androidx.core.widget.NestedScrollView
+    <!-- app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior" -->
+    <ru.skillbranch.skillarticles.ui.custom.StickyScrollView
         android:id="@+id/scroll"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:stickyView="@id/wrap_comments"
+        app:threshold="150dp" >
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -145,19 +149,24 @@
                     android:importantForAutofill="no" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- nestedScrollingEnabled="false" см. лекц 9? 01:18:40 -->
+            <!-- nestedScrollingEnabled="false" см. лекц 8 (2020) 01:18:40 -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_comments"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="?attr/colorSurface"
-                android:nestedScrollingEnabled="false"
+                android:nestedScrollingEnabled="true"
                 android:paddingBottom="@dimen/spacing_normal_16"
+                android:scrollbars="vertical"
                 tools:listitem="@layout/item_comment"
                 app:layout_constraintTop_toBottomOf="@id/wrap_comments"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.core.widget.NestedScrollView>
+    </ru.skillbranch.skillarticles.ui.custom.StickyScrollView>
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+<!-- Чтобы была возможность делать скролл внутри RecyclerView, которая
+ вложена внутрь другой скроллируемой вьюхи, надо установить атрибут
+ android:nestedScrollingEnabled="true" -->

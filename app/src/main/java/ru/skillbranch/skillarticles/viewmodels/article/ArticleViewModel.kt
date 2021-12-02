@@ -1,16 +1,14 @@
 package ru.skillbranch.skillarticles.viewmodels.article
 
+import android.util.Log
 import androidx.lifecycle.*
-import androidx.paging.LivePagedListBuilder
-import androidx.paging.PagedList
+import androidx.paging.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import ru.skillbranch.skillarticles.data.local.NetworkDataHolder
 import ru.skillbranch.skillarticles.data.remote.err.ApiError
 import ru.skillbranch.skillarticles.data.remote.res.CommentRes
-import ru.skillbranch.skillarticles.data.repositories.ArticleRepository
-import ru.skillbranch.skillarticles.data.repositories.CommentsDataFactory
-import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
-import ru.skillbranch.skillarticles.data.repositories.clearContent
+import ru.skillbranch.skillarticles.data.repositories.*
 import ru.skillbranch.skillarticles.extensions.data.toAppSettings
 import ru.skillbranch.skillarticles.extensions.indexesOf
 import ru.skillbranch.skillarticles.extensions.shortFormat
@@ -38,7 +36,7 @@ class ArticleViewModel @Inject constructor(
     private val articleId: String = handle["article_id"]!!
     private var clearContent: String? = null
 
-    private val listConfig by lazy {
+    /*private val listConfig by lazy {
         PagedList.Config.Builder()
             .setEnablePlaceholders(true) // мы знаем общее число комментов к статье
             .setPageSize(7)
@@ -50,12 +48,52 @@ class ArticleViewModel @Inject constructor(
     ) {
         // Текущее количество комментариев у статьи известно заранее
         buildPageList(repository.loadAllComments(articleId, it, ::commentLoadErrorHandler))
+    }*/
+
+    private lateinit var dataSource: CommentsDataSource2
+    private var commCount = 0
+    private var firstTrigger = true
+
+    companion object {
+        const val NETWORK_PAGE_SIZE = 10
     }
+
+    // Подписка на commentsPager выполняется в ArticleFragment (в методе setupViews)
+    val commentsPager: LiveData<PagingData<CommentRes>> =
+        Pager(
+            config = PagingConfig(
+                // Should be several times the number of visible items onscreen
+                pageSize = NETWORK_PAGE_SIZE,
+                prefetchDistance = 2 * NETWORK_PAGE_SIZE,
+                enablePlaceholders = true, // default -> true
+                initialLoadSize = 3 * NETWORK_PAGE_SIZE, // default (3 * pageSize)
+                /*maxSize = 55,*/
+                // Граничное число непрогруженных айтемов. Скролл в пределах
+                // этого порога грузит страницы инкрементно. Скролл, убежавший за
+                // этот порог, заставляет движок прыгнуть к прогрузке страницы,
+                // которая отвечает обновленной позиции скролла. Чтобы это заработало
+                // надо дополнительно выставить в true свойство PagingSource.jumpingSupported
+                /*jumpThreshold = 2 * 12 // default (2 * pageSize)*/
+                // Минус прыжков в том, что ранее загруженные и закешированные айтемы
+                // инвалидируются (отбрасываются) и надо будет грузить их заново
+            ),
+            // С какого айтема следует начинать постраничную загрузку списка
+            initialKey = 0,
+            pagingSourceFactory = {
+                Log.d("M_S_Paging", "ArticleViewModel pagingSourceFactory " +
+                        "[count: $commCount]")
+                repository.makeCommentsDataSource(articleId, commCount)
+                    .also { dataSource = it }
+            }
+        )
+            .liveData
+            .cachedIn(viewModelScope)
 
     // subscribe on mutable data
     init {
         subscribeOnDataSource(repository.findArticle(articleId)) { article, state ->
             if (article.content == null) fetchContent()
+
             state.copy(
                 shareLink = article.shareLink,
                 title = article.title,
@@ -80,12 +118,30 @@ class ArticleViewModel @Inject constructor(
         subscribeOnDataSource(repository.isAuth()) { isAuth, state ->
             state.copy(isAuth = isAuth)
         }
+        subscribeOnDataSource(repository.findArticleCommentCount(articleId)) { count, state ->
+            Log.d("M_S_Paging", "ArticleViewModel subscribeOnDataSource " +
+                    "[commCount: $count]")
+            commCount = count
+            if (firstTrigger) {
+                // При инициализации модели статьи нам ни к чему инвалидация
+                // источника комментов. Просто сбрасываем флаг
+                firstTrigger = false
+            } else {
+                // В результате инвалидации будет вызван PagingSource-метод getRefreshKey
+                dataSource.invalidate()
+            }
+            state
+        }
+
+        // Для тестирования комментов
+        repository.updateCommentsDH()
     }
+
 
     /** Метод вызывается, когда юзер на экране статьи делает свайп
      * вниз при крайнем верхнем показе контента (тянет контент вниз
      * при том, что статья и так показывает самый верх контента) */
-    fun refresh() {
+    fun swipeRefresh() {
         // Параллельно запускаем фоновые задачи
         launchSafety {
             // Загружаем контент статьи с сервера
@@ -252,15 +308,20 @@ class ArticleViewModel @Inject constructor(
                 )
             }
         }) {
+            // Для сетевого запроса инвалидация dataSource будет сделана
+            // в коллбэке обзервера за commentsCount
             repository.sendMessage(
                 articleId,
                 currentState.commentText!!,
                 currentState.answerToMessageId
             )
+            //----------------------------------
+            // Для тестового запроса к NetworkDataHolder, инвалидируем dataSource
+            dataSource.invalidate()
         }
     }
 
-    fun observeCommentList(
+    /*fun observeCommentList(
         owner: LifecycleOwner,
         onChange: (list: PagedList<CommentRes>) -> Unit
     ) {
@@ -274,7 +335,7 @@ class ArticleViewModel @Inject constructor(
             dataFactory,
             listConfig
         ).setFetchExecutor(Executors.newSingleThreadExecutor()).build()
-    }
+    }*/
 
     fun handleCommentFocus(hasFocus: Boolean) {
         updateState { it.copy(showBottombar = !hasFocus) }
@@ -295,6 +356,12 @@ class ArticleViewModel @Inject constructor(
 
     fun saveComment(comment: String) {
         updateState { it.copy(commentText = comment) }
+    }
+
+    fun initCommentCount(count: Int) {
+        Log.d("M_S_Paging", "ArticleViewModel initCommentCount [count: $count]")
+        commCount = count
+//        updateState { it.copy(commentsCount = count) }
     }
 }
 

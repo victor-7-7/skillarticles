@@ -35,6 +35,9 @@
         <argument
             android:name="title"
             app:argType="string" />
+        <argument
+            android:name="comment_count"
+            app:argType="string" />
     </fragment>
 
     <fragment

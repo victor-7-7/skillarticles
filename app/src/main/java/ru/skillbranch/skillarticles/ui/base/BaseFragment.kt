@@ -84,8 +84,9 @@ abstract class BaseFragment<T : BaseViewModel<out IViewModelState>> : Fragment()
         root.bottombarBuilder
             .prepare(prepareBottombar)
             .build(root)
-
+        // Настраиваем виджеты
         setupViews()
+
         /** Если у восстановленного фрагмента свойство binding
          * не null, то делаем реинициализацию каждого RenderProp
          * объекта, принадлежащего binding */

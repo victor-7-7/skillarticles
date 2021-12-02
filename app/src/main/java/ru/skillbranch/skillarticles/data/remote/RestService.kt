@@ -34,6 +34,14 @@ interface RestService {
     ): Call<List<CommentRes>>
 
     // https://skill-articles.skill-branch.ru/api/v1/articles/{articleId}/messages
+    @GET("articles/{article}/messages")
+    suspend fun loadComments2(
+        @Path("article") articleId: String,
+        @Query("offset") offset: Any? = null,
+        @Query("limit") limit: Int = 9
+    ): List<CommentRes>
+
+    // https://skill-articles.skill-branch.ru/api/v1/articles/{articleId}/messages
     @POST("articles/{article}/messages")
     suspend fun sendMessage(
         @Path("article") articleId: String,

@@ -78,5 +78,8 @@ fun BottomNavigationView.selectMenuItem(destination: NavDestination) {
         menu.findItem(R.id.nav_profile).isChecked = true
     }
 }
-
-
+/** Высота дисплея за вычетом высоты статус-бара (который всегда 24 dp) */
+fun View.screenHeight(): Int {
+    val metrics = context.resources.displayMetrics
+    return metrics.heightPixels - (24 * metrics.density).toInt()
+}

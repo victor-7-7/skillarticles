@@ -56,8 +56,10 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     override val binding: ArticleBinding by lazy { ArticleBinding() }
 
     // Логика комментария реализована в методе clickOnComment()
+    /*@Inject
+    lateinit var commentsAdapter: CommentsAdapter*/
     @Inject
-    lateinit var commentsAdapter: CommentsAdapter
+    lateinit var commentsAdapter2: CommentsAdapter2
 
     override val prepareToolbar: (ToolbarBuilder.() -> Unit) = {
         this.setSubtitle(args.category)
@@ -150,14 +152,18 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         )
         viewModel.handleReplyTo(comment.id, comment.user.name)
         et_comment.requestFocus()
+        // Плавно скроллируем контент так, чтобы топ виджета wrap_comments
+        // оказался прижат к верхней границы окна приложения
         scroll.smoothScrollTo(0, wrap_comments.top)
-        et_comment.context.showKeyboard(et_comment)
+        // Дадим время на скроллирование перед показом клавы
+        wrap_comments.postDelayed({
+            et_comment.context.showKeyboard(et_comment)
+        }, 300)
     }
 
     override fun setupViews() {
         // window resize options
         root.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-
         setupSubmenu()
         setupBottombar()
         // init views
@@ -179,6 +185,11 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         tv_source.movementMethod = LinkMovementMethod.getInstance()
         tv_hashtags.setLineSpacing(tv_hashtags.textSize * .5f, 1f)
 
+        // В коллбэк передается три параметра: первый -> EditText,
+        // второй -> actionId (identifier of the action),
+        // третий -> event (If triggered by an enter key, this is the event;
+        // otherwise, this is null)
+        /** Отправляем свое сообщение */
         et_comment.setOnEditorActionListener { view, _, _ ->
             root.hideKeyboard(view)
             viewModel.handleSendComment(view.text.toString())
@@ -190,36 +201,65 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         }
 
         et_comment.setOnFocusChangeListener { _, hasFocus ->
+            // Крестик нужен только при редактировании
+            wrap_comments.isEndIconVisible = hasFocus
+            // При редактировании надо спрятать боттомбар
             viewModel.handleCommentFocus(hasFocus)
         }
 
         wrap_comments.setEndIconOnClickListener { view ->
             view.context.hideKeyboard(view)
             et_comment.text = null
+            et_comment.clearFocus()
             viewModel.handleClearComment()
         }
 
         with(rv_comments) {
             layoutManager = LinearLayoutManager(requireContext())
-            adapter = commentsAdapter
+
+            /*adapter = commentsAdapter*/
+
+            adapter = commentsAdapter2.withLoadStateHeaderAndFooter(
+                header = LoadStateItemsAdapter(commentsAdapter2::retry), // виджет сверху
+                // ::retry - retry any failed load requests (use for LoadState.Error)
+                footer = LoadStateItemsAdapter(commentsAdapter2::retry) // виджет снизу
+            )
+
+            // Доступная для комментов высота экрана, за вычетом поля ввода
+            val availableHeight = screenHeight() - wrap_comments.height
+            // Ограничим высоту rv_comments (RecyclerView) этим значением
+            layoutParams = layoutParams.apply { height = availableHeight }
         }
-        viewModel.observeCommentList(viewLifecycleOwner) {
+
+        /*viewModel.observeCommentList(viewLifecycleOwner) {
             commentsAdapter.submitList(it)
+        }*/
+
+        // Сам фрагмент живет иногда дольше, чем вьюха внутри фрагмента.
+        // viewLifecycleOwner represents the Fragment's View lifecycle
+        viewModel.commentsPager.observe(viewLifecycleOwner) {
+            commentsAdapter2.submitData(viewLifecycleOwner.lifecycle, it)
         }
+
         // Корневая для фрагмента вьюгруппа - SwipeRefreshLayout
-        refresh.setOnRefreshListener {
-            viewModel.refresh()
+        swipe_refresh.setOnRefreshListener {
+            viewModel.swipeRefresh()
         }
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        viewModel.initCommentCount(args.commentCount.toInt())
     }
 
     override fun renderLoading(loadingState: Loading) {
         val progressBar = root.progress
         when (loadingState) {
-            Loading.SHOW_LOADING -> if (!refresh.isRefreshing) progressBar.isVisible = true
+            Loading.SHOW_LOADING -> if (!swipe_refresh.isRefreshing) progressBar.isVisible = true
             Loading.SHOW_BLOCKING_LOADING -> progressBar.isVisible = false
             Loading.HIDE_LOADING -> {
                 progressBar.isVisible = false
-                if (refresh.isRefreshing) refresh.isRefreshing = false
+                if (swipe_refresh.isRefreshing) swipe_refresh.isRefreshing = false
             }
         }
     }

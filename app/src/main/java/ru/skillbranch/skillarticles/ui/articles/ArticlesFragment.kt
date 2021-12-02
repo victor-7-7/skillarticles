@@ -177,7 +177,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>(), IArticlesView {
             binding.categories = it
         }
         // Корневая для фрагмента вьюгруппа - SwipeRefreshLayout
-        refresh.setOnRefreshListener {
+        swipe_refresh.setOnRefreshListener {
             viewModel.refresh()
         }
     }
@@ -190,11 +190,11 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>(), IArticlesView {
     override fun renderLoading(loadingState: Loading) {
         val progressBar = root.progress
         when (loadingState) {
-            Loading.SHOW_LOADING -> if (!refresh.isRefreshing) progressBar.isVisible = true
+            Loading.SHOW_LOADING -> if (!swipe_refresh.isRefreshing) progressBar.isVisible = true
             Loading.SHOW_BLOCKING_LOADING -> progressBar.isVisible = false
             Loading.HIDE_LOADING -> {
                 progressBar.isVisible = false
-                if (refresh.isRefreshing) refresh.isRefreshing = false
+                if (swipe_refresh.isRefreshing) swipe_refresh.isRefreshing = false
             }
         }
     }
@@ -205,7 +205,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>(), IArticlesView {
             Log.d("M_S_ArticlesFragment", "click on article: ${item.id}")
             val action = ArticlesFragmentDirections.actionToPageArticle(
                 item.id, item.author, item.authorAvatar ?: "", item.category,
-                item.categoryIcon, item.date, item.poster, item.title
+                item.categoryIcon, item.date, item.poster, item.title, item.commentCount.toString()
             )
             viewModel.navigate(NavigationCommand.To(action.actionId, action.arguments))
         }

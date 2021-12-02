@@ -47,7 +47,9 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
     }
 
     init {
+        // Ставим дефолтные отступы со всех сторон вьюхи
         setPadding(defaultHSpace, defaultVSpace, defaultHSpace, defaultVSpace)
+
         tv_date = TextView(context).apply {
             setTextColor(grayColor)
             textSize = 12f
@@ -196,6 +198,7 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
         super.dispatchDraw(canvas)
         val level = min(paddingLeft / defaultHSpace, 5)
         if (level == 1) return
+        // Рисуем вертикальные линии
         for (i in 1 until level) {
             canvas.drawLine(
                 i.toFloat() * defaultHSpace,
@@ -207,7 +210,8 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
         }
     }
 
-    fun bind(item: CommentRes?) {
+    /** Параметр pos - для демонстрации механизма пэйджинга */
+    fun bind(item: CommentRes?, pos: Int) {
         if (item == null) {
             //TODO show shimmer
             iv_avatar.setImageDrawable(
@@ -215,12 +219,14 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
                     resources, R.drawable.ic_account_circle_black_24dp, null
                 )
             )
-            tv_author.text = "Name loading..."
+            tv_author.text = "$pos"
             tv_date.text = "time loading..."
             tv_body.text = "Comment loading..."
-        } else {
+        }
+        else {
             val level = min(item.slug.split("/").size.dec(), 5)
-            setPaddingOptionally(left = level * defaultHSpace)
+            // Для нулевого уровня дополнительный отступ слева не нужен
+            if (level > 0) setPaddingOptionally(left = level * defaultHSpace)
 
             if (item.user.avatar.isBlank()) {
                 iv_avatar.setImageDrawable(
@@ -228,17 +234,19 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
                         resources, R.drawable.ic_avatar, null
                     )
                 )
-            } else {
+            }
+            else {
                 Glide.with(context)
                     .load(item.user.avatar)
                     .apply(RequestOptions.circleCropTransform())
                     .override(avatarSize)
                     .into(iv_avatar)
             }
-
-            tv_author.text = item.user.name
+            val name = "$pos ${item.user.name}"
+            tv_author.text = name
             tv_date.text = item.date.humanizeDiff()
-            tv_body.text = item.body
+            val message = item.body
+            tv_body.text = message
             tv_answer_to.text = item.answerTo
             tv_answer_to.isVisible = item.answerTo != null
             iv_answer_icon.isVisible = item.answerTo != null

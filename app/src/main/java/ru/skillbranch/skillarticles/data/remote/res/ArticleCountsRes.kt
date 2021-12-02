@@ -7,5 +7,5 @@ data class ArticleCountsRes(
     val likes: Int = 0,
     val comments: Int = 0,
     val readDuration: Int = 0,
-    val updatedAt: Date
+    val updatedAt: Date = Date()
 )
