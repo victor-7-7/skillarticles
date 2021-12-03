@@ -56,10 +56,8 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     override val binding: ArticleBinding by lazy { ArticleBinding() }
 
     // Логика комментария реализована в методе clickOnComment()
-    /*@Inject
-    lateinit var commentsAdapter: CommentsAdapter*/
     @Inject
-    lateinit var commentsAdapter2: CommentsAdapter2
+    lateinit var commentsAdapter: CommentsAdapter
 
     override val prepareToolbar: (ToolbarBuilder.() -> Unit) = {
         this.setSubtitle(args.category)
@@ -219,10 +217,10 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
 
             /*adapter = commentsAdapter*/
 
-            adapter = commentsAdapter2.withLoadStateHeaderAndFooter(
-                header = LoadStateItemsAdapter(commentsAdapter2::retry), // виджет сверху
+            adapter = commentsAdapter.withLoadStateHeaderAndFooter(
+                header = LoadStateItemsAdapter(commentsAdapter::retry), // виджет сверху
                 // ::retry - retry any failed load requests (use for LoadState.Error)
-                footer = LoadStateItemsAdapter(commentsAdapter2::retry) // виджет снизу
+                footer = LoadStateItemsAdapter(commentsAdapter::retry) // виджет снизу
             )
 
             // Доступная для комментов высота экрана, за вычетом поля ввода
@@ -231,14 +229,10 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             layoutParams = layoutParams.apply { height = availableHeight }
         }
 
-        /*viewModel.observeCommentList(viewLifecycleOwner) {
-            commentsAdapter.submitList(it)
-        }*/
-
         // Сам фрагмент живет иногда дольше, чем вьюха внутри фрагмента.
         // viewLifecycleOwner represents the Fragment's View lifecycle
         viewModel.commentsPager.observe(viewLifecycleOwner) {
-            commentsAdapter2.submitData(viewLifecycleOwner.lifecycle, it)
+            commentsAdapter.submitData(viewLifecycleOwner.lifecycle, it)
         }
 
         // Корневая для фрагмента вьюгруппа - SwipeRefreshLayout

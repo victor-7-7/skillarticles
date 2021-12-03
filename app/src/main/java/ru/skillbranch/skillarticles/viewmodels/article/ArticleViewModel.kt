@@ -5,7 +5,6 @@ import androidx.lifecycle.*
 import androidx.paging.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import ru.skillbranch.skillarticles.data.local.NetworkDataHolder
 import ru.skillbranch.skillarticles.data.remote.err.ApiError
 import ru.skillbranch.skillarticles.data.remote.res.CommentRes
 import ru.skillbranch.skillarticles.data.repositories.*
@@ -16,7 +15,6 @@ import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
-import java.util.concurrent.Executors
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,21 +34,7 @@ class ArticleViewModel @Inject constructor(
     private val articleId: String = handle["article_id"]!!
     private var clearContent: String? = null
 
-    /*private val listConfig by lazy {
-        PagedList.Config.Builder()
-            .setEnablePlaceholders(true) // мы знаем общее число комментов к статье
-            .setPageSize(7)
-            .build()
-    }
-
-    private val commentsListData = Transformations.switchMap(
-        repository.findArticleCommentCount(articleId)
-    ) {
-        // Текущее количество комментариев у статьи известно заранее
-        buildPageList(repository.loadAllComments(articleId, it, ::commentLoadErrorHandler))
-    }*/
-
-    private lateinit var dataSource: CommentsDataSource2
+    private lateinit var dataSource: CommentsDataSource
     private var commCount = 0
     private var firstTrigger = true
 
@@ -123,7 +107,7 @@ class ArticleViewModel @Inject constructor(
                     "[commCount: $count]")
             commCount = count
             if (firstTrigger) {
-                // При инициализации модели статьи нам ни к чему инвалидация
+                // При инициализации вьюмодели статьи нам ни к чему инвалидация
                 // источника комментов. Просто сбрасываем флаг
                 firstTrigger = false
             } else {
@@ -132,9 +116,6 @@ class ArticleViewModel @Inject constructor(
             }
             state
         }
-
-        // Для тестирования комментов
-        repository.updateCommentsDH()
     }
 
 
@@ -308,34 +289,14 @@ class ArticleViewModel @Inject constructor(
                 )
             }
         }) {
-            // Для сетевого запроса инвалидация dataSource будет сделана
-            // в коллбэке обзервера за commentsCount
+            // Инвалидация dataSource будет сделана в коллбэке обзервера за commentsCount
             repository.sendMessage(
                 articleId,
                 currentState.commentText!!,
                 currentState.answerToMessageId
             )
-            //----------------------------------
-            // Для тестового запроса к NetworkDataHolder, инвалидируем dataSource
-            dataSource.invalidate()
         }
     }
-
-    /*fun observeCommentList(
-        owner: LifecycleOwner,
-        onChange: (list: PagedList<CommentRes>) -> Unit
-    ) {
-        commentsListData.observe(owner, Observer { onChange(it) })
-    }
-
-    private fun buildPageList(
-        dataFactory: CommentsDataFactory
-    ): LiveData<PagedList<CommentRes>> {
-        return LivePagedListBuilder(
-            dataFactory,
-            listConfig
-        ).setFetchExecutor(Executors.newSingleThreadExecutor()).build()
-    }*/
 
     fun handleCommentFocus(hasFocus: Boolean) {
         updateState { it.copy(showBottombar = !hasFocus) }

@@ -11,21 +11,8 @@ import ru.skillbranch.skillarticles.data.remote.res.CommentRes
 import ru.skillbranch.skillarticles.ui.custom.CommentItemView
 import javax.inject.Inject
 
-/*class CommentsAdapter @Inject constructor(
-    private val listener: IArticleView
-) : PagedListAdapter<CommentRes, CommentVH>(CommentsDiffCallback()) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentVH {
-        val containerView = CommentItemView(parent.context)
-        return CommentVH(containerView, listener::clickOnComment)
-    }
-
-    override fun onBindViewHolder(holder: CommentVH, position: Int) {
-        holder.bind(getItem(position), position)
-    }
-}*/
-
-class CommentsAdapter2 @Inject constructor(
+class CommentsAdapter @Inject constructor(
     private val listener: IArticleView
 ) : PagingDataAdapter<CommentRes, CommentVH>(CommentsDiffCallback()) {
 
@@ -35,7 +22,7 @@ class CommentsAdapter2 @Inject constructor(
     }
 
     override fun onBindViewHolder(holder: CommentVH, position: Int) {
-        holder.bind(getItem(position), position)
+        holder.bind(getItem(position))
     }
 }
 
@@ -46,8 +33,8 @@ class CommentVH(
     val listener: (CommentRes) -> Unit
 ) : RecyclerView.ViewHolder(containerView), LayoutContainer {
 
-    fun bind(item: CommentRes?, pos: Int) {
-        (containerView as CommentItemView).bind(item, pos)
+    fun bind(item: CommentRes?) {
+        (containerView as CommentItemView).bind(item)
         // Мы разрешили плейсхолдеры, поэтому item может быть null
         if (item != null) itemView.setOnClickListener { listener(item) }
     }

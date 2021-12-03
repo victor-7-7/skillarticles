@@ -5,7 +5,6 @@ import androidx.core.math.MathUtils.clamp
 import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import ru.skillbranch.skillarticles.data.local.NetworkDataHolder
 import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.data.local.dao.ArticleContentsDao
 import ru.skillbranch.skillarticles.data.local.dao.ArticleCountsDao
@@ -16,6 +15,7 @@ import ru.skillbranch.skillarticles.data.models.AppSettings
 import ru.skillbranch.skillarticles.data.remote.RestService
 import ru.skillbranch.skillarticles.data.remote.err.ApiError
 import ru.skillbranch.skillarticles.data.remote.err.NoNetworkError
+import ru.skillbranch.skillarticles.data.remote.req.MessageReq
 import ru.skillbranch.skillarticles.data.remote.res.CommentRes
 import ru.skillbranch.skillarticles.extensions.data.toArticleContent
 import ru.skillbranch.skillarticles.extensions.data.toArticleCounts
@@ -29,31 +29,14 @@ interface IArticleRepository : IRepository {
     fun isAuth(): LiveData<Boolean>
     suspend fun toggleLike(articleId: String): Boolean
     suspend fun toggleBookmark(articleId: String): Boolean
-
-    //    fun loadCommentsByRange(slug: String?, size: Int, articleId: String): List<CommentRes>
     suspend fun sendMessage(articleId: String, message: String, answerToMessageId: String?)
-    /*fun loadAllComments(
-        articleId: String, totalCount: Int,
-        errHandler: (Throwable) -> Unit
-    ): CommentsDataFactory*/
-
     suspend fun decrementLike(articleId: String)
     suspend fun incrementLike(articleId: String)
     suspend fun fetchArticleContent(articleId: String)
     fun findArticleCommentCount(articleId: String): LiveData<Int>
     suspend fun refreshCommentsCount(articleId: String)
-
-    fun makeCommentsDataSource(articleId: String, total: Int): CommentsDataSource2
-//    suspend fun loadComments(articleId: String, offset: Int?, limit: Int): List<CommentRes>
+    fun makeCommentsDataSource(articleId: String, total: Int): CommentsDataSource
 }
-
-//===============================================================================
-
-// Для тестирования
-private var articleIdDH = (0..5).random().toString()
-private var totalDH = NetworkDataHolder.commentsCount(articleIdDH)
-
-//===============================================================================
 
 class ArticleRepository @Inject constructor(
     private val prefs: PrefManager,
@@ -85,18 +68,6 @@ class ArticleRepository @Inject constructor(
     }
 
     override fun isAuth(): LiveData<Boolean> = prefs.isAuthLive
-
-    /*override fun loadAllComments(
-        articleId: String,
-        totalCount: Int,
-        errHandler: (Throwable) -> Unit
-    ) =
-        CommentsDataFactory(
-            itemProvider = network,
-            articleId = articleId,
-            totalCount = totalCount,
-            errHandler = errHandler
-        )*/
 
     /** Метод возвращает значение isLike сущности ArticlePersonalInfo */
     override suspend fun toggleLike(articleId: String): Boolean =
@@ -190,19 +161,15 @@ class ArticleRepository @Inject constructor(
     override suspend fun sendMessage(
         articleId: String, message: String, answerToMessageId: String?
     ) {
-        // Для тестирования комментов
-        NetworkDataHolder.sendMessage(articleIdDH, message, answerToMessageId)
-        totalDH = NetworkDataHolder.commentsCount(articleIdDH)
-        //--------------------------------------
         // Отправляем сообщение на сервер
-        /*val (_, messageCount) = network.sendMessage(
+        val (_, messageCount) = network.sendMessage(
             articleId,
             MessageReq(message, answerToMessageId),
             prefs.accessToken
         )
         // Обновляем в локальной БД изменившееся всеобщее число
         // комментов данной статьи, полученное с сервера
-        articleCountsDao.updateCommentsCount(articleId, messageCount)*/
+        articleCountsDao.updateCommentsCount(articleId, messageCount)
 
 //        articleCountsDao.incrementCommentsCount(articleId) // <- before lecture 11
     }
@@ -215,139 +182,18 @@ class ArticleRepository @Inject constructor(
         articleCountsDao.update(metrics.toArticleCounts())
     }
 
-    override fun makeCommentsDataSource(articleId: String, total: Int): CommentsDataSource2 {
-        return CommentsDataSource2(articleId, network, total)
+    override fun makeCommentsDataSource(articleId: String, total: Int): CommentsDataSource {
+        return CommentsDataSource(articleId, network, total)
     }
-
-    // Для тестирования комментов
-    fun updateCommentsDH() {
-        articleIdDH = (0..5).random().toString()
-        totalDH = NetworkDataHolder.commentsCount(articleIdDH)
-    }
-
-    /*
-        override fun loadCommentsByRange(
-            slug: String?,
-            size: Int,
-            articleId: String
-        ): List<CommentRes> {
-            val data = network.commentsData.getOrElse(articleId) { mutableListOf() }
-            return when {
-                // Если ключа нет, то берем пачку комментов от начала
-                slug == null -> data.take(size)
-                // Находим коммент по ключу и берем пачку комментов после него
-                size > 0 -> data.dropWhile { it.slug != slug }
-                    .drop(1).take(size)
-                // Находим коммент по ключу (идя снизу) и берем пачку комментов перед ним
-                size < 0 -> data.dropLastWhile { it.slug != slug }
-                    .dropLast(1).takeLast(abs(size))
-                else -> emptyList()
-            } //.apply { sleep(3000) }
-        }
-    */
 }
 
-//============================================================================
+//=====================================================================
 
-/*class CommentsDataFactory(
-    private val itemProvider: RestService,
-    private val articleId: String,
-    private val totalCount: Int,
-    private val errHandler: (Throwable) -> Unit
-) : DataSource.Factory<String, CommentRes>() {
-    override fun create(): DataSource<String, CommentRes> =
-        CommentsDataSource(itemProvider, articleId, totalCount, errHandler)
-}*/
-
-//============================================================================
-
-/*class CommentsDataSource(
-    private val itemProvider: RestService,
-    private val articleId: String,
-    private val totalCount: Int,
-    private val errHandler: (Throwable) -> Unit
-) : ItemKeyedDataSource<String, CommentRes>() {
-
-    override fun loadInitial(
-        params: LoadInitialParams<String>,
-        callback: LoadInitialCallback<CommentRes>
-    ) {
-        try {
-            // synchronous call execute
-            val result = itemProvider.loadComments(
-                articleId,
-                params.requestedInitialKey,
-                params.requestedLoadSize
-            ).execute()
-            callback.onResult(
-                if (totalCount > 0) result.body()!! else emptyList(),
-                0,
-                totalCount
-            )
-        } catch (e: Throwable) {
-            // handle network errors in viewModel
-            errHandler(e)
-        }
-        Log.d(
-            "M_S_Paging", "ArticleRepository loadInitial: " +
-                    "key: ${params.requestedInitialKey} " +
-                    "size: ${params.requestedLoadSize} " +
-                    "total: $totalCount"
-        )
-    }
-
-    override fun loadAfter(
-        params: LoadParams<String>,
-        callback: LoadCallback<CommentRes>
-    ) {
-        try {
-            // synchronous call execute
-            val result = itemProvider.loadComments(
-                articleId,
-                params.key,
-                params.requestedLoadSize
-            ).execute()
-            callback.onResult(result.body()!!)
-        } catch (e: Throwable) {
-            // handle network errors in viewModel
-            errHandler(e)
-        }
-        Log.d(
-            "M_S_Paging", "ArticleRepository  loadAfter: " +
-                    "key: ${params.key} " +
-                    "size: ${params.requestedLoadSize}"
-        )
-    }
-
-    override fun loadBefore(
-        params: LoadParams<String>,
-        callback: LoadCallback<CommentRes>
-    ) {
-        try {
-            // synchronous call execute
-            val result = itemProvider.loadComments(
-                articleId,
-                params.key,
-                -params.requestedLoadSize
-            ).execute()
-            callback.onResult(result.body()!!)
-        } catch (e: Throwable) {
-            // handle network errors in viewModel
-            errHandler(e)
-        }
-        Log.d(
-            "M_S_Paging", "ArticleRepository loadBefore: " +
-                    "key: ${params.key} " +
-                    "size: ${params.requestedLoadSize}"
-        )
-    }
-    override fun getKey(item: CommentRes): String = item.id  // item.slug ??
-}*/
-
-class CommentsDataSource2(
+class CommentsDataSource(
     val articleId: String,
     val network: RestService,
-    private var total: Int
+    /** Общее число комментов у статьи */
+    private val total: Int
 ) : PagingSource<Int, CommentRes>() {
 
     override fun getRefreshKey(state: PagingState<Int, CommentRes>): Int? {
@@ -366,33 +212,38 @@ class CommentsDataSource2(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, CommentRes> {
 
         val pageKey = params.key ?: 0
-        val offset = clamp(pageKey * NETWORK_PAGE_SIZE, 0, totalDH)
+        val offset = clamp(pageKey * NETWORK_PAGE_SIZE, 0, total)
         val loadSize = params.loadSize
 
         return try {
-//            val comments = network.loadComments2(articleId, pageKey, pageSize)
-            //------------------------------------
-            // Для тестирования
-            total = totalDH
-            val comments = NetworkDataHolder.loadComments(articleIdDH, offset, loadSize)
-            //------------------------------------
-
+            val comments = network.loadComments2(articleId, pageKey, loadSize)
             val prevKey = if (pageKey > 0) pageKey.minus(1) else null
-
+            // Лишние комменты (сервер продолжает возвращать комменты, зацикливая их
+            // и превышая total-значение). Это багфикс серверного неадеквата
+            var extra = 0
             val nextKey = if(comments.isNotEmpty()) {
-                if (pageKey * NETWORK_PAGE_SIZE + loadSize > total) null
+                if (pageKey * NETWORK_PAGE_SIZE + comments.size >= total) {
+                    extra = pageKey * NETWORK_PAGE_SIZE + comments.size - total
+                    null
+                }
                 else  pageKey.plus(loadSize / NETWORK_PAGE_SIZE)
-            } else null
+            }
+            else null
 
             val itemsAfter = nextKey?.let { total - it * NETWORK_PAGE_SIZE } ?: 0
 
-            Log.d("M_S_Paging", "ArticleRepository load [key: $pageKey] " +
+            val type = when(params) {
+                is LoadParams.Refresh -> "REF"
+                is LoadParams.Prepend -> "PRE"
+                is LoadParams.Append -> "APP"
+            }
+            Log.d("M_S_Paging", "ArticleRepo load() $type [key: $pageKey] " +
                     "[offset: $offset] [limit: $loadSize] [loaded: ${comments.size}] " +
                     "[prev: $prevKey] [next: $nextKey] [before: $offset] " +
-                    "[after: $itemsAfter] [total: $total]")
+                    "[after: $itemsAfter] [total: $total] [extra: $extra]")
 
             LoadResult.Page(
-                data = comments,
+                data = if (extra > 0) comments.subList(0, comments.size - extra) else comments,
                 //Key for previous page if more data can be loaded in that direction
                 prevKey = prevKey,
                 // Key for next page if more data can be loaded in that direction

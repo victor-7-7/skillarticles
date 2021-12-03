@@ -210,8 +210,7 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
         }
     }
 
-    /** Параметр pos - для демонстрации механизма пэйджинга */
-    fun bind(item: CommentRes?, pos: Int) {
+    fun bind(item: CommentRes?) {
         if (item == null) {
             //TODO show shimmer
             iv_avatar.setImageDrawable(
@@ -219,8 +218,7 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
                     resources, R.drawable.ic_account_circle_black_24dp, null
                 )
             )
-            tv_author.text = "$pos"
-            tv_date.text = "time loading..."
+            tv_author.text = "Loading..."
             tv_body.text = "Comment loading..."
         }
         else {
@@ -242,7 +240,7 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
                     .override(avatarSize)
                     .into(iv_avatar)
             }
-            val name = "$pos ${item.user.name}"
+            val name = item.user.name
             tv_author.text = name
             tv_date.text = item.date.humanizeDiff()
             val message = item.body
