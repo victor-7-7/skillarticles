@@ -19,7 +19,7 @@ import ru.skillbranch.skillarticles.data.remote.req.MessageReq
 import ru.skillbranch.skillarticles.data.remote.res.CommentRes
 import ru.skillbranch.skillarticles.extensions.data.toArticleContent
 import ru.skillbranch.skillarticles.extensions.data.toArticleCounts
-import ru.skillbranch.skillarticles.viewmodels.article.ArticleViewModel.Companion.NETWORK_PAGE_SIZE
+import ru.skillbranch.skillarticles.viewmodels.article.ArticleViewModel.Companion.COMMENTS_NW_PAGE_SIZE
 import javax.inject.Inject
 
 interface IArticleRepository : IRepository {
@@ -51,10 +51,12 @@ class ArticleRepository @Inject constructor(
         articlesDao.findFullArticle(articleId)
 
     override suspend fun fetchArticleContent(articleId: String) {
-        // Загружаем контент статьи из сети
-        val content = network.loadArticleContent(articleId)
-        // Сохраняем контент локально в БД устройства
-        articleContentsDao.insert(content.toArticleContent())
+        // Загружаем контент статьи из сети. Обрезаем суффикс перед
+        // запросом к серверу
+        val content = network.loadArticleContent(articleId.substring(0, 24))
+        // Сохраняем контент локально в БД устройства. Перед вставкой контента
+        // в кэш восстанавливаем суффикс
+        articleContentsDao.insert(content.copy(articleId = articleId).toArticleContent())
     }
 
     override fun findArticleCommentCount(articleId: String): LiveData<Int> =
@@ -84,7 +86,8 @@ class ArticleRepository @Inject constructor(
         // Если юзер не авторизован, то выходим
         if (token.isEmpty()) return
         try {
-            network.addBookmark(articleId, token)
+            // Обрезаем суффикс перед запросом к серверу
+            network.addBookmark(articleId.substring(0, 24), token)
         } catch (e: Throwable) {
             // Если нет сети, то выходим
             if (e is NoNetworkError) return
@@ -100,7 +103,8 @@ class ArticleRepository @Inject constructor(
         // Если юзер не авторизован, то выходим
         if (token.isEmpty()) return
         try {
-            network.removeBookmark(articleId, token)
+            // Обрезаем суффикс перед запросом к серверу
+            network.removeBookmark(articleId.substring(0, 24), token)
         } catch (e: Throwable) {
             // Если нет сети, то выходим
             if (e is NoNetworkError) return
@@ -116,17 +120,18 @@ class ArticleRepository @Inject constructor(
         if (token.isEmpty()) {
             // Фиксируем в локальной БД уменьшение на 1 всеобщего
             //числа лайков у данной статьи и выходим
-            articleCountsDao.decrementLike(articleId)
+            articleCountsDao.decrementLikes(articleId)
             return
         }
         try {
-            val resp = network.decrementLike(articleId, token)
-            articleCountsDao.updateLike(articleId, resp.likeCount)
+            // Обрезаем суффикс перед запросом к серверу
+            val resp = network.decrementLike(articleId.substring(0, 24), token)
+            articleCountsDao.updateLikes(articleId, resp.likeCount)
         } catch (e: Throwable) {
             // Если ошибка ApiError.BadRequest, значит декрементировать
             // не надо, в том числе и локально. В случае остальных ошибок
             // надо записать декремент в локальную БД
-            if (e !is ApiError.BadRequest) articleCountsDao.decrementLike(articleId)
+            if (e !is ApiError.BadRequest) articleCountsDao.decrementLikes(articleId)
             // Если ошибка в отсутствии сети, то выходим
             if (e is NoNetworkError) return
             // Прочие ошибки сервера бросим вверх для обработки на уровне ViewModel
@@ -140,17 +145,18 @@ class ArticleRepository @Inject constructor(
         if (token.isEmpty()) {
             // Фиксируем в локальной БД увеличение на 1 всеобщего
             // числа лайков у данной статьи и выходим
-            articleCountsDao.incrementLike(articleId)
+            articleCountsDao.incrementLikes(articleId)
             return
         }
         try {
-            val resp = network.incrementLike(articleId, token)
-            articleCountsDao.updateLike(articleId, resp.likeCount)
+            // Обрезаем суффикс перед запросом к серверу
+            val resp = network.incrementLike(articleId.substring(0, 24), token)
+            articleCountsDao.updateLikes(articleId, resp.likeCount)
         } catch (e: Throwable) {
             // Если ошибка ApiError.BadRequest, значит инкрементировать
             // не надо, в том числе и локально. В случае остальных ошибок
             // надо записать инкремент в локальную БД
-            if (e !is ApiError.BadRequest) articleCountsDao.incrementLike(articleId)
+            if (e !is ApiError.BadRequest) articleCountsDao.incrementLikes(articleId)
             // Если ошибка в отсутствии сети, то выходим
             if (e is NoNetworkError) return
             // Прочие ошибки сервера бросим вверх для обработки на уровне ViewModel
@@ -163,23 +169,23 @@ class ArticleRepository @Inject constructor(
     ) {
         // Отправляем сообщение на сервер
         val (_, messageCount) = network.sendMessage(
-            articleId,
+            // Обрезаем суффикс перед запросом к серверу
+            articleId.substring(0, 24),
             MessageReq(message, answerToMessageId),
             prefs.accessToken
         )
         // Обновляем в локальной БД изменившееся всеобщее число
         // комментов данной статьи, полученное с сервера
         articleCountsDao.updateCommentsCount(articleId, messageCount)
-
-//        articleCountsDao.incrementCommentsCount(articleId) // <- before lecture 11
     }
 
     override suspend fun refreshCommentsCount(articleId: String) {
-        // Загружаем метрики статьи из сети
-        val metrics = network.loadArticleCounts(articleId)
+        // Загружаем метрики статьи из сети. Обрезаем суффикс перед запросом к серверу
+        val metrics = network.loadArticleCounts(articleId.substring(0, 24))
         // Сохраняем свежие метрики локально.
         // Реализация отличается от таковой в видео (lecture 11, 01:44:49)
-        articleCountsDao.update(metrics.toArticleCounts())
+        // Перед апдейтом кэша восстанавливаем суффикс
+        articleCountsDao.update(metrics.copy(articleId = articleId).toArticleCounts())
     }
 
     override fun makeCommentsDataSource(articleId: String, total: Int): CommentsDataSource {
@@ -212,25 +218,27 @@ class CommentsDataSource(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, CommentRes> {
 
         val pageKey = params.key ?: 0
-        val offset = clamp(pageKey * NETWORK_PAGE_SIZE, 0, total)
+        val offset = clamp(pageKey * COMMENTS_NW_PAGE_SIZE, 0, total)
         val loadSize = params.loadSize
 
         return try {
-            val comments = network.loadComments2(articleId, pageKey, loadSize)
+            // Обрезаем суффикс перед запросом к серверу
+            val comments = network.loadComments(articleId.substring(0, 24), pageKey, loadSize)
+
             val prevKey = if (pageKey > 0) pageKey.minus(1) else null
             // Лишние комменты (сервер продолжает возвращать комменты, зацикливая их
-            // и превышая total-значение). Это багфикс серверного неадеквата
+            // и превышая total-значение). Это багфикс серверного поведения
             var extra = 0
             val nextKey = if(comments.isNotEmpty()) {
-                if (pageKey * NETWORK_PAGE_SIZE + comments.size >= total) {
-                    extra = pageKey * NETWORK_PAGE_SIZE + comments.size - total
+                if (pageKey * COMMENTS_NW_PAGE_SIZE + comments.size >= total) {
+                    extra = pageKey * COMMENTS_NW_PAGE_SIZE + comments.size - total
                     null
                 }
-                else  pageKey.plus(loadSize / NETWORK_PAGE_SIZE)
+                else  pageKey.plus(loadSize / COMMENTS_NW_PAGE_SIZE)
             }
             else null
 
-            val itemsAfter = nextKey?.let { total - it * NETWORK_PAGE_SIZE } ?: 0
+            val itemsAfter = nextKey?.let { total - it * COMMENTS_NW_PAGE_SIZE } ?: 0
 
             val type = when(params) {
                 is LoadParams.Refresh -> "REF"

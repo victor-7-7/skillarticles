@@ -12,7 +12,7 @@ interface RestService {
     // параметр last будет null. Если limit < 0, например (-12), значит сервер
     // должен отдать 12 статейных айтемов, расположенных в базе сервера после
     // айтема с идентификатором из параметра last
-    // https://skill-articles.skill-branch.ru/api/v1/articles?last={articleId}&limit=10
+    // https://skill-articles.skill-branch.ru/api/v1/articles?last={last}&limit={limit}
     @GET("articles")
     suspend fun articles(
         @Query("last") last: String? = null,
@@ -27,15 +27,7 @@ interface RestService {
 
     // https://skill-articles.skill-branch.ru/api/v1/articles/{articleId}/messages
     @GET("articles/{article}/messages")
-    fun loadComments(
-        @Path("article") articleId: String,
-        @Query("last") last: Any? = null,
-        @Query("limit") limit: Int = 9
-    ): Call<List<CommentRes>>
-
-    // https://skill-articles.skill-branch.ru/api/v1/articles/{articleId}/messages
-    @GET("articles/{article}/messages")
-    suspend fun loadComments2(
+    suspend fun loadComments(
         @Path("article") articleId: String,
         @Query("offset") offset: Any? = null,
         @Query("limit") limit: Int = 9

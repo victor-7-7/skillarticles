@@ -18,8 +18,10 @@ data class Article(
     val categoryId: String,
     val poster: String,
     val date: Date,
-    @ColumnInfo(name = "updated_at")
-    val updatedAt: Date
+    /** Момент, когда сервер пришлет данные о статье и они будут записаны
+     * в БД. Это поле в таблице БД больше не изменится до сброса кэша */
+    @ColumnInfo(name = "cached_at")
+    val cachedAt: Date
 )
 
 data class Author(
@@ -35,7 +37,7 @@ data class Author(
     description, poster, article.category_id AS category_id, category.title AS category,
     category.icon AS category_icon, counts.likes AS like_count, 
     counts.comments AS comment_count, counts.read_duration AS read_duration, 
-    personal.is_bookmark AS is_bookmark
+    personal.is_bookmark AS is_bookmark, article.cached_at AS cached
     FROM articles AS article
     INNER JOIN article_counts AS counts ON counts.article_id = article.id
     INNER JOIN article_categories AS category 
@@ -43,6 +45,8 @@ data class Author(
     LEFT JOIN article_personal_infos AS personal ON personal.article_id = article.id
 """
 )
+/** It's a Virtual table. You can SELECT FROM that table, but
+ * you can not INSERT, DELETE or UPDATE into it */
 data class ArticleItem(
     val id: String,
     val date: Date = Date(),
@@ -64,7 +68,9 @@ data class ArticleItem(
     @ColumnInfo(name = "read_duration")
     val readDuration: Int = 0,
     @ColumnInfo(name = "is_bookmark")
-    var isBookmark: Boolean = false
+    var isBookmark: Boolean = false,
+    @ColumnInfo(name = "cached")
+    val cached: Date
 )
 
 @DatabaseView(

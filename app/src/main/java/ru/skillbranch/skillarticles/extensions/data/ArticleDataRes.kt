@@ -16,7 +16,7 @@ fun ArticleDataRes.toArticle(): Article = Article(
     categoryId = category.id,
     poster = poster,
     date = date,
-    updatedAt = Date()
+    cachedAt = Date()
 )
 
 fun CategoryRes.toCategory() = Category(

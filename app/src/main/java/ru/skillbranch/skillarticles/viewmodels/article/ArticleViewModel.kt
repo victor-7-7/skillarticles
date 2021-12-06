@@ -39,7 +39,7 @@ class ArticleViewModel @Inject constructor(
     private var firstTrigger = true
 
     companion object {
-        const val NETWORK_PAGE_SIZE = 10
+        const val COMMENTS_NW_PAGE_SIZE = 10
     }
 
     // Подписка на commentsPager выполняется в ArticleFragment (в методе setupViews)
@@ -47,10 +47,10 @@ class ArticleViewModel @Inject constructor(
         Pager(
             config = PagingConfig(
                 // Should be several times the number of visible items onscreen
-                pageSize = NETWORK_PAGE_SIZE,
-                prefetchDistance = 2 * NETWORK_PAGE_SIZE,
+                pageSize = COMMENTS_NW_PAGE_SIZE,
+                prefetchDistance = 2 * COMMENTS_NW_PAGE_SIZE,
                 enablePlaceholders = true, // default -> true
-                initialLoadSize = 3 * NETWORK_PAGE_SIZE, // default (3 * pageSize)
+                initialLoadSize = 3 * COMMENTS_NW_PAGE_SIZE, // default (3 * pageSize)
                 /*maxSize = 55,*/
                 // Граничное число непрогруженных айтемов. Скролл в пределах
                 // этого порога грузит страницы инкрементно. Скролл, убежавший за
