@@ -243,16 +243,18 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>(), IArticlesView {
             )
             dependsOn<Boolean, List<String>>(::isHashtagSearch, ::tags) { ihs, tags ->
                 val cursor = MatrixCursor(arrayOf(BaseColumns._ID, "tag"))
-                if (ihs && tags.isNotEmpty())
+                // Если юзер начал поиск с символа #, то надо показать ему выпадающий
+                // список уже имеющихся в ДБ тегов (они отсортированы по useCount полю)
+                if (ihs && tags.isNotEmpty()) {
                     for ((counter, tag) in tags.withIndex()) {
                         cursor.addRow(arrayOf(counter, tag))
                     }
+                }
                 suggestionsAdapter.changeCursor(cursor)
-                Log.d(
-                    "M_S_ArticlesBinding", "trigger dependsOn handler: " +
-                            "for isHashtagSearch/tags: isHashtagSearch = $isHashtagSearch " +
-                            "tags is not empty = ${tags.isNotEmpty()} new cursor " +
-                            "size - ${cursor.count}"
+                Log.d("M_S_ArticlesBinding", "trigger dependsOn handler: " +
+                    "for isHashtagSearch/tags: isHashtagSearch = $isHashtagSearch " +
+                    "tags is not empty = ${tags.isNotEmpty()} new cursor " +
+                    "size - ${cursor.count}"
                 )
             }
         }
