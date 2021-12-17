@@ -10,7 +10,7 @@ interface BaseDao<T : Any> {
     // IGNORE: если запись с таким первичным ключом (id) уже есть в базе,
     // то запись, предложенная к вставке, отбрасывается (игнорируется).
     // Возвращаемый объект - список из значений столбца rowId каждой
-    // вставленной записи (это НЕ список первичных ключей)
+    // вставленной записи (это НЕ список первичных ключей) и -1 для отброшенных
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(list: List<T>): List<Long>
 
@@ -24,7 +24,9 @@ interface BaseDao<T : Any> {
     suspend fun insert(obj: T): Long
 
     @Update
-    suspend fun update(list: List<T>)
+    /** An @Update method can optionally return an int value indicating
+     * the number of rows that were updated successfully */
+    suspend fun update(list: List<T>): Int
 
     @Update
     suspend fun update(obj: T)

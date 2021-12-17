@@ -13,6 +13,7 @@ import androidx.core.view.isVisible
 import androidx.cursoradapter.widget.SimpleCursorAdapter
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -53,6 +54,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>(), IArticlesView {
 
     override val prepareToolbar: ToolbarBuilder.() -> Unit = {
         addMenuItem(
+            // Кнопка раскрывает поле для ввода поисковой строки
             MenuItemHolder(
                 "Search",
                 R.id.action_search,
@@ -61,6 +63,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>(), IArticlesView {
             )
         )
         addMenuItem(
+            // Кнопка открывает диалоговое окно выбора категорий
             MenuItemHolder(
                 "Filter",
                 R.id.action_filter,
@@ -72,8 +75,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>(), IArticlesView {
                     binding.categories.toTypedArray()
                 )
                 viewModel.navigate(
-                    NavigationCommand
-                        .To(action.actionId, action.arguments)
+                    NavigationCommand.To(action.actionId, action.arguments)
                 )
             }
         )
@@ -85,6 +87,37 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>(), IArticlesView {
             populateAdapter(constraint)
         }
         setHasOptionsMenu(true)
+    }
+
+    override fun setupViews() {
+        with(rv_articles) {
+            layoutManager = LinearLayoutManager(context)
+            adapter = articlesAdapter
+            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
+        }
+
+        viewModel.observeArticles(viewLifecycleOwner, args.onlyBookmarkedArticles) {
+            articlesAdapter.submitData(viewLifecycleOwner.lifecycle, it)
+        }
+
+        viewModel.observeTags(viewLifecycleOwner) {
+            binding.tags = it
+        }
+
+        viewModel.observeCategories(viewLifecycleOwner) {
+            binding.categories = it
+        }
+        // Корневая для фрагмента вьюгруппа - SwipeRefreshLayout
+        swipe_refresh.setOnRefreshListener {
+            viewModel.refresh()
+        }
+
+        articlesAdapter.addLoadStateListener {
+            if (it.refresh == LoadState.Loading) {
+                renderLoading(Loading.SHOW_LOADING)
+            }
+            else renderLoading(Loading.HIDE_LOADING)
+        }
     }
 
     private fun populateAdapter(constraint: CharSequence?): Cursor {
@@ -158,27 +191,6 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>(), IArticlesView {
         searchView.setOnCloseListener {
             viewModel.handleIsSearch(false)
             true
-        }
-    }
-
-    override fun setupViews() {
-        with(rv_articles) {
-            layoutManager = LinearLayoutManager(context)
-            adapter = articlesAdapter
-            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
-        }
-        viewModel.observeList(viewLifecycleOwner, args.onlyBookmarkedArticles) {
-            articlesAdapter.submitList(it)
-        }
-        viewModel.observeTags(viewLifecycleOwner) {
-            binding.tags = it
-        }
-        viewModel.observeCategories(viewLifecycleOwner) {
-            binding.categories = it
-        }
-        // Корневая для фрагмента вьюгруппа - SwipeRefreshLayout
-        swipe_refresh.setOnRefreshListener {
-            viewModel.refresh()
         }
     }
 

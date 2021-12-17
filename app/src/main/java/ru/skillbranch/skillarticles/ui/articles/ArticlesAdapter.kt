@@ -2,7 +2,7 @@ package ru.skillbranch.skillarticles.ui.articles
 
 import android.view.View
 import android.view.ViewGroup
-import androidx.paging.PagedListAdapter
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.extensions.LayoutContainer
@@ -14,7 +14,7 @@ import javax.inject.Inject
 class ArticlesAdapter @Inject constructor(
     // Пример инъекции интерфейса через Hilt
     private val listener: IArticlesView
-) : PagedListAdapter<ArticleItem, ArticleVH>(ArticleDiffCallback()) {
+) : PagingDataAdapter<ArticleItem, ArticleVH>(ArticleDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ArticleVH {
         val containerView = ArticleItemView(parent.context)

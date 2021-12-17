@@ -3,7 +3,6 @@ package ru.skillbranch.skillarticles.ui.custom
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.IdRes
@@ -23,7 +22,7 @@ class StickyScrollView @JvmOverloads constructor(
     /** Ресурсный идентификатор поля ввода комментов (wrap_comments) */
     @IdRes private val targetId: Int
     // Расстояние до пороговых линий (снизу и сверху), пересечение которых
-    // полем ввод stickyView триггерит плавную анимацию скролла
+    // полем ввода stickyView триггерит плавную анимацию скролла
     @Px private val threshold: Int
     private val screenH = screenHeight()
     private var stickyState = StickyState.IDLE

@@ -50,6 +50,7 @@ class RootActivity : BaseActivity<RootViewModel>() {
             viewModel.navigate(NavigationCommand.To(it.itemId))
             true
         }
+
         navController.addOnDestinationChangedListener { _, dest, args ->
             // if destination has changed check whether it is necessary
             // to show nav_auth

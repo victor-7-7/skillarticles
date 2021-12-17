@@ -37,7 +37,7 @@ interface ArticleCountsDao : BaseDao<ArticleCounts> {
         WHERE article_id = :articleId
     """
     )
-    suspend fun incrementLike(articleId: String): Int
+    suspend fun incrementLikes(articleId: String): Int
 
     @Query(
         """
@@ -45,7 +45,7 @@ interface ArticleCountsDao : BaseDao<ArticleCounts> {
         WHERE article_id = :articleId
     """
     )
-    suspend fun decrementLike(articleId: String): Int
+    suspend fun decrementLikes(articleId: String): Int
 
     @Query(
         """
@@ -53,16 +53,7 @@ interface ArticleCountsDao : BaseDao<ArticleCounts> {
         WHERE article_id = :articleId
     """
     )
-    suspend fun updateLike(articleId: String, likes: Int): Int
-
-
-    @Query(
-        """
-        UPDATE article_counts SET comments = comments + 1, updated_at = CURRENT_TIMESTAMP
-        WHERE article_id = :articleId
-    """
-    )
-    suspend fun incrementCommentsCount(articleId: String)
+    suspend fun updateLikes(articleId: String, likes: Int): Int
 
     @Query(
         """

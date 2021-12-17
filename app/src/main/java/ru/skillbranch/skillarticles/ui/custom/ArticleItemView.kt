@@ -38,7 +38,7 @@ class ArticleItemView(
 
     private val posterSize = context.dpToIntPx(64)
     private val categorySize = context.dpToIntPx(40)
-    private val iconSize = context.dpToIntPx(16)
+    private val iconSize = context.dpToIntPx(24)
     private val cornerRadius = context.dpToIntPx(8)
 
     private val tvAuthorMarginStart = context.dpToIntPx(16)

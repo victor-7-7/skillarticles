@@ -17,7 +17,7 @@ class EditImageContract : ActivityResultContract<Pair<Uri, Uri>, Uri?>() {
         // Система предложит юзеру выбрать редактор изображений и
         // затем откроет в редакторе файл по uri => input!!.first
         val intent = Intent(Intent.ACTION_EDIT).apply {
-            setDataAndType(input!!.first, "image/jpeg")
+            setDataAndType(input.first, "image/jpeg")
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             // В экстру кладем второй uri, по которому будем
             // сохранять отредактированный файл изображения
@@ -35,7 +35,7 @@ class EditImageContract : ActivityResultContract<Pair<Uri, Uri>, Uri?>() {
         // Отрываем forEach от цепочки, чтобы можно было grantedApps вывести в лог
         grantedApps.forEach { pack ->
             context.grantUriPermission(
-                pack, input!!.second, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                pack, input.second, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             )
         }
         Log.d(

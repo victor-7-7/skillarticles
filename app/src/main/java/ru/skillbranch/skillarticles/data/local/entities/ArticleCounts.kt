@@ -26,6 +26,9 @@ data class ArticleCounts(
     val comments: Int = 0,
     @ColumnInfo(name = "read_duration")
     val readDuration: Int = 0,
+    /** Момент, когда сервер пришлет числовые данные о статье и они будут
+     * записаны в БД. Это поле в таблице БД будет менятся, в те моменты,
+     * когда будут обновляться в таблице поля likes/comments */
     @ColumnInfo(name = "updated_at")
     val updatedAt: Date = Date()
 )
